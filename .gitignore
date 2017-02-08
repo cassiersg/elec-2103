@@ -47,6 +47,8 @@
 *.qws
 *.jdi
 *db
+*.cdf
+*.sld
 
 ### LaTeX ###
 ## Core latex/pdflatex auxiliary files:
