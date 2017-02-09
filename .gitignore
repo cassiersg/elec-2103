@@ -33,22 +33,24 @@
 
 ######## Quartus II binary files
 
-*.rpt
-*.chg
-*.log
-*.htm
-*.eqn
-*.pin
-*.sof
-*.pof
-*.summary
-*.done
-*.smsg
-*.qws
-*.jdi
-*db
-*.cdf
-*.sld
+#*.rpt
+#*.chg
+#*.log
+#*.htm
+#*.eqn
+#*.pin
+#*.sof
+#*.pof
+#*.summary
+#*.done
+#*.smsg
+#*.qws
+#*.jdi
+*/db/*
+*/incremental_db/*
+*/output_files/*
+#*.cdf
+#*.sld
 
 ### LaTeX ###
 ## Core latex/pdflatex auxiliary files:
