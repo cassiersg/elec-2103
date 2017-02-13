@@ -44,11 +44,12 @@
 #*.summary
 #*.done
 #*.smsg
-#*.qws
+*.qws
 #*.jdi
 */db/*
 */incremental_db/*
 */output_files/*
+*.stp
 #*.cdf
 #*.sld
 

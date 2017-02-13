@@ -140,7 +140,12 @@ mtl_controller (
     .MTL_TOUCH_INT_n(MTL_TOUCH_INT_n), // Interrupt pin of Touch IC (from MTL)
     .MTL_R(MTL_R), // LCD red color data  (to MTL)
     .MTL_G(MTL_G), // LCD green color data (to MTL)
-    .MTL_B(MTL_B) // LCD blue color data (to MTL)
+    .MTL_B(MTL_B), // LCD blue color data (to MTL)
+    // SPI
+    .SPI_CLK(GPIO_0[11]),
+    .SPI_MOSI(GPIO_0[15]),
+    .SPI_MISO(GPIO_0[13]),
+    .SPI_CS(GPIO_0[9])
 );
 
 endmodule // DE0_NANO

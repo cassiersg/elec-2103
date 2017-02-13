@@ -40,17 +40,19 @@
 
 module mtl_display_controller(
 	// Host Side
-	iCLK,  // Input LCD control clock
-	iRST_n,  // Input system reset
-	iColorData,  // Input hardcoded color data
-        oNewFrame,  // Output signal being a pulse when a new frame of the LCD begins
-	oEndFrame,  // Output signal being a pulse when a frame of the LCD ends
+	input logic iCLK,  // Input LCD control clock
+	input logic iRST_n,  // Input system reset
+	input logic [23:0] iColorData,  // Input hardcoded color data
+        output logic oNewFrame,  // Output signal being a pulse when a new frame of the LCD begins
+	output logic oEndFrame,  // Output signal being a pulse when a frame of the LCD ends
 	// LCD Side
-	oHD,  // Output LCD horizontal sync
-	oVD,  // Output LCD vertical sync
-	oLCD_R,  // Output LCD red color data
-	oLCD_G,  // Output LCD green color data
-	oLCD_B  // Output LCD blue color data
+	output logic oHD,  // Output LCD horizontal sync
+	output logic oVD,  // Output LCD vertical sync
+	output logic [7:0] oLCD_R,  // Output LCD red color data
+	output logic [7:0] oLCD_G,  // Output LCD green color data
+	output logic [7:0] oLCD_B,  // Output LCD blue color data
+        output logic [9:0] curr_x,
+        output logic [8:0] curr_y
 );
 
 //============================================================================
@@ -70,16 +72,16 @@ parameter Vertical_Front_Porch = 22;
 // PORT declarations
 //===========================================================================
 
-input iCLK;
-input iRST_n;
-input [23:0] iColorData;
-output oNewFrame;
-output oEndFrame;
-output oHD;
-output oVD;
-output [7:0] oLCD_R;
-output [7:0] oLCD_G;
-output [7:0] oLCD_B;
+//input iCLK;
+//input iRST_n;
+//input [23:0] iColorData;
+//output oNewFrame;
+//output oEndFrame;
+//output oHD;
+//output oVD;
+//output [7:0] oLCD_R;
+//output [7:0] oLCD_G;
+//output [7:0] oLCD_B;
 
 //=============================================================================
 // REG/WIRE declarations
@@ -87,6 +89,8 @@ output [7:0] oLCD_B;
 
 reg  [10:0] x_cnt;
 reg  [9:0] y_cnt;
+reg  [10:0] x_next;
+reg  [9:0] y_next;
 wire [7:0] read_red;
 wire [7:0] read_green;
 wire [7:0] read_blue;
@@ -143,6 +147,12 @@ end
 
 //--- Keeping track of x and y positions of the current pixel ------------------
 //--- and generating the horiz. and vert. sync. signals ------------------------
+assign x_next = (x_cnt == (H_LINE-1)) ? 11'd0 : x_cnt + 11'd1;
+assign y_next = (x_cnt == (H_LINE-1)) ? ((y_cnt == (V_LINE-1)) ? 10'd0 : y_cnt + 10'd1) : y_cnt;
+assign curr_x = x_next - Horizontal_Blank;
+assign curr_y = y_next - Vertical_Blank;
+
+
 always@(posedge iCLK or negedge iRST_n) begin
     if (!iRST_n)
     begin

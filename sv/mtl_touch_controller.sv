@@ -39,26 +39,29 @@
 // --------------------------------------------------------------------
 
 module mtl_touch_controller(
-    input     iCLK,
-    input     iRST,
+    input logic iCLK,
+    input logic iRST,
     // MTL TOUCH
-    input    MTL_TOUCH_INT_n,  // Interrupt pin of Touch IC (from MTL)
-    inout     MTL_TOUCH_I2C_SDA,  // I2C data pin of Touch IC (from/to MTL)
-    output   MTL_TOUCH_I2C_SCL,  // I2C clock pin of Touch IC (from MTL)
+    input logic MTL_TOUCH_INT_n, // Interrupt pin of Touch IC (from MTL)
+    inout MTL_TOUCH_I2C_SDA, // I2C data pin of Touch IC (from/to MTL)
+    output logic MTL_TOUCH_I2C_SCL, // I2C clock pin of Touch IC (from MTL)
     // Gestures
-    output   Gest_W,  // Decoded gesture (sliding towards West)
-    output   Gest_E  // Decoded gesture (sliding towards East)
-);
-
+    output logic Gest_N, // Decoded gesture (sliding towards North)
+    output logic Gest_E, // Decoded gesture (sliding towards East)
+    output logic Gest_S, // Decoded gesture (sliding towards South)
+    output logic Gest_W, // Decoded gesture (sliding towards West)
+    // Debug signals
 //=============================================================================
 // REG/WIRE declarations
 //=============================================================================
 
-logic [9:0] reg_x1, reg_x2, reg_x3, reg_x4, reg_x5;
-logic [8:0] reg_y1, reg_y2, reg_y3, reg_y4, reg_y5;
-logic [1:0] reg_touch_count;
-logic [7:0] reg_gesture;
-logic touch_ready;
+output logic [9:0] reg_x1, reg_x2, reg_x3, reg_x4, reg_x5,
+output logic [8:0] reg_y1, reg_y2, reg_y3, reg_y4, reg_y5,
+output logic [1:0] reg_touch_count,
+output logic [7:0] reg_gesture,
+output logic touch_ready
+
+);
 
 //=============================================================================
 // Structural coding
@@ -112,6 +115,19 @@ touch_buffer touch_buffer_east (
     .pulse (Gest_E)
 );
 
+touch_buffer touch_buffer_south (
+    .clk (iCLK),
+    .rst (iRST),
+    .trigger (touch_ready && (reg_gesture == 8'h10)),
+    .pulse (Gest_S)
+);
+
+touch_buffer touch_buffer_north (
+    .clk (iCLK),
+    .rst (iRST),
+    .trigger (touch_ready && (reg_gesture == 8'h18)),
+    .pulse (Gest_N)
+);
 
 endmodule // mtl_touch_controller
 
@@ -153,6 +169,6 @@ always_ff @ (posedge clk) begin
 
 end
 
-assign pulse = (count==32'd10000000);
+assign pulse = (count==32'd00000001);
 
 endmodule // touch_buffer
