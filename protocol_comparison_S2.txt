@@ -1,0 +1,90 @@
+doWait = False
+=============
+
+Picture transfer protocol:  TCP
+IP CLIENT: 10.0.0.4
+Ports CLIENT TCP: 5005
+Ports CLIENT UDP: 5006
+IP SERVER: 10.0.0.1
+Ports SERVER TCP: 5005
+Ports SERVER UDP: 5006
+ImageSize: 6220817  packetSize: 65507
+elapsed time: 2.43745112419
+Size received: 6220817
+
+
+Picture transfer protocol:  UDP_blocking
+IP CLIENT: 10.0.0.4
+Ports CLIENT TCP: 5005
+Ports CLIENT UDP: 5006
+IP SERVER: 10.0.0.1
+Ports SERVER TCP: 5005
+Ports SERVER UDP: 5006
+ImageSize: 6220817  packetSize: 65507
+elapsed time: 3.22941207886
+Size received: 6220817
+
+Picture transfer protocol:  UDP_blocking
+IP CLIENT: 10.0.0.4
+Ports CLIENT TCP: 5005
+Ports CLIENT UDP: 5006
+IP SERVER: 10.0.0.1
+Ports SERVER TCP: 5005
+Ports SERVER UDP: 5006
+ImageSize: 6220817  packetSize: 65507
+elapsed time: 3.73123192787
+Size received: 6220817
+
+
+Picture transfer protocol:  UDP_nblocking
+IP CLIENT: 10.0.0.4
+Ports CLIENT TCP: 5005
+Ports CLIENT UDP: 5006
+IP SERVER: 10.0.0.1
+Ports SERVER TCP: 5005
+Ports SERVER UDP: 5006
+ImageSize: 6220817  packetSize: 65507
+elapsed time: 0.759029150009
+Size received: 6220817
+
+=> bad file... (black blocks)
+
+dWait=True
+==========
+
+Picture transfer protocol:  TCP
+IP CLIENT: 10.0.0.4
+Ports CLIENT TCP: 5005
+Ports CLIENT UDP: 5006
+IP SERVER: 10.0.0.1
+Ports SERVER TCP: 5005
+Ports SERVER UDP: 5006
+ImageSize: 6220817  packetSize: 65507
+elapsed time: 2.73110890388
+Size received: 6220817
+
+
+Picture transfer protocol:  UDP_blocking
+IP CLIENT: 10.0.0.4
+Ports CLIENT TCP: 5005
+Ports CLIENT UDP: 5006
+IP SERVER: 10.0.0.1
+Ports SERVER TCP: 5005
+Ports SERVER UDP: 5006
+ImageSize: 6220817  packetSize: 65507
+elapsed time: 4.25705909729
+Size received: 6220817
+
+
+Picture transfer protocol:  UDP_nblocking
+IP CLIENT: 10.0.0.4
+Ports CLIENT TCP: 5005
+Ports CLIENT UDP: 5006
+IP SERVER: 10.0.0.1
+Ports SERVER TCP: 5005
+Ports SERVER UDP: 5006
+ImageSize: 6220817  packetSize: 65507
+elapsed time: 1.40310406685
+Size received: 6220817
+
+

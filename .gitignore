@@ -379,3 +379,6 @@ ENV/
 .ropeproject
 
 # End of https://www.gitignore.io/api/python,latex,linux,alteraquartusii
+
+# vim
+*.swp
