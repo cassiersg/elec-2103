@@ -135,17 +135,17 @@ mtl_controller (
     .MTL_DCLK(MTL_DCLK), // LCD Display clock (to MTL)
     .MTL_HSD(MTL_HSD), // LCD horizontal sync (to MTL)
     .MTL_VSD(MTL_VSD), // LCD vertical sync (to MTL)
-    .MTL_TOUCH_I2C_SCL(MTL_TOUCH_I2C_SCL), // I2C clock pin of Touch IC (from MTL)
-    .MTL_TOUCH_I2C_SDA(MTL_TOUCH_I2C_SDA), // I2C data pin of Touch IC (from/to MTL)
-    .MTL_TOUCH_INT_n(MTL_TOUCH_INT_n), // Interrupt pin of Touch IC (from MTL)
     .MTL_R(MTL_R), // LCD red color data  (to MTL)
     .MTL_G(MTL_G), // LCD green color data (to MTL)
     .MTL_B(MTL_B), // LCD blue color data (to MTL)
-    // SPI
-    .SPI_CLK(GPIO_0[11]),
-    .SPI_MOSI(GPIO_0[15]),
-    .SPI_MISO(GPIO_0[13]),
-    .SPI_CS(GPIO_0[9])
+);
+
+qsys1 u0 (
+    .clk_clk(CLOCK_50), // clk.clk
+    .reset_reset_n(~dly_rstn), // reset.reset_n
+    .mtl_touch_ip_0_mtl_connection_i2cclock(MTL_TOUCH_I2C_SCL), // i2c clock pin of touch ic (from mtl)
+    .mtl_touch_ip_0_mtl_connection_i2cdata(MTL_TOUCH_I2C_SDA), // i2c data pin of touch ic (from/to mtl)
+    .mtl_touch_ip_0_mtl_connection_interruptic(MTL_TOUCH_INT_n) // interrupt pin of touch ic (from mtl)
 );
 
 endmodule // DE0_NANO
