@@ -1,5 +1,0 @@
-PLL_Name	mtl_controller:comb_5|MTL_PLL:MTL_PLL_inst|altpll:altpll_component|MTL_PLL_altpll:auto_generated|pll1
-PLLJITTER	NA
-PLLSPEmax	84
-PLLSPEmin	-53
-
