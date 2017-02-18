@@ -1,37 +1,13 @@
 
-# Created by https://www.gitignore.io/api/python,latex,linux,alteraquartusii
+### Custom ###
+src/base/*
 
 ### AlteraQuartusII ###
 ##list taken from http://www.alterawiki.com/wiki/Version_Control (01.10.2015)
 
-######### Quartus II source files
-
 # project files:
 ### project_name.qpf Quartus II project file
 ### project_name.qsf Quartus constraint file (lists the hardware constraints defined for a project, from the used chip and pinout to timing constraints)
-### project_name.qws Quartus Window Settings ? (the configuration of the Quartus gui for the project, may be omitted)
-
-# top level source files:
-### project_name.bdf Block diagram / Schematic file (top level schematic file, there may be many nested files)
-### project_name.vhd VHDL file (top level VHDL file)
-### project_name.v Verilog file (top level Verilog file)
-
-# component source files:
-### component_name.bsf Block Symbol file (component symbol file)
-### component_name.vhd VHDL file (top level VHDL file)
-### component_name.v Verilog file (top level Verilog file)
-
-# SOPC builder project source files (SOPC builder creates many VHDL or Verilog files, that you do not need to store)
-### sopc_project_name.ptf the list and configuration of components selected in the SOPC gui
-### sopc_project_name.bsf Block Symbol file (SOPC component symbol file, especially if you modified it)
-
-# Board Description (if you created your own board, the list is incomplete!)
-### board_name/class.ptf
-
-# software source files:
-### tbd
-
-######## Quartus II binary files
 
 #*.rpt
 #*.chg
@@ -44,14 +20,72 @@
 #*.summary
 #*.done
 #*.smsg
-*.qws
+#*.qws
 #*.jdi
+#*.stp
+#*.cdf
+#*.sld
+
+*.cdf # quartus programmer file, contains absolute path to .sof
+*.qdf
+
 */db/*
 */incremental_db/*
 */output_files/*
-*.stp
-#*.cdf
-#*.sld
+*/.qsys_edit/*
+*/greybox_tmp/*
+
+### QSYS ###
+*.sopcinfo
+*_bsp*
+
+### C, C++ ###
+
+### C ###
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+*.objdump
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
 
 ### LaTeX ###
 ## Core latex/pdflatex auxiliary files:
