@@ -33,55 +33,54 @@
 //
 // Revision History :
 // --------------------------------------------------------------------
-//  Ver  :| Author            	  :| Mod. Date :| Changes Made:
-//  V1.0 :| Johnny Fan			     :| 07/06/30  :| Initial Revision
-//	 V2.0 :| Charlotte Frenkel      :| 14/08/03  :| Adaptation for ELEC2103 project 
-//  V3.0 :| Ludovic Moreau			  :| 17/02/06  :| Adaptation for ELEC2103 project
+//  Ver  :| Author            	    :| Mod. Date :| Changes Made:
+//  V1.0 :| Johnny Fan			    :| 07/06/30  :| Initial Revision
+//	V2.0 :| Charlotte Frenkel       :| 14/08/03  :| Adaptation for ELEC2103 project 
+//  V3.0 :| Ludovic Moreau			:| 17/02/06  :| Adaptation for ELEC2103 project
 // --------------------------------------------------------------------
 
 module mtl_controller (
-	input 		iCLK,
-	input 		iRST,
+	input 		    iCLK,
+	input 		    iRST,
 	// MTL
-	output		 MTL_DCLK,				// LCD Display clock (to MTL)
-	output		 MTL_HSD,				// LCD horizontal sync (to MTL) 
-	output		 MTL_VSD,				// LCD vertical sync (to MTL)
-	output		 MTL_TOUCH_I2C_SCL,  // I2C clock pin of Touch IC (from MTL)
-	inout			 MTL_TOUCH_I2C_SDA,	// I2C data pin of Touch IC (from/to MTL)
-	input			 MTL_TOUCH_INT_n,		// Interrupt pin of Touch IC (from MTL)
-	output [7:0] MTL_R,					// LCD red color data  (to MTL)
-	output [7:0] MTL_G,					// LCD green color data (to MTL)
-	output [7:0] MTL_B 					// LCD blue color data (to MTL)
+	output		    MTL_DCLK,				// LCD Display clock (to MTL)
+	output		    MTL_HSD,				// LCD horizontal sync (to MTL) 
+	output		    MTL_VSD,				// LCD vertical sync (to MTL)
+	output		    MTL_TOUCH_I2C_SCL,      // I2C clock pin of Touch IC (from MTL)
+	inout			MTL_TOUCH_I2C_SDA,	    // I2C data pin of Touch IC (from/to MTL)
+	input	        MTL_TOUCH_INT_n,	    // Interrupt pin of Touch IC (from MTL)
+	output [7:0]    MTL_R,					// LCD red color data  (to MTL)
+	output [7:0]    MTL_G,					// LCD green color data (to MTL)
+	output [7:0]    MTL_B 					// LCD blue color data (to MTL)
 );
 
 //=============================================================================
 // REG/WIRE declarations
 //=============================================================================
 
-logic CLOCK_33, iCLOCK_33;						// 33MHz clocks for the MTL 
+logic           CLOCK_33, iCLOCK_33;	    // 33MHz clocks for the MTL 
+logic           newFrame, endFrame;
+logic           Gest_W, Gest_E;
+logic [23:0]    ColorDataBfr, ColorData;	// {8-bit red, 8-bit green, 8-bit blue} 
 
-logic	newFrame, endFrame;
-
-logic Gest_W, Gest_E;
-
-logic [23:0]   ColorDataBfr, ColorData;	// {8-bit red, 8-bit green, 8-bit blue} 
-
+assign Gest_E = 1'b0;
+assign Gest_W = 1'b0;
  
 //=============================================================================
 // Structural coding
 //=============================================================================
 
 always @(posedge iCLK)
-	if(iRST)					ColorDataBfr <= 24'd0;
+	if(iRST)				ColorDataBfr <= 24'd0;
 	else if (Gest_W)		ColorDataBfr <= 24'hCC33FF;		// Purple
 	else if (Gest_E)		ColorDataBfr <= 24'h33FF66;		// Green 
-	else						ColorDataBfr <= ColorDataBfr;
+	else					ColorDataBfr <= ColorDataBfr;
 	
 always @(posedge iCLK)
-	if(iRST)				 	ColorData <= 24'd0;
-	else if (endFrame)	ColorData <= ColorDataBfr;			// Update the color displayed between 
-	else						ColorData <= ColorData;				// two frames to avoid glitches
-
+	if(iRST)				ColorData <= 24'd0;
+	else if (endFrame)	    ColorData <= ColorDataBfr;		// Update the color displayed between 
+	else					ColorData <= ColorData;			// two frames to avoid glitches
+    
 //=============================================================================
 // Dedicated sub-controllers
 //=============================================================================
@@ -91,7 +90,7 @@ always @(posedge iCLK)
 
 mtl_display_controller mtl_display_controller_inst (
 	// Host Side
-	.iCLK(CLOCK_33),				// Input LCD control clock
+	.iCLK(CLOCK_33),			// Input LCD control clock
 	.iRST_n(~iRST),				// Input system reset
 	.iColorData(ColorData),		// Input hardcoded color data
 	.oNewFrame(newFrame),		// Output signal being a pulse when a new frame of the LCD begins
@@ -100,17 +99,15 @@ mtl_display_controller mtl_display_controller_inst (
 	.oLCD_R(MTL_R),				// Output LCD horizontal sync 
 	.oLCD_G(MTL_G),				// Output LCD vertical sync
 	.oLCD_B(MTL_B),				// Output LCD red color data 
-	.oHD(MTL_HSD),					// Output LCD green color data 
-	.oVD(MTL_VSD)					// Output LCD blue color data  
+	.oHD(MTL_HSD),				// Output LCD green color data 
+	.oVD(MTL_VSD)				// Output LCD blue color data  
 );
 
 assign MTL_DCLK = iCLOCK_33;
 
-
-
 //--- Touch controller -------------------------
 
-mtl_touch_controller mtl_touch_controller_inst (
+/*mtl_touch_controller mtl_touch_controller_inst (
 	.iCLK(iCLK),
 	.iRST(iRST),
 	// MTL TOUCH
@@ -118,20 +115,18 @@ mtl_touch_controller mtl_touch_controller_inst (
 	.MTL_TOUCH_I2C_SDA(MTL_TOUCH_I2C_SDA),	// I2C data pin of Touch IC (from/to MTL)
 	.MTL_TOUCH_I2C_SCL(MTL_TOUCH_I2C_SCL),	// I2C clock pin of Touch IC (from MTL)
 	// Gestures
-	.Gest_W(Gest_W),								// Decoded gesture (sliding towards West)
-	.Gest_E(Gest_E)								// Decoded gesture (sliding towards East)
-);
-			
-
+	.Gest_W(Gest_W),						// Decoded gesture (sliding towards West)
+	.Gest_E(Gest_E)							// Decoded gesture (sliding towards East)
+);*/	
 
 //============================================================
 // Clock management 
 //============================================================
 
-//This PLL generates 33 MHz for the LCD screen.
-//CLOCK_33 is used to generate the controls while iCLOCK_33
-//is connected to the screen. Its phase is 120 so as to
-//meet the setup and hold timing constraints of the screen.
+/* This PLL generates 33 MHz for the LCD screen.
+CLOCK_33 is used to generate the controls while iCLOCK_33
+is connected to the screen. Its phase is 120 so as to
+meet the setup and hold timing constraints of the screen. */
 MTL_PLL	MTL_PLL_inst (
 	.inclk0 (iCLK),
 	.c0 (CLOCK_33),			//33MHz clock, phi=0
@@ -155,6 +150,4 @@ MTL_PLL	MTL_PLL_inst (
  * related to signals whose timing is critical.
  */ 
  
-endmodule // mtl_controller
-
-
+endmodule

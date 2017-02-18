@@ -155,26 +155,26 @@ reset_delay	reset_delay_inst (
 
 //--- MTL Controller ------------------------------------
 
-mtl_controller (
+/*mtl_controller (
 	.iCLK(CLOCK_50),
 	.iRST(dly_rst),
 	// MTL
-	.MTL_DCLK(MTL_DCLK),							// LCD Display clock (to MTL)
-	.MTL_HSD(MTL_HSD),							// LCD horizontal sync (to MTL) 
-	.MTL_VSD(MTL_VSD),							// LCD vertical sync (to MTL)
-	.MTL_TOUCH_I2C_SCL(MTL_TOUCH_I2C_SCL), // I2C clock pin of Touch IC (from MTL)
-	.MTL_TOUCH_I2C_SDA(MTL_TOUCH_I2C_SDA), // I2C data pin of Touch IC (from/to MTL)
-	.MTL_TOUCH_INT_n(MTL_TOUCH_INT_n),     // Interrupt pin of Touch IC (from MTL)
-	.MTL_R(MTL_R),									// LCD red color data  (to MTL)
-	.MTL_G(MTL_G),									// LCD green color data (to MTL)
-	.MTL_B(MTL_B) 									// LCD blue color data (to MTL)
-);
+	.MTL_DCLK(MTL_DCLK),	                // LCD Display clock (to MTL)
+	.MTL_HSD(MTL_HSD),						// LCD horizontal sync (to MTL) 
+	.MTL_VSD(MTL_VSD),						// LCD vertical sync (to MTL)
+	.MTL_TOUCH_I2C_SCL(MTL_TOUCH_I2C_SCL),  // I2C clock pin of Touch IC (from MTL)
+	.MTL_TOUCH_I2C_SDA(MTL_TOUCH_I2C_SDA),  // I2C data pin of Touch IC (from/to MTL)
+	.MTL_TOUCH_INT_n(MTL_TOUCH_INT_n),      // Interrupt pin of Touch IC (from MTL)
+	.MTL_R(MTL_R),							// LCD red color data  (to MTL)
+	.MTL_G(MTL_G),							// LCD green color data (to MTL)
+	.MTL_B(MTL_B) 							// LCD blue color data (to MTL)
+);*/
 
 base u0 (
-    .clk_clk                          (CLOCK_50),   // clk.clk
-    .reset_reset_n                    (KEY[0]),     // reset.reset_n
+    .clk_clk                          (CLOCK_50),       // clk.clk
+    .reset_reset_n                    (KEY[0]),         // reset.reset_n
     // Trivial conduit for testing purposes
-    .pio_0_external_connection_export (32'd42),      // pio_0_external_connection.export
+    .pio_0_external_connection_export (32'd42),             // pio_0_external_connection.export
     .mtl_touch_conduit_i2c_scl        (MTL_TOUCH_I2C_SCL),  // mtl_touch_conduit.i2c_scl
 	.mtl_touch_conduit_i2c_sda        (MTL_TOUCH_I2C_SDA),  // i2c_sda
 	.mtl_touch_conduit_touch_int_n    (MTL_TOUCH_INT_n)     // touch_int_n

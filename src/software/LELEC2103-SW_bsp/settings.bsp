@@ -2,9 +2,9 @@
 <sch:Settings xmlns:sch="http://www.altera.com/embeddedsw/bsp/schema">
         <BspType>hal</BspType>
         <BspVersion>default</BspVersion>
-        <BspGeneratedTimeStamp>Feb 16, 2017 5:45:08 PM</BspGeneratedTimeStamp>
-        <BspGeneratedUnixTimeStamp>1487263508112</BspGeneratedUnixTimeStamp>
-        <BspGeneratedLocation>/home/anparis/Documents/elec-2103/src3/software/LELEC2103-SW_bsp</BspGeneratedLocation>
+        <BspGeneratedTimeStamp>Feb 17, 2017 2:41:56 PM</BspGeneratedTimeStamp>
+        <BspGeneratedUnixTimeStamp>1487338916656</BspGeneratedUnixTimeStamp>
+        <BspGeneratedLocation>/home/anparis/Documents/elec-2103/src/software/LELEC2103-SW_bsp</BspGeneratedLocation>
         <BspSettingsFile>settings.bsp</BspSettingsFile>
         <SopcDesignFile>../../base.sopcinfo</SopcDesignFile>
         <JdiFile>default</JdiFile>

@@ -19,6 +19,7 @@ logic [31:0]    x1_reg, x2_reg, x3_reg, x4_reg, x5_reg;
 logic [31:0]    y1_reg, y2_reg, y3_reg, y4_reg, y5_reg;
 logic [7:0]     gesture_reg;
 logic [31:0]    touch_count_reg;
+logic           touch_ready_reg;
 
 // Instantiation of the touch controller
 logic [9:0]     x1, x2, x3, x4, x5;
@@ -67,6 +68,7 @@ begin
         
         gesture_reg     <= 8'b0;
         touch_count_reg <= 32'b0;
+        touch_ready_reg <= 1'b0;
     end
     else if (touch_ready)
     begin
@@ -84,6 +86,7 @@ begin
         
         gesture_reg     <= gesture;
         touch_count_reg <= touch_count;
+        touch_ready_reg <= touch_ready;
     end
 end
 
@@ -103,7 +106,8 @@ case (avs_s0_address[4:0])
     5'hc:   avs_s0_readdata = y5_reg;
     
     5'h10:  avs_s0_readdata = touch_count_reg;
-    2'h11:  avs_s0_readdata = gesture_reg;
+    5'h11:  avs_s0_readdata = gesture_reg;
+    5'h12:  avs_s0_readdata = touch_ready_reg;
     
     default:    avs_s0_readdata = 32'b0;
 endcase
