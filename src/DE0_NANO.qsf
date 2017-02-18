@@ -6,7 +6,7 @@ set_global_assignment -name FAMILY "Cyclone IV E"
 set_global_assignment -name DEVICE EP4CE22F17C6
 set_global_assignment -name TOP_LEVEL_ENTITY "DE0_NANO"
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 10.1
-set_global_assignment -name LAST_QUARTUS_VERSION 15.0.2
+set_global_assignment -name LAST_QUARTUS_VERSION 16.0.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "19:39:13 JUNE 21,2014"
 set_global_assignment -name DEVICE_FILTER_PACKAGE FBGA
 set_global_assignment -name DEVICE_FILTER_PIN_COUNT 256
@@ -368,6 +368,10 @@ set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_RO
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_global_assignment -name ENABLE_SIGNALTAP ON
 set_global_assignment -name USE_SIGNALTAP_FILE stp_MTL_ports.stp
+set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+
+
 set_global_assignment -name QIP_FILE base/synthesis/base.qip
 set_global_assignment -name SDC_FILE DE0_NANO.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE mtl_touch_controller.sv
@@ -376,7 +380,5 @@ set_global_assignment -name SYSTEMVERILOG_FILE mtl_controller.sv
 set_global_assignment -name VERILOG_FILE i2c_touch_config.v
 set_global_assignment -name SYSTEMVERILOG_FILE DE0_NANO.sv
 set_global_assignment -name QIP_FILE MTL_PLL.qip
-set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
-set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
-
+set_global_assignment -name CDF_FILE output_files/Chain1.cdf
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

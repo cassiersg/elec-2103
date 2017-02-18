@@ -28,6 +28,7 @@ src/base/*
 
 *.cdf # quartus programmer file, contains absolute path to .sof
 *.qdf
+*.qws
 
 */db/*
 */incremental_db/*
