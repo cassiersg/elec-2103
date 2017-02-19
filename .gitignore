@@ -1,6 +1,7 @@
 
 ### Custom ###
 src/base/*
+src/software/LELEC2103-SW/.settings/*
 
 ### AlteraQuartusII ###
 ##list taken from http://www.alterawiki.com/wiki/Version_Control (01.10.2015)
