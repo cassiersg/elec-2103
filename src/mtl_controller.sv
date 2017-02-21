@@ -1,3 +1,9 @@
+/*
+	FIXME: this module was useful in the past when it was used to instantiate every
+	subcontrollers (touch, display). Now that he is only instantiating display controller,
+	this could as well only one module...
+*/
+
 module mtl_controller (
 	input 		    iCLK_50,				// System clock (50MHz)
 	input 		    iRST,					// System sync reset

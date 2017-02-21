@@ -162,13 +162,15 @@ mtl_controller mtl_ctrl_inst(
 
 // SoPC instantiation
 base u0 (
-    .clk_clk                          (CLOCK_50),
-    .reset_reset_n                    (KEY[0]),
+    .clk_clk                            (CLOCK_50),
+    .reset_reset_n                      (KEY[0]),
     // Trivial conduit for testing purposes
-    .pio_0_external_connection_export (32'd42),
-    .mtl_touch_conduit_i2c_scl        (MTL_TOUCH_I2C_SCL),
-	.mtl_touch_conduit_i2c_sda        (MTL_TOUCH_I2C_SDA),
-	.mtl_touch_conduit_touch_int_n    (MTL_TOUCH_INT_n)
+    .pio_0_external_connection_export   (32'd42),
+    .mtl_touch_conduit_i2c_scl          (MTL_TOUCH_I2C_SCL),
+	.mtl_touch_conduit_i2c_sda          (MTL_TOUCH_I2C_SDA),
+	.mtl_touch_conduit_touch_int_n      (MTL_TOUCH_INT_n),
+    .mtl_touch_conduit_gest_e           (Gest_E),  
+    .mtl_touch_conduit_gest_w           (Gest_W)
 );
 
 

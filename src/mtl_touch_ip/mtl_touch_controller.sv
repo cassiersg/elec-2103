@@ -1,43 +1,3 @@
-// --------------------------------------------------------------------
-// Copyright (c) 2007 by Terasic Technologies Inc.
-// --------------------------------------------------------------------
-//
-// Permission:
-//
-//   Terasic grants permission to use and modify this code for use
-//   in synthesis for all Terasic Development Boards and Altera Development
-//   Kits made by Terasic.  Other use of this code, including the selling
-//   ,duplication, or modification of any portion is strictly prohibited.
-//
-// Disclaimer:
-//
-//   This VHDL/Verilog or C/C++ source code is intended as a design reference
-//   which illustrates how these types of functions can be implemented.
-//   It is the user's responsibility to verify their design for
-//   consistency and functionality through the use of formal
-//   verification methods.  Terasic provides no warranty regarding the use
-//   or functionality of this code.
-//
-// --------------------------------------------------------------------
-//
-//                     Terasic Technologies Inc
-//                     356 Fu-Shin E. Rd Sec. 1. JhuBei City,
-//                     HsinChu County, Taiwan
-//                     302
-//
-//                     web: http://www.terasic.com/
-//                     email: support@terasic.com
-//
-// --------------------------------------------------------------------
-//
-// Revision History :
-// --------------------------------------------------------------------
-//  Ver  :| Author            :| Mod. Date :| Changes Made:
-//  V1.0 :| Johnny Fan          :| 07/06/30  :| Initial Revision
-//  V2.0 :| Charlotte Frenkel :| 14/08/03  :| Adaptation for ELEC2103 project
-//  V3.0 :| Ludovic Moreau    :| 17/02/06  :| Adaptation for ELEC2103 project
-// --------------------------------------------------------------------
-
 module mtl_touch_controller(
     input logic iCLK,
     input logic iRST,
@@ -46,9 +6,7 @@ module mtl_touch_controller(
     inout MTL_TOUCH_I2C_SDA, // I2C data pin of Touch IC (from/to MTL)
     output logic MTL_TOUCH_I2C_SCL, // I2C clock pin of Touch IC (from MTL)
     // Gestures
-    output logic Gest_N, // Decoded gesture (sliding towards North)
     output logic Gest_E, // Decoded gesture (sliding towards East)
-    output logic Gest_S, // Decoded gesture (sliding towards South)
     output logic Gest_W, // Decoded gesture (sliding towards West)
     // Raw touch signals
     output logic [9:0] reg_x1, reg_x2, reg_x3, reg_x4, reg_x5,
@@ -99,20 +57,6 @@ touch_buffer touch_buffer_east (
     .rst (iRST),
     .trigger (touch_ready && (reg_gesture == 8'h14)),
     .pulse (Gest_E)
-);
-
-touch_buffer touch_buffer_south (
-    .clk (iCLK),
-    .rst (iRST),
-    .trigger (touch_ready && (reg_gesture == 8'h10)),
-    .pulse (Gest_S)
-);
-
-touch_buffer touch_buffer_north (
-    .clk (iCLK),
-    .rst (iRST),
-    .trigger (touch_ready && (reg_gesture == 8'h18)),
-    .pulse (Gest_N)
 );
 
 endmodule // mtl_touch_controller

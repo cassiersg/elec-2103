@@ -10,7 +10,10 @@ module mtl_touch_ip (
     // MTL connection
     output  logic           MTL_TOUCH_I2C_SCL,  // I2C clock pin of Touch IC (from MTL)
     inout                   MTL_TOUCH_I2C_SDA,  // I2C data pin of Touch IC (from/to MTL)
-    input                   MTL_TOUCH_INT_n     // Interrupt pin of Touch IC (from MTL)
+    input                   MTL_TOUCH_INT_n,    // Interrupt pin of Touch IC (from MTL)
+    
+    output                  Gest_E,
+    output                  Gest_W
 );
 
 // Resgisters for synchronizing touch signals
@@ -45,7 +48,9 @@ mtl_touch_controller mtl_touch_controller_inst (
     .reg_y5(y5),
     .reg_touch_count(touch_count),
     .reg_gesture(gesture),
-    .touch_ready(touch_ready)
+    .touch_ready(touch_ready),
+    .Gest_E(Gest_E),
+    .Gest_W(Gest_W)
 );
 
 // Update registers only when touch_ready == 1
