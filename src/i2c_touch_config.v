@@ -1,3 +1,7 @@
+ /*
+    Used as a black-box to retrieves information from the touch screen.
+    TODO: need a good auto-indent.
+ */
  
  module  i2c_touch_config(
                //Host Side

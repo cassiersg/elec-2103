@@ -1,55 +1,13 @@
-
-
-// --------------------------------------------------------------------
-// Copyright (c) 2007 by Terasic Technologies Inc. 
-// --------------------------------------------------------------------
-//
-// Permission:
-//
-//   Terasic grants permission to use and modify this code for use
-//   in synthesis for all Terasic Development Boards and Altera Development 
-//   Kits made by Terasic.  Other use of this code, including the selling 
-//   ,duplication, or modification of any portion is strictly prohibited.
-//
-// Disclaimer:
-//
-//   This VHDL/Verilog or C/C++ source code is intended as a design reference
-//   which illustrates how these types of functions can be implemented.
-//   It is the user's responsibility to verify their design for
-//   consistency and functionality through the use of formal
-//   verification methods.  Terasic provides no warranty regarding the use 
-//   or functionality of this code.
-//
-// --------------------------------------------------------------------
-//           
-//                     Terasic Technologies Inc
-//                     356 Fu-Shin E. Rd Sec. 1. JhuBei City,
-//                     HsinChu County, Taiwan
-//                     302
-//
-//                     web: http://www.terasic.com/
-//                     email: support@terasic.com
-//
-// --------------------------------------------------------------------
-//
-// Revision History :
-// --------------------------------------------------------------------
-//  Ver  :| Author            	  :| Mod. Date :| Changes Made:
-//  V1.0 :| Johnny Fan			     :| 07/06/30  :| Initial Revision
-//	 V2.0 :| Charlotte Frenkel      :| 14/08/03  :| Adaptation for ELEC2103 project 
-//  V3.0 :| Ludovic Moreau			  :| 17/02/06  :| Adaptation for ELEC2103 project
-// --------------------------------------------------------------------
-
 module mtl_touch_controller(
 	input 	iCLK,
 	input 	iRST,
 	// MTL TOUCH
-	input    MTL_TOUCH_INT_n,		// Interrupt pin of Touch IC (from MTL)
+	input   MTL_TOUCH_INT_n,    // Interrupt pin of Touch IC (from MTL)
 	inout 	MTL_TOUCH_I2C_SDA,	// I2C data pin of Touch IC (from/to MTL)
-	output   MTL_TOUCH_I2C_SCL,	// I2C clock pin of Touch IC (from MTL)
+	output  MTL_TOUCH_I2C_SCL,	// I2C clock pin of Touch IC (from MTL)
 	// Gestures
-	output   Gest_W,					// Decoded gesture (sliding towards West)
-	output   Gest_E					// Decoded gesture (sliding towards East)
+	output  Gest_W,				// Decoded gesture (sliding towards West)
+	output  Gest_E				// Decoded gesture (sliding towards East)
 );
 
 //=============================================================================
@@ -60,7 +18,7 @@ logic [9:0] reg_x1, reg_x2, reg_x3, reg_x4, reg_x5;
 logic [8:0] reg_y1, reg_y2, reg_y3, reg_y4, reg_y5;
 logic [1:0] reg_touch_count;
 logic [7:0] reg_gesture;
-logic			touch_ready;
+logic		touch_ready;
 
 
 //=============================================================================
@@ -117,12 +75,9 @@ touch_buffer	touch_buffer_east (
 	.pulse (Gest_E)
 );
 
-
-endmodule // mtl_touch_controller
-
+endmodule
 
 ///////////////////////////////////////////////////////////////////////////
-
 
 /*
  * This small counting module generates a one-cycle
@@ -146,23 +101,22 @@ module touch_buffer (
 	logic [31:0] count;
 	
 	always_ff @ (posedge clk) begin
-	
 		if (rst) begin
-			active <= 1'b0;
-			count <= 32'd0;
+			active  <= 1'b0;
+			count   <= 32'd0;
 		end else begin
 			if (trigger && !active)
 				active <= 1'b1;
 			else if (active && (count < 32'd25000000))
 				count <= count + 32'b1;
 			else if (count >= 32'd25000000) begin
-				active <= 1'b0;
-				count <= 32'd0;
+				active  <= 1'b0;
+				count   <= 32'd0;
 			end
 		end
 		
 	end
 
-	assign pulse = (count==32'd10000000); 
+	assign pulse = (count == 32'd10000000); 
 	
-endmodule // touch_buffer
+endmodule

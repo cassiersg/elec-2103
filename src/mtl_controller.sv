@@ -1,44 +1,3 @@
-
-// --------------------------------------------------------------------
-// Copyright (c) 2007 by Terasic Technologies Inc. 
-// --------------------------------------------------------------------
-//
-// Permission:
-//
-//   Terasic grants permission to use and modify this code for use
-//   in synthesis for all Terasic Development Boards and Altera Development 
-//   Kits made by Terasic.  Other use of this code, including the selling 
-//   ,duplication, or modification of any portion is strictly prohibited.
-//
-// Disclaimer:
-//
-//   This VHDL/Verilog or C/C++ source code is intended as a design reference
-//   which illustrates how these types of functions can be implemented.
-//   It is the user's responsibility to verify their design for
-//   consistency and functionality through the use of formal
-//   verification methods.  Terasic provides no warranty regarding the use 
-//   or functionality of this code.
-//
-// --------------------------------------------------------------------
-//           
-//                     Terasic Technologies Inc
-//                     356 Fu-Shin E. Rd Sec. 1. JhuBei City,
-//                     HsinChu County, Taiwan
-//                     302
-//
-//                     web: http://www.terasic.com/
-//                     email: support@terasic.com
-//
-// --------------------------------------------------------------------
-//
-// Revision History :
-// --------------------------------------------------------------------
-//  Ver  :| Author            	    :| Mod. Date :| Changes Made:
-//  V1.0 :| Johnny Fan			    :| 07/06/30  :| Initial Revision
-//	V2.0 :| Charlotte Frenkel       :| 14/08/03  :| Adaptation for ELEC2103 project 
-//  V3.0 :| Ludovic Moreau			:| 17/02/06  :| Adaptation for ELEC2103 project
-// --------------------------------------------------------------------
-
 module mtl_controller (
 	input 		    iCLK,
 	input 		    iRST,
@@ -85,8 +44,7 @@ always @(posedge iCLK)
 // Dedicated sub-controllers
 //=============================================================================
  
-
-//--- Display controller ------------------------------------
+// Display controller
 
 mtl_display_controller mtl_display_controller_inst (
 	// Host Side
@@ -105,19 +63,7 @@ mtl_display_controller mtl_display_controller_inst (
 
 assign MTL_DCLK = iCLOCK_33;
 
-//--- Touch controller -------------------------
-
-/*mtl_touch_controller mtl_touch_controller_inst (
-	.iCLK(iCLK),
-	.iRST(iRST),
-	// MTL TOUCH
-	.MTL_TOUCH_INT_n(MTL_TOUCH_INT_n),		// Interrupt pin of Touch IC (from MTL)
-	.MTL_TOUCH_I2C_SDA(MTL_TOUCH_I2C_SDA),	// I2C data pin of Touch IC (from/to MTL)
-	.MTL_TOUCH_I2C_SCL(MTL_TOUCH_I2C_SCL),	// I2C clock pin of Touch IC (from MTL)
-	// Gestures
-	.Gest_W(Gest_W),						// Decoded gesture (sliding towards West)
-	.Gest_E(Gest_E)							// Decoded gesture (sliding towards East)
-);*/	
+// Touch controller: is no longer here! Handled by our custom IP.	
 
 //============================================================
 // Clock management 
