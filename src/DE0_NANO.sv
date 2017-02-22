@@ -55,19 +55,22 @@ module DE0_NANO(
 );
 
 // System clock and 
-logic ClOCK_33;
+logic ClOCK_33, CLOCK_33d;
 logic RST, dly_rstn, rd_rst, dly_rst;
 
 // Synchronous system reset from R-PI
 assign RST = GPIO_0[1];
 
 // MMU - MTL
-logic [31:0]	SDRAM_RData;
-logic 			SDRAM_REn;
+logic [31:0]	pixel_readdata, pixel_rgb;
+logic 			pixel_read_enable;
 logic			New_Frame, End_Frame;
+logic next_display_active;
 
 logic 			Gest_W, Gest_E;
-logic 			Loading;
+logic load_new_pixel_mem;
+logic [23:0] pixel_base_address, pixel_max_address;
+logic image_loaded;
 
 // Pixel's RGB data
 logic			Trigger;
@@ -110,16 +113,13 @@ mmu mmu_inst(
     .iTrigger(Trigger),		
 
     // MTL
-    .iGest_W(Gest_W),
-    .iGest_E(Gest_E),
-	// Control signal being a pulse when a new frame of the LCD begins
-    .iNew_Frame(New_Frame),
-    // Control signal being a pulse when a frame of the LCD ends        
-    .iEnd_Frame(End_Frame),
-	// Control signal telling in which loading state is the system
-    .oLoading(Loading),		
-    .oRead_Data(SDRAM_RData),   // Data (RGB) from SDRAM to MTL controller
-    .iRead_En(SDRAM_REn),		// SDRAM read control signal
+    .oRead_Data(pixel_readdata),   // Data (RGB) from SDRAM to MTL controller
+    .i_load_new(load_new_pixel_mem),
+    .iRead_En(pixel_read_enable),		// SDRAM read control signal
+    .i_base_address(pixel_base_address),
+    .i_max_address(pixel_max_address),
+
+    .image_loaded(image_loaded),
 
     // SDRAM
     .oDRAM_ADDR(DRAM_ADDR),
@@ -137,28 +137,42 @@ mmu mmu_inst(
 /********************/
 /*  LCD controller  */
 /********************/
-	
-mtl_controller mtl_ctrl_inst(
-    .iCLK_50(CLOCK_50),				// System clock (50MHz)
-    .iRST(dly_rst),					// System sync reset
-    .oCLK_33(CLOCK_33),				// MTL Clock (33 MHz, 0°)
+
+mtl_display mtl_display_inst (
+    // Host Side
+    .iCLK(CLOCK_33),				// Input LCD control clock
+    .iRST_n(~RST),				    // Input system reset
     // MMU
-    // Input signal telling in which loading state is the system 
-    .iLoading(Loading),
-    .iREAD_DATA(SDRAM_RData), 		// Input data from SDRAM (RGB)
-    .oREAD_SDRAM_EN(SDRAM_REn),		// SDRAM read control signal
-    // Output signal being a pulse when a new frame of the LCD begins
-    .oNew_Frame(New_Frame),
-	// Output signal being a pulse when a frame of the LCD ends
-    .oEnd_Frame(End_Frame),
-    // MTL
-    .oMTL_DCLK(MTL_DCLK),			// LCD Display clock (to MTL)
-    .oMTL_HSD(MTL_HSD),			    // LCD horizontal sync (to MTL) 
-    .oMTL_VSD(MTL_VSD),				// LCD vertical sync (to MTL)
-    .oMTL_R(MTL_R),					// LCD red color data  (to MTL)
-    .oMTL_G(MTL_G),					// LCD green color data (to MTL)
-    .oMTL_B(MTL_B) 					// LCD blue color data (to MTL)
+    .iREAD_DATA(pixel_rgb),		// Input data from SDRAM (RGB)
+    .next_display_active(next_display_active),
+    .oNew_Frame(New_Frame),			// Output signal being a pulse when a new frame of the LCD begins
+    .oEnd_Frame(End_Frame),			// Output signal being a pulse when a frame of the LCD ends
+    // LCD Side
+    .oLCD_R(MTL_R),					// Output LCD horizontal sync 
+    .oLCD_G(MTL_G),					// Output LCD vertical sync
+    .oLCD_B(MTL_B),					// Output LCD red color data 
+    .oHD(MTL_HSD),					// Output LCD green color data 
+    .oVD(MTL_VSD)					// Output LCD blue color data  
 );
+
+mtl_display_controller(
+    .iCLK_50(CLOCK_50),
+    .iCLK_33(CLOCK_33),
+    .iRST(RST),
+    .iImg_Tot(Img_Tot),
+    .image_loaded(image_loaded),
+    .iGest_E(Gest_E),
+    .iGest_W(Gest_W),
+    .iNew_Frame(New_Frame),
+    .iEnd_Frame(End_Frame),
+    .i_next_active(next_display_active),
+    .o_pixel_data(pixel_rgb),
+    .o_load_new(load_new_pixel_mem),
+    .o_read_enable(pixel_read_enable),
+    .o_base_address(pixel_base_address),
+    .o_max_address(pixel_max_address)
+);
+
 
 // SoPC instantiation
 base u0 (
@@ -172,7 +186,6 @@ base u0 (
     .mtl_touch_conduit_gest_e           (Gest_E),  
     .mtl_touch_conduit_gest_w           (Gest_W)
 );
-
 
 /*************************/
 /*  SPI slave interface  */
@@ -206,6 +219,36 @@ assign spi_cs   = GPIO_0[9];					// CS   = pin 14 = GPIO_9
 assign spi_mosi = GPIO_0[15];					// MOSI = pin 20 = GPIO_15
 
 assign GPIO_0[13] = spi_cs ? 1'bz : spi_miso;   // MISO = pin 18 = GPIO_13
+
+/**********************/
+/*  Clock management  */ 
+/**********************/
+
+// This PLL generates 33 MHz for the LCD screen. CLK_33 is used to generate the controls 
+// while iCLK_33 is connected to the screen. Its phase is 120 so as to meet the setup and 
+// hold timing constraints of the screen.
+MTL_PLL	MTL_PLL_inst (
+    .inclk0(CLOCK_50),
+    .c0(CLOCK_33),	    // 33MHz clock, phi=0
+    .c1(CLOCK_33d)      // 33MHz clock, phi=120, unwired, where is useful?
+);
+
+assign MTL_DCLK = CLOCK_33d;
+
+// Note: a critical warning is generated for the MTL_PLL:
+// "input clock is not fully compensated because it is fed by
+// a remote clock pin". In fact, each PLL can compensate the
+// input clock on a set of dedicated pins.
+// The input clock iCLK_50 (50MHz) should be available on other pins
+// than PIN_R8 so that it can be compensated on each PLL, it is
+// not the case in the DE0-Nano board.
+// Hopefully, it is not important here.
+//
+// You might as well see three other critical warnings about 
+// timing requirements. They are about communication between 
+// iCLK (50MHz) and CLK_33. It is impossible to completely get 
+// rid of them. They can be safely ignored as they aren't
+// related to signals whose timing is critical. 
 
 endmodule 
 

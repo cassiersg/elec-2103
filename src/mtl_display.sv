@@ -3,9 +3,8 @@ module mtl_display(
 	input			iCLK, 				// Input LCD control clock
 	input			iRST_n, 			// Input system reset
 	// MMU
-	input 		    iLoading,			// Input signal telling in which loading state is the system
 	input   [31:0]	iREAD_DATA,			// Input data from SDRAM (RGB)
-	output			oREAD_SDRAM_EN,		// SDRAM read control signal
+	output			next_display_active,		// SDRAM read control signal
 	output 			oNew_Frame,			// Output signal being a pulse when a new frame of the LCD begins
 	output 			oEnd_Frame,			// Output signal being a pulse when a frame of the LCD ends
 	// LCD Side
@@ -24,9 +23,9 @@ module mtl_display(
 	// available in the project file folder
 	parameter H_LINE = 1056; 
 	parameter V_LINE = 525;
-	parameter Horizontal_Blank = 46;          //H_SYNC + H_Back_Porch
+	parameter Horizontal_Blank = 46;        // H_SYNC + H_Back_Porch
 	parameter Horizontal_Front_Porch = 210;
-	parameter Vertical_Blank = 23;      	   //V_SYNC + V_BACK_PORCH
+	parameter Vertical_Blank = 23;          // V_SYNC + V_BACK_PORCH
 	parameter Vertical_Front_Porch = 22;
 
 	//=============================================================================
@@ -39,12 +38,8 @@ module mtl_display(
 	wire    [7:0]	read_green;
 	wire    [7:0]	read_blue; 
 	wire			display_area, display_area_prev;
-	//wire		   q_rom;
-	wire    [18:0]  address;
 	reg		        mhd;
 	reg			    mvd;
-	reg			    loading_buf;
-	reg			    no_data_yet;
 
 	//=============================================================================
 	// Structural coding
@@ -53,23 +48,11 @@ module mtl_display(
 	//--- Assigning the right color data as a function -------------------------
 	//--- of the current pixel position ----------------------------------------
 
-	// This loading ROM contains B/W data to display the loading screen.
-	// The data is available in the rom.mif file in the project folder.
-	// Note that it is just a gadget for the demonstration, it is not efficient!
-	// Indeed, it must contain 1bit x 800 x 480 = 384000 bits of data,
-	// which is more than 60% of the total memory bits of the FPGA.
-	// Don't hesitate to suppress it.
-	/*Loading_ROM	Loading_ROM_inst (
-		.address(address),
-		.clock(iCLK),
-		.q(q_rom),
-		.rden(iLoading)
-	);*/
-
 	// This signal controls read requests to the SDRAM.
-	// When asserted, new data becomes available in iREAD_DATA
+	// When asserted, new data becomes available in 
+
 	// at each clock cycle.
-	assign	oREAD_SDRAM_EN = (~loading_buf && display_area_prev);
+	assign	next_display_active = display_area_prev;
 							
 	// This signal indicates the LCD active display area shifted back from
 	// 1 pixel in the x direction. This accounts for the 1-cycle delay
@@ -86,42 +69,27 @@ module mtl_display(
 							(y_cnt>(Vertical_Blank-1))&& 
 							(y_cnt<(V_LINE-Vertical_Front_Porch))));	
 							
-	// This signal updates the ROM address to read from based on the current pixel position.
-	assign address = display_area_prev ? ((x_cnt-(Horizontal_Blank-2)) + (y_cnt-Vertical_Blank)*800) : 19'b0;
-
 	// Assigns the right color data.
-	always_ff @(posedge iCLK) begin
+	always_ff @(posedge iCLK)
+    begin
 		// If the screen is reset, put at zero the color signals.
-		if (!iRST_n) begin
+		if (!iRST_n)
+        begin
 			read_red 	<= 8'b0;
 			read_green 	<= 8'b0;
 			read_blue 	<= 8'b0;
 		// If we are in the active display area...
-		end else if (display_area) begin
-			// ...and if no data has been sent yet by the Rasp-Pi,
-			// then display a white screen.
-			if (no_data_yet) begin
-				read_red 	<= 8'd255;
-				read_green 	<= 8'd255;
-				read_blue 	<= 8'd255;
-			// ...and if the slideshow is currently loading,
-			// then display the loading screen.
-			// The current pixel is black (resp. white)
-			// if a 1 (resp. 0) is written in the ROM.
-			end else if (loading_buf) begin
-				read_red 	<= 8'd255;
-				read_green 	<= 8'd255;
-				read_blue 	<= 8'd255;
-			// ...and if the slideshow has been loaded,
-			// then display the values read from the SDRAM.
-			end else begin
-				read_red 	<= iREAD_DATA[23:16];
-				read_green 	<= iREAD_DATA[15:8];
-				read_blue 	<= iREAD_DATA[7:0];
-			end
+		end
+        else if (display_area)
+        begin
+            read_red 	<= iREAD_DATA[23:16];
+            read_green 	<= iREAD_DATA[15:8];
+            read_blue 	<= iREAD_DATA[7:0];
+        end
 		// If we aren't in the active display area, put at zero
 		// the color signals.
-		end else begin
+		else
+        begin
 			read_red 	<= 8'b0;
 			read_green 	<= 8'b0;
 			read_blue 	<= 8'b0;
@@ -172,26 +140,6 @@ module mtl_display(
 
 	assign oNew_Frame = ((x_cnt == 11'd0)   && (y_cnt == 10'd0)  );	
 	assign oEnd_Frame = ((x_cnt == 11'd846) && (y_cnt == 10'd503));	
-		
-		
-	//--- Retrieving the current loading state based on the iLoading signal --------
-		
-	// - When iLoading is initially at 0, the Rasp-Pi has not sent anything yet, the 
-	//   no_data_yet and loading_buf signals are at 1 and a white screen is displayed.
-	// - When iLoading rises to 1, the slideshow is currently loading and no_data_yet
-	//   falls at zero: the loading screen is displayed.
-	// - When iLoading falls back to 0, the loading_buf signal falls at zero at the
-	//   beginning of the next frame. The SDRAM data is then displayed.
-	always@(posedge iCLK or negedge iRST_n) begin
-		if (!iRST_n) begin
-			no_data_yet <= 1'b1;
-			loading_buf <= 1'b1;
-		end else if (!iLoading && oNew_Frame && !no_data_yet) 
-			loading_buf <= 1'b0;
-		else if (iLoading)
-			no_data_yet <= 1'b0;
-	end	
-		
 
 	//--- Assigning synchronously the color and sync. signals ------------------
 
@@ -213,6 +161,4 @@ module mtl_display(
 				oLCD_B <= read_blue;
 			end		
 	end
-	
-							
-endmodule // mtl_display
+endmodule

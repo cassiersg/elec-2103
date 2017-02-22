@@ -1,7 +1,8 @@
 /*
 	FIXME: this module was useful in the past when it was used to instantiate every
 	subcontrollers (touch, display). Now that he is only instantiating display controller,
-	this could as well only one module...
+	this could as well be only one module (but then the clock management should be done in
+    our top-level)
 */
 
 module mtl_controller (
@@ -88,4 +89,3 @@ module mtl_controller (
 	// related to signals whose timing is critical. 
  
 endmodule
-

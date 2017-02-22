@@ -51,7 +51,16 @@ int main(void)
 						current_touch_counter = 0;
 					}
 
-					printf("Swipe detected.\n");
+					if(my_abs(x1 - xnew) > my_abs(y1 - ynew)) {
+						if(xnew > x1) {
+							printf("Swipe east detected.\n");
+						} else {
+							printf("Swipe west detected.\n");
+						}
+					} else {
+						printf("Vertical swipe detected.\n");
+					}
+
 					t = dead;
 				}
 			} else if(touch_count == 0) {
