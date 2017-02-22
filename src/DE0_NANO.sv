@@ -54,38 +54,18 @@ module DE0_NANO(
 	output  [7:0]   MTL_B
 );
 
-// System clock and 
-logic ClOCK_33, CLOCK_33d;
-logic RST, dly_rstn, rd_rst, dly_rst;
+// System clocks and resets 
+logic ClOCK_33;
+logic CLOCK_33d;
+logic RST;
+logic dly_rstn;
+logic rd_rst;
+logic dly_rst;
 
 // Synchronous system reset from R-PI
 assign RST = GPIO_0[1];
 
-// MMU - MTL
-logic [31:0]	pixel_readdata, pixel_rgb;
-logic 			pixel_read_enable;
-logic			New_Frame, End_Frame;
-logic next_display_active;
-
-logic 			Gest_W, Gest_E;
-logic load_new_pixel_mem;
-logic [23:0] pixel_base_address, pixel_max_address;
-logic image_loaded;
-
-// Pixel's RGB data
-logic			Trigger;
-logic [7:0] 	Img_Tot;
-logic [23:0] 	Pix_Data;		
-
-// SPI
-logic 			spi_clk, spi_cs, spi_mosi, spi_miso;
-logic [31:0]	spi_data;
-
-// A good synchronization of all the resets of the different
-// components must be carried out. Otherwise, some random bugs
-// risk to appear after a reset of the system (see definition
-// of the module at the end of this file).
-// TODO: get rid of this?
+// Synchronization module (TODO: useful?)
 reset_delay	reset_delay_inst (		
     .iRSTN  (~RST),
     .iCLK   (CLOCK_50),
@@ -94,33 +74,38 @@ reset_delay	reset_delay_inst (
 	.oRST   (dly_rst)
 );
 
-/****************************/
-/*  Memory Management Unit  */
-/****************************/
+// MMU - MTL
+logic [31:0] pixel_readdata;
+logic [31:0] pixel_rgb;
+logic pixel_read_enable;
+logic next_display_active;
+
+logic load_new_pixel_mem;
+logic [23:0] pixel_base_address;
+logic [23:0] pixel_max_address;
+logic image_loaded;
+
+// SPI outputs
+logic Trigger;
+logic [7:0] Img_Tot;
+logic [23:0] Pix_Data;		
 
 mmu mmu_inst(
-    .iCLK_50(CLOCK_50),		// System Clock (50MHz)
+    .iCLK_50(CLOCK_50),		// S:/ystem Clock (50MHz)
     .iCLK_33(CLOCK_33),		// MTL Clock (33 MHz, 0°)
     .iRST(dly_rst),			// System sync reset
     .iRd_RST(rd_rst),
-    
     // SPI
     .iPix_Data(Pix_Data),	// Pixel's data from R-Pi (24-bit RGB)
     .iImg_Tot(Img_Tot),		// Total number of images transferred from Rasp-Pi
-    /* Short pulse that is raised each time a whole pixel has been
-    received by the spi slave interface. Trigger enables writing the pixel
-    to the SDRAM.*/
     .iTrigger(Trigger),		
-
     // MTL
-    .oRead_Data(pixel_readdata),   // Data (RGB) from SDRAM to MTL controller
     .i_load_new(load_new_pixel_mem),
-    .iRead_En(pixel_read_enable),		// SDRAM read control signal
+    .iRead_En(pixel_read_enable), // SDRAM read control signal
     .i_base_address(pixel_base_address),
     .i_max_address(pixel_max_address),
-
-    .image_loaded(image_loaded),
-
+    .oRead_Data(pixel_readdata), // Data (RGB) from SDRAM
+    .o_image_loaded(image_loaded),
     // SDRAM
     .oDRAM_ADDR(DRAM_ADDR),
     .oDRAM_BA(DRAM_BA),
@@ -134,27 +119,40 @@ mmu mmu_inst(
     .oDRAM_WE_N(DRAM_WE_N)
 );
 
-/********************/
-/*  LCD controller  */
-/********************/
+// SPI
+logic spi_clk, spi_cs, spi_mosi, spi_miso;
+logic [31:0] spi_data;
 
-mtl_display mtl_display_inst (
-    // Host Side
-    .iCLK(CLOCK_33),				// Input LCD control clock
-    .iRST_n(~RST),				    // Input system reset
-    // MMU
-    .iREAD_DATA(pixel_rgb),		// Input data from SDRAM (RGB)
-    .next_display_active(next_display_active),
-    .oNew_Frame(New_Frame),			// Output signal being a pulse when a new frame of the LCD begins
-    .oEnd_Frame(End_Frame),			// Output signal being a pulse when a frame of the LCD ends
-    // LCD Side
-    .oLCD_R(MTL_R),					// Output LCD horizontal sync 
-    .oLCD_G(MTL_G),					// Output LCD vertical sync
-    .oLCD_B(MTL_B),					// Output LCD red color data 
-    .oHD(MTL_HSD),					// Output LCD green color data 
-    .oVD(MTL_VSD)					// Output LCD blue color data  
+spi_slave spi_slave_inst(
+    .iCLK(CLOCK_50),
+    .iRST(dly_rst),
+    // SPI
+    .iSPI_CLK(spi_clk),
+    .iSPI_CS(spi_cs),
+    .iSPI_MOSI(spi_mosi),
+    .oSPI_MISO(spi_miso),
+    // Internal registers R/W (not used)
+    .iData_WE       (1'b0),
+    .iData_Addr     (32'd0),
+    .iData_Write    (32'd0),
+    .oData_Read     (spi_data),
+    // MTL
+    .oPix_Data      (Pix_Data),	// Pixel's data from R-Pi (24-bit RGB)
+    .oImg_Tot       (Img_Tot),	// Total number of images transferred from Rasp-Pi
+    .oTrigger       (Trigger)		
 );
 
+assign spi_clk = GPIO_0[11];    // SCLK = pin 16 = GPIO_11
+assign spi_cs = GPIO_0[9];	    // CS   = pin 14 = GPIO_9
+assign spi_mosi = GPIO_0[15];	// MOSI = pin 20 = GPIO_15
+
+assign GPIO_0[13] = spi_cs ? 1'bz : spi_miso;   // MISO = pin 18 = GPIO_13
+
+// MTL
+logic New_Frame;
+logic End_Frame;
+
+// MTL DISPLAY CONTROLLER
 mtl_display_controller(
     .iCLK_50(CLOCK_50),
     .iCLK_33(CLOCK_33),
@@ -166,6 +164,7 @@ mtl_display_controller(
     .iNew_Frame(New_Frame),
     .iEnd_Frame(End_Frame),
     .i_next_active(next_display_active),
+    .i_readdata(pixel_readdata),
     .o_pixel_data(pixel_rgb),
     .o_load_new(load_new_pixel_mem),
     .o_read_enable(pixel_read_enable),
@@ -173,6 +172,26 @@ mtl_display_controller(
     .o_max_address(pixel_max_address)
 );
 
+// MTL DISPLAY
+mtl_display mtl_display_inst (
+    // Host Side
+    .iCLK(CLOCK_33),    // Input LCD control clock
+    .iRST_n(~RST),      // Input system reset
+    // MMU
+    .iREAD_DATA(pixel_rgb),	// Input data from SDRAM (RGB)
+    .next_display_active(next_display_active),
+    .oNew_Frame(New_Frame),
+    .oEnd_Frame(End_Frame),
+    // LCD Side
+    .oLCD_R(MTL_R),	// Output LCD horizontal sync 
+    .oLCD_G(MTL_G),	// Output LCD vertical sync
+    .oLCD_B(MTL_B),	// Output LCD red color data 
+    .oHD(MTL_HSD),	// Output LCD green color data 
+    .oVD(MTL_VSD)	// Output LCD blue color data  
+);
+
+logic Gest_W;
+logic Gest_E;
 
 // SoPC instantiation
 base u0 (
@@ -187,50 +206,13 @@ base u0 (
     .mtl_touch_conduit_gest_w           (Gest_W)
 );
 
-/*************************/
-/*  SPI slave interface  */
-/*************************/
-
-spi_slave spi_slave_inst(
-    .iCLK           (CLOCK_50),		// System clock (50MHz)
-    .iRST	        (dly_rst),		// System sync reset
-    // SPI
-    .iSPI_CLK       (spi_clk),		// SPI clock
-    .iSPI_CS        (spi_cs),		// SPI chip select
-    .iSPI_MOSI      (spi_mosi),		// SPI MOSI (from Rasp-Pi)
-    .oSPI_MISO      (spi_miso),		// SPI MISO (to Rasp-Pi)
-    // Internal registers R/W
-    // Write enable for SPI internal registers (not used here)
-    .iData_WE       (1'b0),
-	// Write address for SPI internal registers (not used here)
-    .iData_Addr     (32'd0),
-	// Write data for SPI internal registers (not used here)
-    .iData_Write    (32'd0),
-	// Read data from SPI internal registers (not used here)
-    .oData_Read     (spi_data),
-    // MTL
-    .oPix_Data      (Pix_Data),		// Pixel's data from R-Pi (24-bit RGB)
-    .oImg_Tot       (Img_Tot),		// Total number of images transferred from Rasp-Pi
-    .oTrigger       (Trigger)		
-);
-
-assign spi_clk  = GPIO_0[11];				    // SCLK = pin 16 = GPIO_11
-assign spi_cs   = GPIO_0[9];					// CS   = pin 14 = GPIO_9
-assign spi_mosi = GPIO_0[15];					// MOSI = pin 20 = GPIO_15
-
-assign GPIO_0[13] = spi_cs ? 1'bz : spi_miso;   // MISO = pin 18 = GPIO_13
-
-/**********************/
-/*  Clock management  */ 
-/**********************/
-
 // This PLL generates 33 MHz for the LCD screen. CLK_33 is used to generate the controls 
 // while iCLK_33 is connected to the screen. Its phase is 120 so as to meet the setup and 
 // hold timing constraints of the screen.
 MTL_PLL	MTL_PLL_inst (
     .inclk0(CLOCK_50),
-    .c0(CLOCK_33),	    // 33MHz clock, phi=0
-    .c1(CLOCK_33d)      // 33MHz clock, phi=120, unwired, where is useful?
+    .c0(CLOCK_33),	// 33MHz clock, phi=0
+    .c1(CLOCK_33d)  // 33MHz clock, phi=120, unwired, where is useful?
 );
 
 assign MTL_DCLK = CLOCK_33d;
