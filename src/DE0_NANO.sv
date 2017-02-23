@@ -113,6 +113,7 @@ mmu mmu_inst(
     .i_base_address_1(pixel_base_address_1),
     .i_max_address_1(pixel_max_address_1),
     .oRead_Data_1(pixel_readdata_1), // Data (RGB) from SDRAM
+    
     .i_load_new_2(load_new_pixel_mem_2),
     .iRead_En_2(pixel_read_enable_2), // SDRAM read control signal
     .i_base_address_2(pixel_base_address_2),
@@ -147,6 +148,9 @@ assign GPIO_0[13] = spi_cs ? 1'bz : spi_miso;   // MISO = pin 18 = GPIO_13
 logic New_Frame;
 logic End_Frame;
 
+logic [10:0] current_x;
+logic [9:0] current_y;
+
 // MTL DISPLAY CONTROLLER
 mtl_display_controller(
     .iCLK_50(CLOCK_50),
@@ -166,11 +170,15 @@ mtl_display_controller(
     .o_read_enable_1(pixel_read_enable_1),
     .o_base_address_1(pixel_base_address_1),
     .o_max_address_1(pixel_max_address_1),
+    
     .i_readdata_2(pixel_readdata_2),
     .o_load_new_2(load_new_pixel_mem_2),
     .o_read_enable_2(pixel_read_enable_2),
     .o_base_address_2(pixel_base_address_2),
-    .o_max_address_2(pixel_max_address_2)
+    .o_max_address_2(pixel_max_address_2),
+
+    .i_current_x(current_x),
+    .i_current_y(current_y)
 );
 
 // MTL DISPLAY
@@ -188,7 +196,9 @@ mtl_display mtl_display_inst (
     .oLCD_G(MTL_G),	// Output LCD vertical sync
     .oLCD_B(MTL_B),	// Output LCD red color data 
     .oHD(MTL_HSD),	// Output LCD green color data 
-    .oVD(MTL_VSD)	// Output LCD blue color data  
+    .oVD(MTL_VSD),	// Output LCD blue color data 
+    .o_current_x(current_x),
+    .o_current_y(current_y)
 );
 
 logic Gest_W;

@@ -24,7 +24,10 @@ module mtl_display_controller (
     output logic o_load_new_2,
     output logic o_read_enable_2,
     output logic [23:0] o_base_address_2,
-    output logic [23:0] o_max_address_2
+    output logic [23:0] o_max_address_2,
+
+    input logic [10:0] i_current_x,
+    input logic [9:0] i_current_y
 );
 	//Parameters for the SDRAM Controller
 	//- RANGE_ADDR_IMG is equal to 480x800 times 2 (again for 32-bit vs 16-bit bus).
@@ -69,22 +72,40 @@ module mtl_display_controller (
 		if (iRST) begin
 			o_base_address_1 <= 24'b0;
 			o_max_address_1 <= RANGE_ADDR_IMG;
-			o_load_new_1 		<= 1'b0;
+			o_load_new_1 <= 1'b0;
+
+            o_base_address_2 <= 24'b0;
+            o_max_address_2 <= RANGE_ADDR_IMG;
+            o_load_new_2 <= 1'b0;
 		end else begin
 			if (iEnd_Frame) begin
 				o_base_address_1 <= current_img*RANGE_ADDR_IMG;
 				o_max_address_1 <= current_img*RANGE_ADDR_IMG + RANGE_ADDR_IMG;
+                
+                o_base_address_2 <= (current_img + 5'b1)*RANGE_ADDR_IMG;
+                o_max_address_2 <= (current_img + 5'b1)*RANGE_ADDR_IMG + RANGE_ADDR_IMG; 
 			end else begin
                 // FIXME: useless I suppose?
                 o_base_address_1 <= o_base_address_1;
                 o_max_address_1 <= o_max_address_1;
+
+                o_base_address_2 <= o_base_address_2;
+                o_max_address_2 <= o_max_address_2;
 				//base_read_addr <= base_read_addr;
 				//max_read_addr  <= max_read_addr;
 			end
 			o_load_new_1 <= iNew_Frame;
+            o_load_new_2 <= iNew_Frame;
 		end
 	end
     
-    assign o_read_enable_1 = i_next_active;
-    assign o_pixel_data = image_loaded ? i_readdata_1 : 32'h001080D0;
+    assign o_read_enable_1 = i_next_active && (i_current_y < 240);
+    assign o_read_enable_2 = i_next_active && (i_current_y >= 240);
+
+    always_comb
+        if(i_current_y < 240)
+            o_pixel_data = image_loaded ? i_readdata_1 : 32'h001080D0;
+        else
+            o_pixel_data = image_loaded ? i_readdata_2 : 32'h001080D0;
+
 endmodule 

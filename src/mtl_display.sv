@@ -12,7 +12,10 @@ module mtl_display(
 	output 		 	oVD,				// Output LCD vertical sync 
 	output  [7:0] 	oLCD_R,				// Output LCD red color data 
 	output  [7:0] 	oLCD_G,           	// Output LCD green color data  
-	output  [7:0] 	oLCD_B            	// Output LCD blue color data  
+	output  [7:0] 	oLCD_B,            	// Output LCD blue color data
+
+    output [10:0] o_current_x,
+    output [9:0] o_current_y
 );
 	
 	//============================================================================
@@ -137,6 +140,10 @@ module mtl_display(
 		else
 			mvd  <= 1'b1;
 	end	
+
+
+    assign o_current_x = x_cnt;
+    assign o_current_y = y_cnt;
 
 	assign oNew_Frame = ((x_cnt == 11'd0)   && (y_cnt == 10'd0)  );	
 	assign oEnd_Frame = ((x_cnt == 11'd846) && (y_cnt == 10'd503));	
