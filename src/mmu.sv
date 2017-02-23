@@ -10,11 +10,18 @@ module mmu (
 	input iTrigger,	
 	
     // MTL
-    input i_load_new,
-	input iRead_En,	// SDRAM read control signal
-    input logic [23:0] i_base_address,
-    input logic [23:0] i_max_address,
-	output [31:0] oRead_Data,  // Data (RGB) from SDRAM to MTL controller
+    input i_load_new_1,
+	input iRead_En_1,	// SDRAM read control signal
+    input logic [23:0] i_base_address_1,
+    input logic [23:0] i_max_address_1,
+	output [31:0] oRead_Data_1,  // Data (RGB) from SDRAM to MTL controller
+
+    input i_load_new_2,
+	input iRead_En_2,	// SDRAM read control signal
+    input logic [23:0] i_base_address_2,
+    input logic [23:0] i_max_address_2,
+	output [31:0] oRead_Data_2,  // Data (RGB) from SDRAM to MTL controller
+
     output logic o_image_loaded,
 
 	// SDRAM
@@ -104,13 +111,21 @@ sdram_control sdram_control_inst (
 	.WR1_LOAD(iRST),
 	.WR1_CLK(~iCLK_50),
 	//	FIFO Read Side 1
-	.RD1_DATA(oRead_Data),
-	.RD1(iRead_En),
-	.RD1_ADDR(i_base_address),
-	.RD1_MAX_ADDR(i_max_address),
+	.RD1_DATA(oRead_Data_1),
+	.RD1(iRead_En_1),
+	.RD1_ADDR(i_base_address_1),
+	.RD1_MAX_ADDR(i_max_address_1),
 	.RD1_LENGTH(RD_LENGTH),
-	.RD1_LOAD(iRST|| iRd_RST || i_load_new),
+	.RD1_LOAD(iRST|| iRd_RST || i_load_new_1),
 	.RD1_CLK(iCLK_33),
+	//	FIFO Read Side 2
+	.RD2_DATA(oRead_Data_2),
+	.RD2(iRead_En_2),
+	.RD2_ADDR(i_base_address_2),
+	.RD2_MAX_ADDR(i_max_address_2),
+	.RD2_LENGTH(RD_LENGTH),
+	.RD2_LOAD(iRST|| iRd_RST || i_load_new_2),
+	.RD2_CLK(iCLK_33),
 	//	SDRAM 
 	.SA(oDRAM_ADDR),
 	.BA(oDRAM_BA),

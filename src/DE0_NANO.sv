@@ -75,14 +75,22 @@ reset_delay	reset_delay_inst (
 );
 
 // MMU - MTL
-logic [31:0] pixel_readdata;
 logic [31:0] pixel_rgb;
-logic pixel_read_enable;
+
 logic next_display_active;
 
-logic load_new_pixel_mem;
-logic [23:0] pixel_base_address;
-logic [23:0] pixel_max_address;
+logic [31:0] pixel_readdata_1;
+logic pixel_read_enable_1;
+logic load_new_pixel_mem_1;
+logic [23:0] pixel_base_address_1;
+logic [23:0] pixel_max_address_1;
+
+
+logic [31:0] pixel_readdata_2;
+logic pixel_read_enable_2;
+logic load_new_pixel_mem_2;
+logic [23:0] pixel_base_address_2;
+logic [23:0] pixel_max_address_2;
 logic image_loaded;
 
 // SPI outputs
@@ -100,11 +108,17 @@ mmu mmu_inst(
     .iImg_Tot(Img_Tot),		// Total number of images transferred from Rasp-Pi
     .iTrigger(Trigger),		
     // MTL
-    .i_load_new(load_new_pixel_mem),
-    .iRead_En(pixel_read_enable), // SDRAM read control signal
-    .i_base_address(pixel_base_address),
-    .i_max_address(pixel_max_address),
-    .oRead_Data(pixel_readdata), // Data (RGB) from SDRAM
+    .i_load_new_1(load_new_pixel_mem_1),
+    .iRead_En_1(pixel_read_enable_1), // SDRAM read control signal
+    .i_base_address_1(pixel_base_address_1),
+    .i_max_address_1(pixel_max_address_1),
+    .oRead_Data_1(pixel_readdata_1), // Data (RGB) from SDRAM
+    .i_load_new_2(load_new_pixel_mem_2),
+    .iRead_En_2(pixel_read_enable_2), // SDRAM read control signal
+    .i_base_address_2(pixel_base_address_2),
+    .i_max_address_2(pixel_max_address_2),
+    .oRead_Data_2(pixel_readdata_2), // Data (RGB) from SDRAM
+
     .o_image_loaded(image_loaded),
     // SDRAM
     .oDRAM_ADDR(DRAM_ADDR),
@@ -122,27 +136,6 @@ mmu mmu_inst(
 // SPI
 logic spi_clk, spi_cs, spi_mosi, spi_miso;
 logic [31:0] spi_data;
-
-/*
-spi_slave spi_slave_inst(
-    .iCLK(CLOCK_50),
-    .iRST(dly_rst),
-    // SPI
-    .iSPI_CLK(spi_clk),
-    .iSPI_CS(spi_cs),
-    .iSPI_MOSI(spi_mosi),
-    .oSPI_MISO(spi_miso),
-    // Internal registers R/W (not used)
-    .iData_WE       (1'b0),
-    .iData_Addr     (32'd0),
-    .iData_Write    (32'd0),
-    .oData_Read     (spi_data),
-    // MTL
-    .oPix_Data      (Pix_Data),	// Pixel's data from R-Pi (24-bit RGB)
-    .oImg_Tot       (Img_Tot),	// Total number of images transferred from Rasp-Pi
-    .oTrigger       (Trigger)		
-);
-*/
 
 assign spi_clk = GPIO_0[11];    // SCLK = pin 16 = GPIO_11
 assign spi_cs = GPIO_0[9];	    // CS   = pin 14 = GPIO_9
@@ -165,13 +158,19 @@ mtl_display_controller(
     .iGest_W(Gest_W),
     .iNew_Frame(New_Frame),
     .iEnd_Frame(End_Frame),
-    .i_next_active(next_display_active),
-    .i_readdata(pixel_readdata),
     .o_pixel_data(pixel_rgb),
-    .o_load_new(load_new_pixel_mem),
-    .o_read_enable(pixel_read_enable),
-    .o_base_address(pixel_base_address),
-    .o_max_address(pixel_max_address)
+    .i_next_active(next_display_active),
+    // MMU
+    .i_readdata_1(pixel_readdata_1),
+    .o_load_new_1(load_new_pixel_mem_1),
+    .o_read_enable_1(pixel_read_enable_1),
+    .o_base_address_1(pixel_base_address_1),
+    .o_max_address_1(pixel_max_address_1)
+    .i_readdata_2(pixel_readdata_2),
+    .o_load_new_2(load_new_pixel_mem_2),
+    .o_read_enable_2(pixel_read_enable_2),
+    .o_base_address_2(pixel_base_address_2),
+    .o_max_address_2(pixel_max_address_2)
 );
 
 // MTL DISPLAY

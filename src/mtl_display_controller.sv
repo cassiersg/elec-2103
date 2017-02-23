@@ -15,11 +15,16 @@ module mtl_display_controller (
 	input  i_next_active,			// SDRAM read control signal
     output logic [31:0] o_pixel_data,
     // MMU
-    input logic [31:0] i_readdata,
-    output logic o_load_new,
-    output logic o_read_enable,
-    output logic [23:0] o_base_address,
-    output logic [23:0] o_max_address
+    input logic [31:0] i_readdata_1,
+    output logic o_load_new_1,
+    output logic o_read_enable_1,
+    output logic [23:0] o_base_address_1,
+    output logic [23:0] o_max_address_1
+    input logic [31:0] i_readdata_2,
+    output logic o_load_new_2,
+    output logic o_read_enable_2,
+    output logic [23:0] o_base_address_2,
+    output logic [23:0] o_max_address_2
 );
 	//Parameters for the SDRAM Controller
 	//- RANGE_ADDR_IMG is equal to 480x800 times 2 (again for 32-bit vs 16-bit bus).
@@ -62,24 +67,24 @@ module mtl_display_controller (
 	// The signals End_Frame and New_Frame come from the LCD controller.
 	always_ff @(posedge iCLK_33, posedge iRST) begin
 		if (iRST) begin
-			o_base_address <= 24'b0;
-			o_max_address <= RANGE_ADDR_IMG;
-			o_load_new 		<= 1'b0;
+			o_base_address_1 <= 24'b0;
+			o_max_address_1 <= RANGE_ADDR_IMG;
+			o_load_new_1 		<= 1'b0;
 		end else begin
 			if (iEnd_Frame) begin
-				o_base_address <= current_img*RANGE_ADDR_IMG;
-				o_max_address <= current_img*RANGE_ADDR_IMG + RANGE_ADDR_IMG;
+				o_base_address_1 <= current_img*RANGE_ADDR_IMG;
+				o_max_address_1 <= current_img*RANGE_ADDR_IMG + RANGE_ADDR_IMG;
 			end else begin
                 // FIXME: useless I suppose?
-                o_base_address <= o_base_address;
-                o_max_address <= o_max_address;
+                o_base_address_1 <= o_base_address_1;
+                o_max_address_1 <= o_max_address_1;
 				//base_read_addr <= base_read_addr;
 				//max_read_addr  <= max_read_addr;
 			end
-			o_load_new <= iNew_Frame;
+			o_load_new_1 <= iNew_Frame;
 		end
 	end
     
-    assign o_read_enable = i_next_active;
-    assign o_pixel_data = image_loaded ? i_readdata : 32'h001080D0;
+    assign o_read_enable_1 = i_next_active;
+    assign o_pixel_data = image_loaded ? i_readdata_1 : 32'h001080D0;
 endmodule 
