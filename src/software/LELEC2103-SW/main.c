@@ -34,7 +34,7 @@ int main(void)
 		int i;
 		for (i=0; i< 16; i++) {
 			printf("spi_reg %i: %x\n", i, spi_reg[i]);
-			//spi_reg[i] = i;
+			spi_reg[i] = i;
 		}
 		*mtl_display_next_slide = 1;
 		// Huge delay so that we can actually see the slides changing

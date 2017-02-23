@@ -104,7 +104,7 @@ logic [31:0] misoRAM_read;
 assign misoRAM_read = misoRAM[SPI_reg[3:0]];
 
 always_ff @(posedge iCLK) begin
-    if (iData_WE) misoRAM[iData_Addr[5:2]] <= iData_Write;
+    if (iData_WE) misoRAM[iData_Addr[3:0]] <= iData_Write;
 end
 
 //---SPI Sysnchronization -------------------------------------
