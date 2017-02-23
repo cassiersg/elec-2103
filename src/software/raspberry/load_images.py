@@ -8,7 +8,7 @@ MyARM_ResetPin = 19 # Pin 4 of connector = BCM19 = GPIO[1]
 
 MySPI_FPGA = spidev.SpiDev()
 MySPI_FPGA.open(0,0)
-MySPI_FPGA.max_speed_hz = 5_000_000
+MySPI_FPGA.max_speed_hz = 5000000
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -22,15 +22,30 @@ print("This version of the script suppose that your BMP")
 print("files are stored in a folder 'Slides' located")
 print("in the same directory that this script\n");
 
+# do not set MSB, it makes python3 crash...
+magic = 0x0EADBEEF
+
 def read_spi(reg_id):
     ToSPI = [reg_id, 0x00, 0x00, 0x00, 0x00] 
     FromSPI = MySPI_FPGA.xfer2(ToSPI)
-    return sum(x << 8*(3-i) for (x, i) in enumerate(FromSPI[1:]))
+    try:
+        s = 0
+        for i, x in enumerate(FromSPI[1:]):
+            y = 2**(8*(3-i))
+            z = int(x) * y
+            s += z
+        return s
+    except:
+        print(FromSPI)
+        raise
 
 def load_images():
+    ToSPI = [0x80, 0x00, 0x00, 0x00, 0x00] 
+    FromSPI = MySPI_FPGA.xfer2(ToSPI)
+    print("listening...")
     while True:
         x = read_spi(0x0)
-        if x = 0xDEADBEEF:
+        if x == magic:
             break
 
     # Important to wait for the DE0-Nano to be ready
@@ -39,7 +54,7 @@ def load_images():
     print("Transfer launched:\n")
 
     # Total number of images to be transferred
-    img_tot = 2    
+    img_tot = 1    
 
     # Transmit image number information to the DE0-Nano
     ToSPI = [0x90, 0x00, 0x00, 0x00, int(img_tot)] 
@@ -59,8 +74,12 @@ def load_images():
         msg_progr = '--> Image ' + str(k) + '/' + str(img_tot) + ' transfer done !'        
         print(msg_progr)
             
-    ToSPI = [0x80, 0x00, 0x00, 0x00, 0xDEADBEEF] 
+    ToSPI = [0x80, 0x0E, 0xAD, 0xBE, 0xEF] 
     FromSPI = MySPI_FPGA.xfer2(ToSPI)
+
+    while read_spi(1) != magic:
+        pass
+    print("loading finished")
 
 if __name__ == "__main__":
     while True:
