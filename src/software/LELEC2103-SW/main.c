@@ -12,14 +12,14 @@ int my_abs(int x) {
 #define SPI_LOAD_CST  0x0EADBEEF
 int load_images(void)
 {
-    printf("loding images...\n");
+    printf("loading images...\n");
     volatile int *spi_reg = (int *) SPI_SLAVE_0_BASE;
     spi_reg[0] = SPI_LOAD_CST;
     spi_reg[1] = 0x0;
     while (spi_reg[0] != SPI_LOAD_CST);
     spi_reg[0] = 0x0;
     spi_reg[1] = SPI_LOAD_CST;
-    printf("finished loding images\n");
+    printf("finished loading images\n");
     return 0;
 }
 

@@ -91,8 +91,6 @@ module mtl_display_controller (
 
                 o_base_address_2 <= o_base_address_2;
                 o_max_address_2 <= o_max_address_2;
-				//base_read_addr <= base_read_addr;
-				//max_read_addr  <= max_read_addr;
 			end
 			o_load_new_1 <= iNew_Frame;
             o_load_new_2 <= iNew_Frame;
