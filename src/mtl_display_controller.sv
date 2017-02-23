@@ -19,7 +19,7 @@ module mtl_display_controller (
     output logic o_load_new_1,
     output logic o_read_enable_1,
     output logic [23:0] o_base_address_1,
-    output logic [23:0] o_max_address_1
+    output logic [23:0] o_max_address_1,
     input logic [31:0] i_readdata_2,
     output logic o_load_new_2,
     output logic o_read_enable_2,
