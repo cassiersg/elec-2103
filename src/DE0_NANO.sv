@@ -165,7 +165,7 @@ mtl_display_controller(
     .o_load_new_1(load_new_pixel_mem_1),
     .o_read_enable_1(pixel_read_enable_1),
     .o_base_address_1(pixel_base_address_1),
-    .o_max_address_1(pixel_max_address_1)
+    .o_max_address_1(pixel_max_address_1),
     .i_readdata_2(pixel_readdata_2),
     .o_load_new_2(load_new_pixel_mem_2),
     .o_read_enable_2(pixel_read_enable_2),
