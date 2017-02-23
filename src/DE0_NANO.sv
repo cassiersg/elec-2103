@@ -203,7 +203,9 @@ base u0 (
 	.mtl_touch_conduit_i2c_sda          (MTL_TOUCH_I2C_SDA),
 	.mtl_touch_conduit_touch_int_n      (MTL_TOUCH_INT_n),
     .mtl_touch_conduit_gest_e           (Gest_E),  
-    .mtl_touch_conduit_gest_w           (Gest_W)
+    // Temporarily removed to test the MTL display IP
+    //.mtl_touch_conduit_gest_w           (Gest_W),
+    .mtl_display_ip_conduit_end_next_slide_pulse(Gest_W)
 );
 
 // This PLL generates 33 MHz for the LCD screen. CLK_33 is used to generate the controls 

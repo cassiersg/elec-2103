@@ -1,10 +1,3 @@
-/*
- * mtltouch.h
- *
- *  Created on: Feb 16, 2017
- *      Author: cgaetan
- */
-
 #ifndef MTLTOUCH_H_
 #define MTLTOUCH_H_
 
@@ -16,6 +9,4 @@
 #define MTL_TOUCH_GESTURE (((int *) MTL_IP_0_BASE) + 17)
 #define MTL_TOUCH_READY (((int *) MTL_IP_0_BASE) + 18)
 
-
-
-#endif /* MTLTOUCH_H_ */
+#endif

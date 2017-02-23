@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "mtltouch.h"
+#include "mtldisplay.h"
 
 typedef enum touch_state touch_state;
 enum touch_state {notouch, dead, in_touch, just_released};
@@ -18,6 +19,8 @@ int main(void)
 	volatile int *mtl_touch_y 		= MTL_TOUCH_Y;
 	volatile int *mtl_touch_count 	= MTL_TOUCH_COUNT;
 
+	volatile int *mtl_display_next_slide = MTL_DISPLAY_NEXT_SLIDE;
+
 	int delay;
 
 	int x1, y1;
@@ -26,7 +29,10 @@ int main(void)
 	touch_state t = notouch;
 
 	while (1) {
-		for(delay = 0; delay < 100; delay++);
+		*mtl_display_next_slide = 1;
+		// Huge delay so that we can actually see the slides changing
+		// currently breaks our MTL touch demo
+		for(delay = 0; delay < 1000000; delay++);
 
 		int touch_count = *mtl_touch_count;
 		if(touch_count > 1) {

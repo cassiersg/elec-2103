@@ -374,6 +374,7 @@ set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 
 
 
+set_global_assignment -name SYSTEMVERILOG_FILE mtl_display_ip.sv
 set_global_assignment -name SYSTEMVERILOG_FILE mtl_display_controller.sv
 set_global_assignment -name SYSTEMVERILOG_FILE mtl_display.sv
 set_global_assignment -name VERILOG_FILE RAM_PLL.v
@@ -395,4 +396,5 @@ set_global_assignment -name SDC_FILE DE0_NANO.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE DE0_NANO.sv
 set_global_assignment -name QIP_FILE MTL_PLL.qip
 set_global_assignment -name CDF_FILE output_files/Chain1.cdf
+set_global_assignment -name SLD_FILE db/stp_MTL_ports_auto_stripped.stp
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
