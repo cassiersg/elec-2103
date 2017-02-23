@@ -11,11 +11,14 @@ module mtl_display_ip (
     output next_slide_pulse
 );
 
+assign next_slide_pulse = avs_s0_write && avs_s0_address == 1'b0 && avs_s0_writedata[0] == 1'b1;
+/*
 touch_buffer tb (
     .clk(clk),
     .rst(reset),
     .trigger(avs_s0_write && (avs_s0_writedata[0] == 1'b1)),
     .pulse(next_slide_pulse)
 );
+*/
 
 endmodule

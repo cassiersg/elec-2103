@@ -123,6 +123,7 @@ mmu mmu_inst(
 logic spi_clk, spi_cs, spi_mosi, spi_miso;
 logic [31:0] spi_data;
 
+/*
 spi_slave spi_slave_inst(
     .iCLK(CLOCK_50),
     .iRST(dly_rst),
@@ -141,6 +142,7 @@ spi_slave spi_slave_inst(
     .oImg_Tot       (Img_Tot),	// Total number of images transferred from Rasp-Pi
     .oTrigger       (Trigger)		
 );
+*/
 
 assign spi_clk = GPIO_0[11];    // SCLK = pin 16 = GPIO_11
 assign spi_cs = GPIO_0[9];	    // CS   = pin 14 = GPIO_9
@@ -205,7 +207,15 @@ base u0 (
     .mtl_touch_conduit_gest_e           (Gest_E),  
     // Temporarily removed to test the MTL display IP
     //.mtl_touch_conduit_gest_w           (Gest_W),
-    .mtl_display_ip_conduit_end_next_slide_pulse(Gest_W)
+    .mtl_display_ip_conduit_end_next_slide_pulse(Gest_W),
+
+    .spi_slave_0_conduit_end_spi_clk      (spi_clk),
+        .spi_slave_0_conduit_end_spii_cs  (spi_cs), 
+        .spi_slave_0_conduit_end_mosi     (spi_mosi), 
+        .spi_slave_0_conduit_end_miso     (spi_miso), 
+        .spi_slave_0_conduit_end_img_tot  (Img_Tot), 
+        .spi_slave_0_conduit_end_pix_data (Pix_Data), 
+        .spi_slave_0_conduit_end_trigger  (Trigger)  
 );
 
 // This PLL generates 33 MHz for the LCD screen. CLK_33 is used to generate the controls 
