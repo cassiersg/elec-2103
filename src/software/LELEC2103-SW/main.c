@@ -9,11 +9,27 @@ int my_abs(int x) {
 	return (x > 0) ? x : -x;
 }
 
+#define SPI_LOAD_CST  0x0EADBEEF
+int load_images(void)
+{
+    printf("loding images...\n");
+    volatile int *spi_reg = (int *) SPI_SLAVE_0_BASE;
+    spi_reg[0] = SPI_LOAD_CST;
+    spi_reg[1] = 0x0;
+    while (spi_reg[0] != SPI_LOAD_CST);
+    spi_reg[0] = 0x0;
+    spi_reg[1] = SPI_LOAD_CST;
+    printf("finished loding images\n");
+    return 0;
+}
+
+
 #define TAP_RADIUS 50
 
 int main(void)
 {
 	printf("=== Starting MTL touch demo ===\n");
+        load_images();
 
 	volatile int *mtl_touch_x 		= MTL_TOUCH_X;
 	volatile int *mtl_touch_y 		= MTL_TOUCH_Y;
