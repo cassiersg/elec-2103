@@ -272,7 +272,11 @@ base u0 (
 	.colormap_s2_writedata  (32'b0),
 	.colormap_s2_byteenable (4'b1111),
 	// display control
-	.display_control_external_connection_export(display_control)
+	.display_control_external_connection_export(display_control),
+	// mtl touch
+	.mtl_touch_0_conduit_end_scl(MTL_TOUCH_I2C_SCL),
+	.mtl_touch_0_conduit_end_sda(MTL_TOUCH_I2C_SDA),
+	.mtl_touch_0_conduit_end_int_n(MTL_TOUCH_INT_n)
 );
 
 assign DRAM_CLK = sdram_pll_clk;
