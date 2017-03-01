@@ -4,9 +4,9 @@ module mtl_display(
 	input			iRST_n, 			// Input system reset
 	// MMU
 	input   [31:0]	iREAD_DATA,			// Input data from SDRAM (RGB)
-	output			next_display_active,// SDRAM read control signal
-	output 			oNew_Frame,			
-	output 			oEnd_Frame,		
+	output			next_display_active,		// SDRAM read control signal
+	output 			oNew_Frame,			// Output signal being a pulse when a new frame of the LCD begins
+	output 			oEnd_Frame,			// Output signal being a pulse when a frame of the LCD ends
 	// LCD Side
 	output 		 	oHD,				// Output LCD horizontal sync 
 	output 		 	oVD,				// Output LCD vertical sync 
@@ -18,6 +18,10 @@ module mtl_display(
     output [9:0] o_current_y
 );
 	
+	//============================================================================
+	// PARAMETER declarations
+	//============================================================================
+
 	// All these parameters are given in the MTL user manual, section 3.2,
 	// available in the project file folder
 	parameter H_LINE = 1056; 
@@ -27,6 +31,11 @@ module mtl_display(
 	parameter Vertical_Blank = 23;          // V_SYNC + V_BACK_PORCH
 	parameter Vertical_Front_Porch = 22;
 
+	//=============================================================================
+	// REG/WIRE declarations
+	//=============================================================================
+    //
+	reg     [10:0]  x_cnt;  
 	reg     [9:0]	y_cnt; 
 	wire    [7:0]	read_red;
 	wire    [7:0]	read_green;
@@ -34,6 +43,10 @@ module mtl_display(
 	wire			display_area, display_area_prev;
 	reg		        mhd;
 	reg			    mvd;
+
+	//=============================================================================
+	// Structural coding
+	//=============================================================================
 
 	//--- Assigning the right color data as a function -------------------------
 	//--- of the current pixel position ----------------------------------------
