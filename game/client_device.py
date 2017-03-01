@@ -15,9 +15,7 @@ def setup():
     return spi
 
 def bytes2int(x):
-    if x[0] & 0x8:
-        raise ValueError('Value transmitted over SPI not fitting in python int')
-    return sum(y << (8*i) for (i, y) in enumerate(reversed(x)))
+    return struct.unpack('!i', bytes(x))[0]
 
 def int2bytes(x):
     return list(struct.pack('!I', x))
@@ -44,6 +42,7 @@ class DeviceHwInterface:
         self.spi = setup()
         set_display(self.spi, 0)
         self.current_display = 0
+        print("initialized devHWinterface")
 
     def pageflip(self):
         new_display = self.current_display ^ 0x1
@@ -77,6 +76,14 @@ class DeviceHwInterface:
                     for j_off in range(0, SCALE_FACTOR):
                         color = self.map_color(grid[gg.N-j-1][i], player_id)
                         tiles[TILES_ROW*(j*SCALE_FACTOR+j_off)+i*SCALE_FACTOR+i_off] = color
+        for j in range(0, SCALE_FACTOR*gg.N):
+            for i_off in range(0, SCALE_FACTOR):
+                if (SCALE_FACTOR*gg.N-j-1)/(SCALE_FACTOR*gg.N) > round_gauge/GAUGE_STATE_INIT:
+                    color = 3
+                else:
+                    color = 2
+                tiles[TILES_ROW*j+(1+gg.M)*SCALE_FACTOR+i_off] = color
+ 
         return tiles
 
     def update_display(self, *args):
@@ -97,8 +104,8 @@ class DeviceHwInterface:
         if events:
             write_spi(self.spi, 0x02, 4*[0x00])
 
-        cur_acc_value = bytes2int(read_spi(self.spi, 0x03))
-        print((cur_acc_value + 512)//4)
+        cur_acc_value = min(255, max(0, (bytes2int(read_spi(self.spi, 0x03)) + 256) // 2))
+        print(cur_acc_value)
 
         return (False, cur_acc_value, events)
 
