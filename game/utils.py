@@ -113,3 +113,7 @@ def my_pack(packet_type, payload):
     packed_header = pack(HEADER_FMT, packet_type, len(packed_payload))
 
     return packed_header + packed_payload
+
+def runs_on_rpi():
+    return 'raspberry' in socket.gethostname()
+

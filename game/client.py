@@ -2,10 +2,14 @@ import socket
 import sys
 import time
 import pygame
-import client_desktop as cd
+from utils import *
+
+if runs_on_rpi():
+    import client_device as cd
+else:
+    import client_desktop as cd
 
 from pygame.locals import *
-from utils import *
 
 from game_global import *
 from game_frontend import *

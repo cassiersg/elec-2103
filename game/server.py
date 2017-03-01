@@ -10,18 +10,13 @@ from utils import *
 from game_global import *
 from game_backend import *
 
-if len(sys.argv) != 2:
-    raise ValueError('Missing argument(s)')
-
-_, address = sys.argv
-
 # Create a TCP/IP socket
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     #server.setblocking(0)
 
     # Bind the socket to the port
-    server_address = (address, 10000)
+    server_address = ('', 10000)
     print('starting up on {} port {}'.format(*server_address), file=sys.stderr)
     server.bind(server_address)
 
