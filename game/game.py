@@ -1,12 +1,10 @@
-# WARNING: clean-up needed
-
-import readchar
 import random as r
-import time
-import getkey
 import pygame
 import sys
+import time
+
 from pygame.locals import *
+
 
 # Grid elements
 HOLE = -3
@@ -174,8 +172,14 @@ def main():
     draw_grid(screen, grid)
 
     start_time = pygame.time.get_ticks()
+    start_loop_time = start_time
+    total_time = 0
+
+    speed_factor = 1.0
 
     while True:
+        time.sleep(0.01)
+
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -189,22 +193,36 @@ def main():
                     p2_pos = move_left(grid, P2, p2_pos, positions, holes)
                 elif event.key == pygame.K_m:
                     p2_pos = move_right(grid, P2, p2_pos, positions, holes)
+                elif event.key == pygame.K_z:
+                    speed_factor = speed_factor + 0.2
+                    print("Faster:" + str(speed_factor))
+                elif event.key == pygame.K_o:
+                    speed_factor = max(0, speed_factor-0.2)
+                    print("Slower:" + str(speed_factor))
 
         draw_grid(screen, grid)
-        elapsed_time = (pygame.time.get_ticks() - start_time)/1000
+        loop_time = pygame.time.get_ticks() - start_loop_time
+        start_loop_time = pygame.time.get_ticks()
 
-        if elapsed_time > TIMEOUT:
+        total_time = speed_factor*loop_time/1000 + total_time
+
+        if total_time > TIMEOUT:
             if set([positions[p1_pos], positions[p2_pos]]) == set(holes):
                 score = score + 1
             else:
                 score = 0
 
             start_time = pygame.time.get_ticks()
+            start_loop_time = start_time
+            total_time = 0
+
+            speed_factor = 1.0
+
             (grid, positions, holes) = build_grid(M,N)
             p1_pos = 0
             p2_pos = len(positions)-1
 
-        draw_timer(screen, elapsed_time)
+        draw_timer(screen, total_time)
         write_score(screen, myfont, score)
         pygame.display.update()
 
