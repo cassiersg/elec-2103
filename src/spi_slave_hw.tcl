@@ -12,7 +12,7 @@
 # 
 # request TCL package from ACDS 16.0
 # 
-package require -exact qsys 16.0
+package require -exact qsys 15.0
 
 
 # 

@@ -74,109 +74,23 @@ reset_delay	reset_delay_inst (
 	.oRST   (dly_rst)
 );
 
-// MMU - MTL
+// MTL control
 logic [31:0] pixel_rgb;
-
 logic next_display_active;
-
-logic [31:0] pixel_readdata_1;
-logic pixel_read_enable_1;
-logic load_new_pixel_mem_1;
-logic [23:0] pixel_base_address_1;
-logic [23:0] pixel_max_address_1;
-
-
-logic [31:0] pixel_readdata_2;
-logic pixel_read_enable_2;
-logic load_new_pixel_mem_2;
-logic [23:0] pixel_base_address_2;
-logic [23:0] pixel_max_address_2;
-logic image_loaded;
-
-// SPI outputs
-logic Trigger;
-logic [7:0] Img_Tot;
-logic [23:0] Pix_Data;		
-
-mmu mmu_inst(
-    .iCLK_50(CLOCK_50),		// S:/ystem Clock (50MHz)
-    .iCLK_33(CLOCK_33),		// MTL Clock (33 MHz, 0°)
-    .iRST(dly_rst),			// System sync reset
-    .iRd_RST(rd_rst),
-    // SPI
-    .iPix_Data(Pix_Data),	// Pixel's data from R-Pi (24-bit RGB)
-    .iImg_Tot(Img_Tot),		// Total number of images transferred from Rasp-Pi
-    .iTrigger(Trigger),		
-    // MTL
-    .i_load_new_1(load_new_pixel_mem_1),
-    .iRead_En_1(pixel_read_enable_1), // SDRAM read control signal
-    .i_base_address_1(pixel_base_address_1),
-    .i_max_address_1(pixel_max_address_1),
-    .oRead_Data_1(pixel_readdata_1), // Data (RGB) from SDRAM
-    
-    .i_load_new_2(load_new_pixel_mem_2),
-    .iRead_En_2(pixel_read_enable_2), // SDRAM read control signal
-    .i_base_address_2(pixel_base_address_2),
-    .i_max_address_2(pixel_max_address_2),
-    .oRead_Data_2(pixel_readdata_2), // Data (RGB) from SDRAM
-
-    .o_image_loaded(image_loaded),
-    // SDRAM
-    .oDRAM_ADDR(DRAM_ADDR),
-    .oDRAM_BA(DRAM_BA),
-    .oDRAM_CAS_N(DRAM_CAS_N),
-    .oDRAM_CKE(DRAM_CKE),
-    .oDRAM_CLK(DRAM_CLK),
-    .oDRAM_CS_N(DRAM_CS_N),
-    .ioDRAM_DQ(DRAM_DQ),
-    .oDRAM_DQM(DRAM_DQM),
-    .oDRAM_RAS_N(DRAM_RAS_N),
-    .oDRAM_WE_N(DRAM_WE_N)
-);
-
-// SPI
-logic spi_clk, spi_cs, spi_mosi, spi_miso;
-logic [31:0] spi_data;
-
-assign spi_clk = GPIO_0[11];    // SCLK = pin 16 = GPIO_11
-assign spi_cs = GPIO_0[9];	    // CS   = pin 14 = GPIO_9
-assign spi_mosi = GPIO_0[15];	// MOSI = pin 20 = GPIO_15
-
-assign GPIO_0[13] = spi_cs ? 1'bz : spi_miso;   // MISO = pin 18 = GPIO_13
-
-// MTL
 logic New_Frame;
 logic End_Frame;
-
 logic [10:0] current_x;
 logic [9:0] current_y;
 
 // MTL DISPLAY CONTROLLER
-mtl_display_controller(
+mtl_display_controller mtl_display_controller_inst (
     .iCLK_50(CLOCK_50),
     .iCLK_33(CLOCK_33),
     .iRST(RST),
-    .iImg_Tot(Img_Tot),
-    .image_loaded(image_loaded),
-    .iGest_E(Gest_E),
-    .iGest_W(Gest_W),
     .iNew_Frame(New_Frame),
     .iEnd_Frame(End_Frame),
+	 .i_next_active(next_display_active),
     .o_pixel_data(pixel_rgb),
-    .i_next_active(next_display_active),
-    // MMU
-    .i_readdata_1(pixel_readdata_1),
-    .o_load_new_1(load_new_pixel_mem_1),
-    .o_read_enable_1(pixel_read_enable_1),
-    .o_base_address_1(pixel_base_address_1),
-    .o_max_address_1(pixel_max_address_1),
-    
-    .i_readdata_2(pixel_readdata_2),
-    .o_load_new_2(load_new_pixel_mem_2),
-    .o_read_enable_2(pixel_read_enable_2),
-    .o_base_address_2(pixel_base_address_2),
-    .o_max_address_2(pixel_max_address_2),
-
     .i_current_x(current_x),
     .i_current_y(current_y)
 );
@@ -201,31 +115,69 @@ mtl_display mtl_display_inst (
     .o_current_y(current_y)
 );
 
-logic Gest_W;
-logic Gest_E;
+// SPI instantiation
+logic mem_pi_we, mem_pi_read;
+logic [27:0] mem_pi_addr;
+logic [31:0] mem_pi_readdata, mem_pi_writedata;
+
+logic spi_clk, spi_cs, spi_mosi, spi_miso;
+logic [31:0] spi_data;
+
+assign spi_clk = GPIO_0[11];    // SCLK = pin 16 = GPIO_11
+assign spi_cs = GPIO_0[9];	    // CS   = pin 14 = GPIO_9
+assign spi_mosi = GPIO_0[15];	// MOSI = pin 20 = GPIO_15
+
+assign GPIO_0[13] = spi_cs ? 1'bz : spi_miso;   // MISO = pin 18 = GPIO_13 // TODO useless ?
+
+spi_slave spi_slave_instance(
+	.SPI_CLK    (spi_clk),
+	.SPI_CS     (spi_cs),
+	.SPI_MOSI   (spi_mosi),
+	.SPI_MISO   (spi_miso),
+	.Data_WE    (mem_pi_we),
+	.Data_Addr  (mem_pi_addr),
+	.Data_Write (mem_pi_writedata),
+	.Data_Read  (mem_pi_readdata),
+	.mem_read(mem_pi_read),
+	.Clk        (CLOCK_50),
+	.reset(~KEY[0])
+);
+
+// SDRAM PLL
+wire sdram_pll_clk;
+
+sdram_pll sdram_pll_inst(
+	.inclk0(CLOCK_50),
+	.c0(sdram_pll_clk)
+);
 
 // SoPC instantiation
 base u0 (
     .clk_clk                            (CLOCK_50),
     .reset_reset_n                      (KEY[0]),
-    // Trivial conduit for testing purposes
-    .pio_0_external_connection_export   (32'd42),
-    .mtl_touch_conduit_i2c_scl          (MTL_TOUCH_I2C_SCL),
-	.mtl_touch_conduit_i2c_sda          (MTL_TOUCH_I2C_SDA),
-	.mtl_touch_conduit_touch_int_n      (MTL_TOUCH_INT_n),
-    .mtl_touch_conduit_gest_e           (Gest_E),  
-    // Temporarily removed to test the MTL display IP
-    //.mtl_touch_conduit_gest_w           (Gest_W),
-    .mtl_display_ip_conduit_end_next_slide_pulse(Gest_W),
-
-    .spi_slave_0_conduit_end_spi_clk      (spi_clk),
-        .spi_slave_0_conduit_end_spii_cs  (spi_cs), 
-        .spi_slave_0_conduit_end_mosi     (spi_mosi), 
-        .spi_slave_0_conduit_end_miso     (spi_miso), 
-        .spi_slave_0_conduit_end_img_tot  (Img_Tot), 
-        .spi_slave_0_conduit_end_pix_data (Pix_Data), 
-        .spi_slave_0_conduit_end_trigger  (Trigger)  
+	.pi_mailbox_mem_s1_address   (mem_pi_addr),
+	.pi_mailbox_mem_s1_writedata (mem_pi_writedata),
+	.pi_mailbox_mem_s1_readdata  (mem_pi_readdata),
+	.pi_mailbox_mem_s1_write     (mem_pi_we),
+	.pi_mailbox_mem_s1_read      (mem_pi_read),
+	.sdram_wire_addr (DRAM_ADDR),
+	.sdram_wire_ba   (DRAM_BA),
+	.sdram_wire_cas_n(DRAM_CAS_N),
+	.sdram_wire_cke  (DRAM_CKE),
+	.sdram_wire_cs_n (DRAM_CS_N),
+	.sdram_wire_dq   (DRAM_DQ),
+	.sdram_wire_dqm  (DRAM_DQM),
+	.sdram_wire_ras_n(DRAM_RAS_N),
+	.sdram_wire_we_n (DRAM_WE_N)
 );
+
+assign DRAM_CLK = sdram_pll_clk;
+
+// =============================================================
+// =============================================================
+// ======= Clock and Rest -- crazy stuff from altera ===========
+// =============================================================
+// =============================================================
 
 // This PLL generates 33 MHz for the LCD screen. CLK_33 is used to generate the controls 
 // while iCLK_33 is connected to the screen. Its phase is 120 so as to meet the setup and 

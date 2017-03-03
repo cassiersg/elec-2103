@@ -3,107 +3,16 @@ module mtl_display_controller (
 	input 			iCLK_50,			// System Clock (50MHz)
 	input    		iCLK_33,	// MTL Clock (33 MHz, 0°)
     input 			iRST,				// System sync reset
-	// SPI
-	input   [7:0]   iImg_Tot,			// Total number of images transferred from Rasp-Pi
-    input           image_loaded,
-    // Temp
-	input           iGest_E,
-	input  			iGest_W,
 	// mtl_display
 	input  iNew_Frame, // Control signal being a pulse when a new frame of the LCD begins
 	input  iEnd_Frame,		// Control signal being a pulse when a frame of the LCD ends
 	input  i_next_active,			// SDRAM read control signal
     output logic [31:0] o_pixel_data,
-    // MMU
-    input logic [31:0] i_readdata_1,
-    output logic o_load_new_1,
-    output logic o_read_enable_1,
-    output logic [23:0] o_base_address_1,
-    output logic [23:0] o_max_address_1,
-    input logic [31:0] i_readdata_2,
-    output logic o_load_new_2,
-    output logic o_read_enable_2,
-    output logic [23:0] o_base_address_2,
-    output logic [23:0] o_max_address_2,
 
     input logic [10:0] i_current_x,
     input logic [9:0] i_current_y
 );
-	//Parameters for the SDRAM Controller
-	//- RANGE_ADDR_IMG is equal to 480x800 times 2 (again for 32-bit vs 16-bit bus).
-	parameter	RANGE_ADDR_IMG	= 23'd768000;
-	
-	logic   [4:0]   current_img;
-	 
-    // Image selector
-	always_ff @(posedge iCLK_50, posedge iRST) 
-    begin
-		if (iRST) 
-        begin
-			current_img <= 5'b0;
-		end 
-        else
-        begin
-            if (iGest_E)
-            begin
-                // Wrap around between slides
-                if (current_img == 5'b0)
-                    current_img <= iImg_Tot[4:0] - 5'b1;
-                else
-                    current_img <= current_img - 5'b1;
-            end
-            else if (iGest_W)
-            begin
-                if (current_img == (iImg_Tot[4:0] - 5'b1))
-                    current_img <= 5'b0;
-                else
-                    current_img <= current_img + 5'b1;		
-            end
-        end
-	end
 
-	// This always block is synchronous with the LCD controller
-	// and with the read side of the SDRAM controller.
-	// Based on the current image, the base and max read
-	// addresses are updated each time a frame ends, the
-	// read FIFO is emptied as well when a new frame begins.
-	// The signals End_Frame and New_Frame come from the LCD controller.
-	always_ff @(posedge iCLK_33, posedge iRST) begin
-		if (iRST) begin
-			o_base_address_1 <= 24'b0;
-			o_max_address_1 <= RANGE_ADDR_IMG;
-			o_load_new_1 <= 1'b0;
-
-            o_base_address_2 <= 24'b0;
-            o_max_address_2 <= RANGE_ADDR_IMG;
-            o_load_new_2 <= 1'b0;
-		end else begin
-			if (iEnd_Frame) begin
-				o_base_address_1 <= current_img*RANGE_ADDR_IMG;
-				o_max_address_1 <= current_img*RANGE_ADDR_IMG + RANGE_ADDR_IMG;
-                
-                o_base_address_2 <= (current_img + 5'b1)*RANGE_ADDR_IMG;
-                o_max_address_2 <= (current_img + 5'b1)*RANGE_ADDR_IMG + RANGE_ADDR_IMG; 
-			end else begin
-                // FIXME: useless I suppose?
-                o_base_address_1 <= o_base_address_1;
-                o_max_address_1 <= o_max_address_1;
-
-                o_base_address_2 <= o_base_address_2;
-                o_max_address_2 <= o_max_address_2;
-			end
-			o_load_new_1 <= iNew_Frame;
-            o_load_new_2 <= iNew_Frame;
-		end
-	end
-    
-    assign o_read_enable_1 = i_next_active && (i_current_y < 240);
-    assign o_read_enable_2 = i_next_active && (i_current_y >= 240);
-
-    always_comb
-        if(i_current_y < 240)
-            o_pixel_data = image_loaded ? i_readdata_1 : 32'h001080D0;
-        else
-            o_pixel_data = image_loaded ? i_readdata_2 : 32'h001080D0;
+	 assign o_pixel_data = 32'h00123456;
 
 endmodule 

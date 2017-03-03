@@ -2,6 +2,8 @@
 ### Custom ###
 src/base/*
 src/software/LELEC2103-SW/.settings/*
+src/software/LELEC2103-SW/obj/*
+src/software/LELEC2103-SW/.force_relink
 eclipse/*
 
 ### AlteraQuartusII ###

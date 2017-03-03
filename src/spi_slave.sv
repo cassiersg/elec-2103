@@ -1,206 +1,214 @@
+//-------------------------------------------------------------
+//
+// SPI Module
+// 
+// TODO
+// fix interblock delay (currently 3)
+// enabled/disabled RAM : enable on write, disable on read, test if enabled
 
-module spi_mm(
-    input logic clk,
-    input logic reset,
-    // Avalon MM interface
-    input logic avs_s0_write,
-    input logic [7:0] avs_s0_address,
-    input logic [31:0] avs_s0_writedata,
-    output logic [31:0] avs_s0_readdata,
-    // SPI interface
-    input logic spi_clk,
-    input logic spi_cs,
-    input logic spi_mosi,
-    output logic spi_miso,
-    // MTL interface
-    output logic [23:0] oPix_Data, // Pixel's data from R-Pi (24-bit RGB)
-    output logic  [7:0] oImg_Tot, // Total number of images transferred from Rasp-Pi
 
-    // Short pulse that is raised each time a whole pixel has been
-    // received by the spi slave interface. Trigger enables writing 
-    // the pixel to the SDRAM.
-    output logic oTrigger
-    
+// All addresses are in words (32 bytes).
+
+module spi_slave(
+	input  logic 			SPI_CLK,
+	input  logic			SPI_CS,
+	input  logic 			SPI_MOSI,
+	output logic 			SPI_MISO,
+	output logic 			Data_WE,
+	output logic[27:0] 	Data_Addr,
+	output logic[31:0] 	Data_Write,
+	input  logic[31:0] 	Data_Read,
+	output logic mem_read,
+	input  logic Clk,
+	input logic reset
 );
 
-spi_slave impl(
-    .iCLK(clk),
-    .iRST(reset),
-    .iSPI_CLK(spi_clk),
-    .iSPI_MOSI(spi_mosi),
-    .iSPI_CS(spi_cs),
-    .oSPI_MISO(spi_miso),
-    .iData_WE(avs_s0_write),
-    .iData_Addr(avs_s0_address),
-    .iData_Write(avs_s0_writedata),
-    .oData_Read(avs_s0_readdata),
-    .oPix_Data(oPix_Data),
-    .oImg_Tot(oImg_Tot),
-    .oTrigger(oTrigger)
+logic end_block, update_addr, update_burst_size;
+logic reset_addr_offset, inc_addr_offset;
+logic [27:0] burst_size;
+logic [27:0] addr_offset;
+logic [27:0] base_addr;
+logic spi_enabled;
+logic do_read;
+
+assign mem_read = do_read;
+assign Data_Addr = base_addr + addr_offset;
+
+typedef enum logic [1:0] {Command, RAM_writing, RAM_reading} ReceiveState;
+ReceiveState state, nextstate;
+
+always_ff @(posedge Clk)
+begin
+	state <= spi_enabled ? nextstate : Command;
+	if (update_addr) base_addr <= Data_Write[27:0];
+	if (update_burst_size) burst_size <= Data_Write[27:0];
+	if (reset_addr_offset) addr_offset <= 28'b0;
+	if (inc_addr_offset) addr_offset <= addr_offset + 28'h1;
+end
+
+always_comb
+begin
+	nextstate = state;
+	Data_WE = 1'b0;
+	update_addr = 1'b0;
+	update_burst_size = 0;
+	reset_addr_offset = 0;
+	inc_addr_offset = 0;
+	do_read = 0;
+	case (state)
+		Command:
+		if (end_block)
+		begin
+			casez (Data_Write[31:28])
+				//8'h0: nextstate = Command; // reset
+				8'h1:
+				begin
+					nextstate = RAM_writing;
+					update_burst_size = 1;
+				end
+				8'h2:
+				begin
+					nextstate = RAM_reading;
+					update_burst_size = 1;
+					do_read = 1;
+					inc_addr_offset = 1;
+				end
+				8'h3: // set address
+				begin
+					nextstate = Command;
+					update_addr = 1;
+				end
+				default: nextstate = Command;
+			endcase
+		end
+		RAM_writing:
+		if (end_block)
+		begin
+			if (addr_offset == burst_size - 1)
+			begin
+				nextstate = Command;
+				reset_addr_offset = 1;
+			end
+			else inc_addr_offset = 1;
+			Data_WE = end_block;
+		end
+		RAM_reading:
+		if (end_block)
+		begin
+			if (addr_offset == burst_size)
+			begin
+				nextstate = Command;
+				reset_addr_offset = 1;
+			end
+			else
+			begin
+				inc_addr_offset = 1;
+				do_read = 1;
+			end
+		end
+	endcase
+end
+
+spi_slave_sub spi_slave_sub_inst (
+	.SPI_CLK(SPI_CLK),
+	.SPI_CS(SPI_CS),
+	.SPI_MOSI(SPI_MOSI),
+	.SPI_MISO(SPI_MISO),
+	.Data_Write(Data_Write),
+	.Data_Read(Data_Read),
+	.end_block(end_block),
+	.Clk(Clk),
+	.spi_enabled(spi_enabled),
+	.load_data(do_read)
 );
 
 endmodule
 
-module spi_slave(
-    input  logic iCLK, // System clock
-    input  logic iRST, // System sync reset
-    // SPI
-    input  logic iSPI_CLK, // SPI clock
-    input  logic iSPI_CS, // SPI chip select
-    input  logic iSPI_MOSI, // SPI MOSI (from Rasp-Pi)
-    output logic oSPI_MISO, // SPI MISO (to Rasp-Pi)
-    // Internal registers R/W	
-    input  logic  iData_WE, // Write enable for SPI internal registers (not used here)
-    input  logic [31:0] iData_Addr, // Write address for SPI internal registers (not used here)
-    input  logic [31:0] iData_Write, // Write data for SPI internal registers (not used here)
-    output logic [31:0] oData_Read, // Read data from SPI internal registers (not used here)
-    // MTL
-    output logic [23:0] oPix_Data, // Pixel's data from R-Pi (24-bit RGB)
-    output logic  [7:0] oImg_Tot, // Total number of images transferred from Rasp-Pi
-
-    // Short pulse that is raised each time a whole pixel has been
-    // received by the spi slave interface. Trigger enables writing 
-    // the pixel to the SDRAM.
-    output logic oTrigger
+module spi_slave_sub(
+	input  logic 			SPI_CLK,
+	input  logic			SPI_CS,
+	input  logic 			SPI_MOSI,
+	output logic 			SPI_MISO,
+	output logic[31:0] 	Data_Write,
+	input  logic[31:0] 	Data_Read,
+	output logic end_block,  // triggered once each time a word has been written to/read from SPI
+	input  logic			Clk,
+	output logic spi_enabled,
+	input logic load_data // must be asserted for one clock cycle between end_block signal and the next negedge of SPI_CLK_sync
 );
 
-logic [39:0] SPI_reg;
+	logic [31:0] SPI_reg;
 
-//---Input Registers -(from PI to ARM) ------------------------
-
-
-logic [31:0] mosiRAM[15:0];
-logic mosiRAM_we;
-
-logic [7:0] img_tot;
-logic [23:0] pix_data;	 
-
-assign oData_Read = mosiRAM[iData_Addr[3:0]]; 
-
-always_ff @(posedge iCLK) begin
-    if(iRST)
-    begin 
-        pix_data <= 24'd0;
-        img_tot  <= 8'd0;
-    end	
-    else if (mosiRAM_we)
-    begin
-        case (SPI_reg[36:32])
-            5'd16: img_tot <= SPI_reg[7:0];
-            5'd17: pix_data <= SPI_reg[23:0];
-            default: mosiRAM[SPI_reg[35:32]] <= SPI_reg[31:0]; 
-        endcase
-    end
-end
-
-assign oImg_Tot = img_tot;
-assign oPix_Data = pix_data;
-
-//--- Output Registers - (from ARM to PI)----------------------
-
-logic [31:0] misoRAM[15:0];
-logic [31:0] misoRAM_read;
-
-assign misoRAM_read = misoRAM[SPI_reg[3:0]];
-
-always_ff @(posedge iCLK) begin
-    if (iData_WE) misoRAM[iData_Addr[3:0]] <= iData_Write;
-end
-
+	assign Data_Write =  {SPI_reg[30:0], SPI_MOSI};
+	
 //---SPI Sysnchronization -------------------------------------
+	logic SPI_CLK_sync;
+	logic SPI_CS_sync;
+	
+	assign spi_enabled = ~SPI_CS_sync;
 
-logic SPI_CLK_sync;
-logic SPI_CS_sync;
-
-always_ff @(posedge iCLK) begin
-    SPI_CLK_sync <= iSPI_CLK;
-    SPI_CS_sync <= iSPI_CS;
-end
-
+	always_ff @(posedge Clk) begin
+		SPI_CLK_sync <= SPI_CLK;
+		SPI_CS_sync  <= SPI_CS;
+	end
+	
 //--- SPI FSM -------------------------------------------------
+	typedef enum logic [1:0] {S0,S1,S2,S3} statetype;
+	statetype state, nextstate;
+	
+	logic [5:0] SPI_cnt;
+	logic 		SPI_cnt_reset, SPI_cnt_inc;
+	logic			SPI_reg_shift;
+	logic 		MISO_we;
+	
+// State Register & Bit counter & SPI Register & MISO	
+	always_ff @(posedge Clk) begin
+		if (SPI_CS_sync)			state <= S0;
+		else 							state <= nextstate;
+		
+		if (SPI_cnt_reset) 	 	SPI_cnt <= 6'b0;
+		else if (SPI_cnt_inc) 	SPI_cnt <= SPI_cnt + 6'b1;
+		
+		if (load_data)	SPI_reg <= Data_Read;
+		else if (SPI_reg_shift)	SPI_reg <= {SPI_reg[30:0], SPI_MOSI};
+		
+		if (MISO_we)			SPI_MISO <= SPI_reg[31];
 
-typedef enum logic [1:0] {S0,S1,S2,S3} statetype;
-statetype state, nextstate;
-
-logic [5:0] SPI_cnt;
-logic SPI_cnt_reset, SPI_cnt_inc;
-logic SPI_reg_reset, SPI_reg_shift, SPI_reg_load;	
-logic MISO_we, MISO_reset;
-
-// State Register & Bit counter & SPI Register & MISO
-
-always_ff @(posedge iCLK)
-begin
-    if (SPI_CS_sync)
-        state <= S0;
-    else
-        state <= nextstate;
-
-    if (SPI_cnt_reset)
-        SPI_cnt <= 6'b0;
-    else if (SPI_cnt_inc)
-        SPI_cnt <= SPI_cnt + 6'b1;
-
-    if (SPI_reg_reset)
-        SPI_reg <= 40'b0;
-    else if (SPI_reg_shift)
-        SPI_reg <= {SPI_reg[38:0], iSPI_MOSI};
-    else if (SPI_reg_load)
-        SPI_reg <= {misoRAM_read, SPI_reg[7:0]};
-
-    if (MISO_reset)
-        oSPI_MISO <= 0;
-    else if (SPI_reg_load)
-        oSPI_MISO <= misoRAM_read[31];
-    else if (MISO_we)
-        oSPI_MISO <= SPI_reg[39];
-end
-
+	end
+	
 // Next State Logic
-always_comb
-begin
-    // Default value
-    nextstate = state;
-    SPI_cnt_reset = 0; SPI_cnt_inc = 0;
-    SPI_reg_reset = 0; SPI_reg_shift = 0; SPI_reg_load = 0;
-    MISO_we = 0; MISO_reset = 0;
-    mosiRAM_we = 0;
-    oTrigger = 0;
-
-    case (state)
-        S0: if (~SPI_CS_sync) // negedge of SPI_CS
-        begin
-            SPI_cnt_reset = 1;
-            SPI_reg_reset = 1;
-            MISO_reset = 1;
-            oTrigger = 0;
-            nextstate = S1;
-        end
-        S1: if (SPI_CLK_sync) // posedge of SPI_CLK
-        begin
-            SPI_reg_shift = 1;
-            SPI_cnt_inc   = 1;
-            nextstate = S2;
-        end
-        S2 : if (~SPI_CLK_sync) // negedge of SPI_CLK
-        begin
-            MISO_we = 1;
-            if (SPI_cnt == 8) SPI_reg_load = 1;
-            if (SPI_cnt == 40) begin
-                if (SPI_reg[39] == 1) begin 
-                    mosiRAM_we = 1; 
-                    if((SPI_reg[36:32]==5'd17))
-                        oTrigger = 1;
-                end
-                nextstate = S3;
-            end
-            else nextstate = S1;
-        end
-        S3 : if (SPI_CS_sync) // posedge of SPI_CS
-        begin
-            nextstate = S0;
-        end
-    endcase
-end
-
-endmodule // spi_slave
+	always_comb begin
+		// Default value
+		nextstate = state;
+		SPI_cnt_reset = 0; SPI_cnt_inc = 0;
+		SPI_reg_shift = 0;
+		MISO_we = 0;
+		end_block = 0;
+		
+		case (state)
+			S0 : if (~SPI_CS_sync) begin 			// negedge of SPI_CS
+						SPI_cnt_reset = 1;
+						nextstate = S1;
+					end	
+			S1	: if (SPI_CLK_sync) begin			// posedge of SPI_CLK ->  data is valid
+						if (SPI_cnt == 31)
+						begin
+							end_block = 1;
+							SPI_cnt_reset = 1;
+						end
+						SPI_reg_shift = 1;
+						SPI_cnt_inc   = 1; 
+						nextstate = S2;
+					end
+			S2 : if (~SPI_CLK_sync) begin			// negedge of SPI_CLK
+						MISO_we = 1;
+						nextstate = S1;
+					end
+			S3 : if (SPI_CS_sync) begin 			// posedge of SPI_CS
+						nextstate = S0;
+					end
+		endcase
+	end
+	
+endmodule
+	
