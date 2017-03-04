@@ -14,8 +14,8 @@ module mtl_display(
 	output  [7:0] 	oLCD_G,           	// Output LCD green color data  
 	output  [7:0] 	oLCD_B,            	// Output LCD blue color data
 
-    output [10:0] o_next_x,
-    output [9:0] o_next_y
+    output [10:0] o_next2_x,
+    output [9:0] o_next2_y
 );
 	
 	//============================================================================
@@ -41,8 +41,12 @@ module mtl_display(
 	logic mhd, mvd;
 	logic current_display_active;
 
-	assign o_next_x = x_cnt - Horizontal_Blank;
-   assign o_next_y = y_cnt - Vertical_Blank;
+	logic [11:0] next2_x_unmasked;
+	logic [10:0] next2_y_unmasked;
+	assign next2_x_unmasked = x_next - Horizontal_Blank - 11'b1;
+	assign next2_y_unmasked = y_next - Vertical_Blank;
+	assign o_next2_x = next2_x_unmasked >= 800 ? 11'b0 : next2_x_unmasked;
+   assign o_next2_y = next2_y_unmasked >= 480 ? 11'b0 : next2_y_unmasked;
 	
 	assign next_display_active = (
 			(x_next >= Horizontal_Blank) &&
