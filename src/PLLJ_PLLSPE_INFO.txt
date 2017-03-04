@@ -1,0 +1,10 @@
+PLL_Name	MTL_PLL:MTL_PLL_inst|altpll:altpll_component|MTL_PLL_altpll:auto_generated|pll1
+PLLJITTER	NA
+PLLSPEmax	84
+PLLSPEmin	-53
+
+PLL_Name	sdram_pll:sdram_pll_inst|altpll:altpll_component|sdram_pll_altpll:auto_generated|pll1
+PLLJITTER	35
+PLLSPEmax	84
+PLLSPEmin	-53
+

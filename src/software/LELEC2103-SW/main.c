@@ -1,134 +1,145 @@
+/*************************************************************************
+ * Copyright (c) 2004 Altera Corporation, San Jose, California, USA.      *
+ * All rights reserved. All use of this software and documentation is     *
+ * subject to the License Agreement located at the end of this file below.*
+ **************************************************************************
+ * Description:                                                           *
+ * The following is a simple hello world program running MicroC/OS-II.The *
+ * purpose of the design is to be a very simple application that just     *
+ * demonstrates MicroC/OS-II running on NIOS II.The design doesn't account*
+ * for issues such as checking system call return codes. etc.             *
+ *                                                                        *
+ * Requirements:                                                          *
+ *   -Supported Example Hardware Platforms                                *
+ *     Standard                                                           *
+ *     Full Featured                                                      *
+ *     Low Cost                                                           *
+ *   -Supported Development Boards                                        *
+ *     Nios II Development Board, Stratix II Edition                      *
+ *     Nios Development Board, Stratix Professional Edition               *
+ *     Nios Development Board, Stratix Edition                            *
+ *     Nios Development Board, Cyclone Edition                            *
+ *   -System Library Settings                                             *
+ *     RTOS Type - MicroC/OS-II                                           *
+ *     Periodic System Timer                                              *
+ *   -Know Issues                                                         *
+ *     If this design is run on the ISS, terminal output will take several*
+ *     minutes per iteration.                                             *
+ **************************************************************************/
+
+
 #include <stdio.h>
-#include "mtltouch.h"
-#include "mtldisplay.h"
+#include "includes.h"
 
-typedef enum touch_state touch_state;
-enum touch_state {notouch, dead, in_touch, just_released};
+/* Definition of Task Stacks */
+#define   TASK_STACKSIZE       2048
+OS_STK    task1_stk[TASK_STACKSIZE];
+OS_STK    task2_stk[TASK_STACKSIZE];
 
-int my_abs(int x) {
-	return (x > 0) ? x : -x;
-}
+/* Definition of Task Priorities */
 
-#define SPI_LOAD_CST  0x0EADBEEF
-int load_images(void)
+#define TASK1_PRIORITY      1
+#define TASK2_PRIORITY      2
+
+/* Prints "Hello World" and sleeps for three seconds */
+void task1(void* pdata)
 {
-    printf("loading images...\n");
-    volatile int *spi_reg = (int *) SPI_SLAVE_0_BASE;
-    spi_reg[0] = SPI_LOAD_CST;
-    spi_reg[1] = 0x0;
-    while (spi_reg[0] != SPI_LOAD_CST);
-    spi_reg[0] = 0x0;
-    spi_reg[1] = SPI_LOAD_CST;
-    printf("finished loading images\n");
-    return 0;
+	while (1)
+	{
+		printf("It's working\n");
+
+		while (1) {
+			volatile int * spi_ptr =   (int*) PI_MAILBOX_MEM_BASE;
+			volatile int * spi_ptr_fresh =   spi_ptr + 0x10;
+			int last = 0xFFFFFFFF;
+			while (1)
+			{
+				int i;
+				for (i=0; i<10000; i++);
+
+				if (spi_ptr[0] != last) {
+					last = spi_ptr[0];
+					printf("%x  %x\n", spi_ptr[0], spi_ptr[1]);
+				}
+
+				if ((spi_ptr[0] & 0xFFFF) == 0xDEAD) {
+					printf("updating\n");
+					spi_ptr[0] = 0xBEEF00 | (spi_ptr[0] >> 16);
+					last = spi_ptr[0];
+				}
+
+				if (spi_ptr_fresh[2]) {
+					printf("new message %x\n", spi_ptr[2]);
+					spi_ptr[3] = 0xAAA;
+				}
+			}
+		}
+		OSTimeDlyHMSM(0, 0, 3, 0);
+	}
 }
-
-
-#define TAP_RADIUS 50
-
+/* Prints "Hello World" and sleeps for three seconds */
+void task2(void* pdata)
+{
+	while (1)
+	{
+		OSTimeDlyHMSM(0, 0, 3, 0);
+	}
+}
+/* The main function creates two task and starts multi-tasking */
 int main(void)
 {
-	printf("=== Starting MTL touch demo ===\n");
-        load_images();
 
-	volatile int *mtl_touch_x 		= MTL_TOUCH_X;
-	volatile int *mtl_touch_y 		= MTL_TOUCH_Y;
-	volatile int *mtl_touch_count 	= MTL_TOUCH_COUNT;
+	OSTaskCreateExt(task1,
+			NULL,
+			(void *)&task1_stk[TASK_STACKSIZE-1],
+			TASK1_PRIORITY,
+			TASK1_PRIORITY,
+			task1_stk,
+			TASK_STACKSIZE,
+			NULL,
+			0);
 
-	volatile int *mtl_display_next_slide = MTL_DISPLAY_NEXT_SLIDE;
 
-	int delay;
-
-	int x1, y1;
-	int just_released_counter = 0;
-	int current_touch_counter = 0;
-	touch_state t = notouch;
-
-	volatile int *spi_reg = (int *) SPI_SLAVE_0_BASE;
-
-	while (1) {
-		/*int i;
-		for (i=0; i< 16; i++) {
-			printf("spi_reg %i: %x\n", i, spi_reg[i]);
-			spi_reg[i] = i;
-		}*/
-		*mtl_display_next_slide = 0;
-		// Huge delay so that we can actually see the slides changing
-		// currently breaks our MTL touch demo
-		for(delay = 0; delay < 100; delay++);
-
-		int touch_count = *mtl_touch_count;
-		if(touch_count > 1) {
-			printf("Invalid touch count.\n");
-			continue;
-		}
-
-		if(t == notouch) {
-			if(touch_count == 1) {
-				x1 = mtl_touch_x[0];
-				y1 = mtl_touch_y[0];
-				t = in_touch;
-			}
-		} else if(t == in_touch) {
-			if(touch_count == 1) {
-				int xnew = mtl_touch_x[0];
-				int ynew = mtl_touch_y[0];
-
-				if(my_abs(x1 - xnew) > TAP_RADIUS || my_abs(y1 - ynew) > TAP_RADIUS) {
-					if(current_touch_counter != 0) {
-						printf("Tap detected: %i at (%i, %i).\n", current_touch_counter, x1, y1);
-						current_touch_counter = 0;
-					}
-
-					if(my_abs(x1 - xnew) > my_abs(y1 - ynew)) {
-						if(xnew > x1) {
-							printf("Swipe east detected.\n");
-						} else {
-							printf("Swipe west detected.\n");
-						}
-					} else {
-						printf("Vertical swipe detected.\n");
-					}
-
-					t = dead;
-				}
-			} else if(touch_count == 0) {
-				current_touch_counter++;
-				t = just_released;
-			}
-		} else if(t == just_released) {
-			if(just_released_counter >= 2000) {
-				printf("Tap detected: %i at (%i, %i).\n", current_touch_counter, x1, y1);
-				current_touch_counter = 0;
-				just_released_counter = 0;
-				t = dead;
-			} else {
-				just_released_counter++;
-
-				if(touch_count == 1) {
-					int xnew = mtl_touch_x[0];
-					int ynew = mtl_touch_y[0];
-
-					// FIX: tap_init
-					if(my_abs(x1 - xnew) > TAP_RADIUS || my_abs(y1 - ynew) > TAP_RADIUS) {
-						printf("Tap detected: %i at (%i, %i).\n", current_touch_counter, x1, y1);
-						current_touch_counter = 0;
-					}
-
-					x1 = xnew;
-					y1 = ynew;
-
-					t = in_touch;
-					just_released_counter = 0;
-				}
-			}
-		} else if(t == dead) {
-			for(delay = 0; delay < 200000; delay++);
-			t = notouch;
-		}
-	}
-
+	OSTaskCreateExt(task2,
+			NULL,
+			(void *)&task2_stk[TASK_STACKSIZE-1],
+			TASK2_PRIORITY,
+			TASK2_PRIORITY,
+			task2_stk,
+			TASK_STACKSIZE,
+			NULL,
+			0);
+	OSStart();
 	return 0;
 }
 
-
+/******************************************************************************
+ *                                                                             *
+ * License Agreement                                                           *
+ *                                                                             *
+ * Copyright (c) 2004 Altera Corporation, San Jose, California, USA.           *
+ * All rights reserved.                                                        *
+ *                                                                             *
+ * Permission is hereby granted, free of charge, to any person obtaining a     *
+ * copy of this software and associated documentation files (the "Software"),  *
+ * to deal in the Software without restriction, including without limitation   *
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,    *
+ * and/or sell copies of the Software, and to permit persons to whom the       *
+ * Software is furnished to do so, subject to the following conditions:        *
+ *                                                                             *
+ * The above copyright notice and this permission notice shall be included in  *
+ * all copies or substantial portions of the Software.                         *
+ *                                                                             *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR  *
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,    *
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE *
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER      *
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     *
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER         *
+ * DEALINGS IN THE SOFTWARE.                                                   *
+ *                                                                             *
+ * This agreement shall be governed in all respects by the laws of the State   *
+ * of California and by the laws of the United States of America.              *
+ * Altera does not recommend, suggest or require that this reference design    *
+ * file be used in conjunction or combination with any other product.          *
+ ******************************************************************************/

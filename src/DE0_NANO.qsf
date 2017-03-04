@@ -6,7 +6,7 @@ set_global_assignment -name FAMILY "Cyclone IV E"
 set_global_assignment -name DEVICE EP4CE22F17C6
 set_global_assignment -name TOP_LEVEL_ENTITY "DE0_NANO"
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 10.1
-set_global_assignment -name LAST_QUARTUS_VERSION 16.0.0
+set_global_assignment -name LAST_QUARTUS_VERSION 15.0.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "19:39:13 JUNE 21,2014"
 set_global_assignment -name DEVICE_FILTER_PACKAGE FBGA
 set_global_assignment -name DEVICE_FILTER_PIN_COUNT 256
@@ -366,7 +366,7 @@ set_location_assignment PIN_J13 -to MTL_TOUCH_INT_n
 set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-set_global_assignment -name ENABLE_SIGNALTAP ON
+set_global_assignment -name ENABLE_SIGNALTAP OFF
 set_global_assignment -name USE_SIGNALTAP_FILE stp_MTL_ports.stp
 set_global_assignment -name TIMEQUEST_MULTICORNER_ANALYSIS ON
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
@@ -374,20 +374,9 @@ set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 
 
 
-set_global_assignment -name SYSTEMVERILOG_FILE mtl_display_ip.sv
 set_global_assignment -name SYSTEMVERILOG_FILE mtl_display_controller.sv
 set_global_assignment -name SYSTEMVERILOG_FILE mtl_display.sv
-set_global_assignment -name VERILOG_FILE RAM_PLL.v
-set_global_assignment -name VERILOG_FILE Loading_ROM.v
-set_global_assignment -name SYSTEMVERILOG_FILE mmu.sv
 set_global_assignment -name SYSTEMVERILOG_FILE spi_slave.sv
-set_global_assignment -name VERILOG_FILE sdram_control/sdram_WR_FIFO.v
-set_global_assignment -name VERILOG_FILE sdram_control/sdram_RD_FIFO.v
-set_global_assignment -name SOURCE_FILE sdram_control/sdram_params.h
-set_global_assignment -name VERILOG_FILE sdram_control/sdram_control.v
-set_global_assignment -name VERILOG_FILE sdram_control/sdr_data_path.v
-set_global_assignment -name VERILOG_FILE sdram_control/control_interface.v
-set_global_assignment -name VERILOG_FILE sdram_control/command.v
 set_global_assignment -name SYSTEMVERILOG_FILE mtl_touch_ip/mtl_touch_ip.sv
 set_global_assignment -name SYSTEMVERILOG_FILE mtl_touch_ip/mtl_touch_controller.sv
 set_global_assignment -name VERILOG_FILE mtl_touch_ip/i2c_touch_config.v
@@ -397,4 +386,5 @@ set_global_assignment -name SYSTEMVERILOG_FILE DE0_NANO.sv
 set_global_assignment -name QIP_FILE MTL_PLL.qip
 set_global_assignment -name CDF_FILE output_files/Chain1.cdf
 set_global_assignment -name CDF_FILE Chain1.cdf
+set_global_assignment -name QIP_FILE sdram_pll.qip
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
