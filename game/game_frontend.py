@@ -43,16 +43,13 @@ def draw_grid(display, grid):
 def draw_case(display, color, x, y):
     pygame.draw.rect(display, color, (x, y, CASE_SIZE, CASE_SIZE))
 
-def draw_round_timer(display, elapsed_time):
-    per_remaining = (gg.ROUND_TIMEOUT-elapsed_time)/gg.ROUND_TIMEOUT
+def draw_round_timer(display, percentage):
+    p = percentage/100.0
 
-    if per_remaining < 0:
-        return
-
-    timer_height = per_remaining*gg.N*CASE_SIZE
-
-    pygame.draw.rect(display, BLACK, (gg.M*CASE_SIZE+2, 0, 38, gg.N*CASE_SIZE-timer_height))
-    pygame.draw.rect(display, BLUE, (gg.M*CASE_SIZE+2, gg.N*CASE_SIZE-timer_height, 38, timer_height))
+    pygame.draw.rect(display, BLACK, (gg.M*CASE_SIZE+2, 0, 38, (1.0-p)*gg.N*CASE_SIZE))
+    pygame.draw.rect(display, BLUE, (gg.M*CASE_SIZE+2,
+                                     gg.N*CASE_SIZE*(1.0-p),
+                                     38, p*gg.N*CASE_SIZE))
 
 def draw_game_timer(display, elapsed_time):
     per_remaining = (gg.GAME_TIMEOUT-elapsed_time)/gg.GAME_TIMEOUT
