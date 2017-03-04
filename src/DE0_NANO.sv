@@ -79,8 +79,8 @@ logic [31:0] pixel_rgb;
 logic next_display_active;
 logic New_Frame;
 logic End_Frame;
-logic [10:0] current_x;
-logic [9:0] current_y;
+logic [10:0] next_x;
+logic [9:0] next_y;
 
 // MTL DISPLAY CONTROLLER
 mtl_display_controller mtl_display_controller_inst (
@@ -91,8 +91,8 @@ mtl_display_controller mtl_display_controller_inst (
     .iEnd_Frame(End_Frame),
 	 .i_next_active(next_display_active),
     .o_pixel_data(pixel_rgb),
-    .i_current_x(current_x),
-    .i_current_y(current_y)
+    .i_next_x(next_x),
+    .i_next_y(next_y)
 );
 
 // MTL DISPLAY
@@ -111,8 +111,8 @@ mtl_display mtl_display_inst (
     .oLCD_B(MTL_B),	// Output LCD red color data 
     .oHD(MTL_HSD),	// Output LCD green color data 
     .oVD(MTL_VSD),	// Output LCD blue color data 
-    .o_current_x(current_x),
-    .o_current_y(current_y)
+    .o_next_x(next_x),
+    .o_next_y(next_y)
 );
 
 // SPI instantiation
