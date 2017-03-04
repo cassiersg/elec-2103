@@ -15,9 +15,10 @@ CLIENT_ANGLE = 5
 SERVER_GAME_FINISHED = 6
 SERVER_ACTION_RESPONSE = 7
 SERVER_GRID_STATE = 8
-SERVER_GAUGE_STATE = 9
+SERVER_ROUND_GAUGE_STATE = 9
 SERVER_SCORE = 10
 SERVER_SPEED = 11
+SERVER_GLOBAL_GAUGE_STATE = 12
 
 # Payload packing format
 PACKET_FMT = {
@@ -28,10 +29,12 @@ PACKET_FMT = {
     CLIENT_ANGLE: '!BB',
     SERVER_ACTION_RESPONSE: '!IB',
     SERVER_GRID_STATE: '!I' + str(M*N) + 'B',
-    SERVER_GAUGE_STATE: '!H',
+    SERVER_ROUND_GAUGE_STATE: '!HH',
     SERVER_SCORE: '!I',
+    SERVER_GLOBAL_GAUGE_STATE: '!H',
     SERVER_SPEED: '!H',
 }
+
 HEADER_FMT = '!BH'
 
 # Client role
@@ -63,14 +66,6 @@ def flatten_grid(grid):
 
 def unflatten_grid(flat_grid, n, m):
     return [[flat_grid[i+j*n] for i in range(n)] for j in range(m)]
-
-def split(data):
-    header = data[0:3]
-    (packet_type, packet_length) = unpack(HEADER_FMT, header)
-
-    raw_payload = data[3:]
-
-    return (packet_type, packet_length, raw_payload)
 
 def my_unpack(packet_type, raw_payload):
     return unpack(PACKET_FMT[packet_type], raw_payload)

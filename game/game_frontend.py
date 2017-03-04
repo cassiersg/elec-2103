@@ -2,7 +2,7 @@ import pygame
 import sys
 import time
 
-import game_global as gg
+from game_global import *
 
 from pygame.locals import *
 
@@ -18,7 +18,7 @@ BLUE  = (  0,   0, 255)
 
 def pygame_init():
     pygame.init()
-    screen = pygame.display.set_mode(((gg.M+2)*CASE_SIZE, (gg.N+1)*CASE_SIZE))
+    screen = pygame.display.set_mode(((M+2)*CASE_SIZE, (N+1)*CASE_SIZE))
     screen.fill(BLACK)
     pygame.display.set_caption("Shape Yourself, Wall is Coming!")
     return screen
@@ -29,40 +29,37 @@ def draw_grid(display, grid):
 
     for i in range(m):
         for j in range(n):
-            if grid[m-i-1][j] == gg.STRUCT:
+            if grid[m-i-1][j] == STRUCT:
                 draw_case(display, WHITE, j*CASE_SIZE, i*CASE_SIZE)
-            elif grid[m-i-1][j] == gg.WALL:
+            elif grid[m-i-1][j] == WALL:
                 draw_case(display, GREY, j*CASE_SIZE, i*CASE_SIZE)
-            elif grid[m-i-1][j] == gg.P1:
+            elif grid[m-i-1][j] == P1:
                 draw_case(display, RED, j*CASE_SIZE, i*CASE_SIZE)
-            elif grid[m-i-1][j] == gg.P2:
+            elif grid[m-i-1][j] == P2:
                 draw_case(display, GREEN, j*CASE_SIZE, i*CASE_SIZE)
-            elif grid[m-i-1][j] == gg.HOLE:
+            elif grid[m-i-1][j] == HOLE:
                 draw_case(display, BLACK, j*CASE_SIZE, i*CASE_SIZE)
 
 def draw_case(display, color, x, y):
     pygame.draw.rect(display, color, (x, y, CASE_SIZE, CASE_SIZE))
 
-def draw_round_timer(display, percentage):
-    p = percentage/100.0
+def draw_round_timer(display, gauge_state):
+    p = gauge_state/GAUGE_STATE_INIT
 
-    pygame.draw.rect(display, BLACK, (gg.M*CASE_SIZE+2, 0, 38, (1.0-p)*gg.N*CASE_SIZE))
-    pygame.draw.rect(display, BLUE, (gg.M*CASE_SIZE+2,
-                                     gg.N*CASE_SIZE*(1.0-p),
-                                     38, p*gg.N*CASE_SIZE))
+    pygame.draw.rect(display, BLACK, (M*CASE_SIZE+2, 0, 38, (1.0-p)*N*CASE_SIZE))
+    pygame.draw.rect(display, BLUE, (M*CASE_SIZE+2,
+                                     N*CASE_SIZE*(1.0-p),
+                                     38, p*N*CASE_SIZE))
 
-def draw_game_timer(display, elapsed_time):
-    per_remaining = (gg.GAME_TIMEOUT-elapsed_time)/gg.GAME_TIMEOUT
+def draw_global_timer(display, gauge_state):
+    p = gauge_state/GAUGE_STATE_INIT
 
-    if per_remaining < 0:
-        return
-
-    timer_height = per_remaining*gg.N*CASE_SIZE
-
-    pygame.draw.rect(display, BLACK, ((gg.M+1)*CASE_SIZE+2, 0, 38, gg.N*CASE_SIZE-timer_height))
-    pygame.draw.rect(display, GREEN, ((gg.M+1)*CASE_SIZE+2, gg.N*CASE_SIZE-timer_height, 38, timer_height))
+    pygame.draw.rect(display, BLACK, ((M+1)*CASE_SIZE+2, 0, 38, (1.0-p)*N*CASE_SIZE))
+    pygame.draw.rect(display, GREEN, ((M+1)*CASE_SIZE+2,
+                                      N*CASE_SIZE*(1.0-p),
+                                      38, p*N*CASE_SIZE))
 
 def write_score(display, font, value):
-    pygame.draw.rect(display, BLACK, (0, gg.N*CASE_SIZE, gg.M*CASE_SIZE, 40))
+    pygame.draw.rect(display, BLACK, (0, N*CASE_SIZE, M*CASE_SIZE, 40))
     score_text = font.render("Score: " + str(value), 1, WHITE)
-    display.blit(score_text, (0, gg.N*CASE_SIZE))
+    display.blit(score_text, (0, N*CASE_SIZE))

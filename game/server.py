@@ -33,16 +33,16 @@ message_queues = {}
 
 # Number of connected client in players mode
 players = 0
+
+# Numbers of players who sent CLIENT READY
 players_ready = 0
 game_started = False
 
-# Game state
-(grid, positions, holes) = init_round(M, N)
+# PyGame is used for time managment
+pygame.init()
 
-p1_pos = 0
-p2_pos = len(positions) - 1
-
-speed_factor = 1.0
+# Initialize the whole thing
+(grid, positions, holes, p1_pos, p2_pos) = init_round(M, N)
 
 last_score_sent = -1
 score = 0
@@ -50,22 +50,18 @@ score = 0
 last_grid_sent = -1
 grid_id = 0
 
-# Time managment
-pygame.init()
-
-game_start_time = pygame.time.get_ticks()
 round_start_time = pygame.time.get_ticks()
+last_iteration_start_time = round_start_time
 
-game_elapsed_time = 0
-round_elapsed_time = 0
+iteration_elapsed_time = 0
 
-last_iteration_start_time = pygame.time.get_ticks()
-round_inc_elapsed_time = 0
-
-round_gauge_state = 100
+round_gauge_state = GAUGE_STATE_INIT
+round_gauge_speed = ROUND_GAUGE_SPEED_INIT
 last_round_gauge_state_sent = -1
 
-speed_factor = 1.0
+global_gauge_state = GAUGE_STATE_INIT
+global_gauge_speed = GLOBAL_GAUGE_SPEED
+last_global_gauge_state_sent = -1
 
 while inputs:
     sleep(0.001)
@@ -94,31 +90,30 @@ while inputs:
                     (client_role,) = my_unpack(packet_type, raw_payload)
                     if client_role == PLAYER and players < 2:
                         players += 1
-                        print("A player just connects")
+                        print("[SERVER] A player just connects.")
                         message_queues[s].put(my_pack(SERVER_CONNECT, [ACCEPTED]))
                     elif client_role == PLAYER and players >= 2:
-                        print("Too many players connected")
+                        print("[SERVER] Too many players connected.")
                         message_queues[s].put(my_pack(SERVER_CONNECT, [DENIED]))
                     else:
                         # Not supported currently
-                        print("A spectator just connects")
+                        print("[SERVER] A spectator just connects.")
                         message_queues[s].put(my_pack(SERVER_CONNECT, [DENIED]))
                 # CLIENT READY
                 elif packet_type == CLIENT_READY:
-                    print("A client is ready to play")
+                    print("[SERVER] A client is ready to play.")
                     players_ready += 1
                     message_queues[s].put(my_pack(SERVER_START_GAME,
                                                   [players_ready, M, N]))
 
                     if players_ready == 2:
-                        print("Two players are ready")
+                        print("[SERVER] Two clients are ready to player.")
                         game_started = True
 
                 # CLIENT ACTION
                 elif packet_type == CLIENT_ACTION:
-                    print("Action received")
-                    (player_id, action_id, player_grid_id, move_type) = my_unpack(CLIENT_ACTION,
-                                                                           raw_payload)
+                    print("[SERVER] Client action received.")
+                    (player_id, action_id, player_grid_id, move_type) = my_unpack(CLIENT_ACTION, raw_payload)
 
                     if move_type == RIGHT:
                         if player_id == 1:
@@ -136,7 +131,6 @@ while inputs:
                                                positions, holes)
 
                     grid_id += 1
-                    print(grid_id)
 
                 # Add output channel for response
                 if s not in outputs:
@@ -161,51 +155,59 @@ while inputs:
             next_msg = message_queues[s].get_nowait()
         except queue.Empty:
             pass
-            # No message waiting so stop checking for writability
-            #print('\t', s.getpeername(), 'queue empty', file=sys.stderr)
-            #outputs.remove(s)
         else:
-            #print('\tsending {!r} to {}'.format(next_msg, s.getpeername()),
-            #        file=sys.stderr)
             s.send(next_msg)
 
-        # Send an updated grid if necessary
+        # If the game has started already
         if game_started:
             iteration_elapsed_time = pygame.time.get_ticks() - last_iteration_start_time
             last_iteration_start_time = pygame.time.get_ticks()
-            round_elapsed_time = speed_factor*iteration_elapsed_time/1000 + round_elapsed_time
-            round_gauge_state = round(((ROUND_TIMEOUT - round_elapsed_time)/ROUND_TIMEOUT)*100)
+            round_gauge_state -= round_gauge_speed*iteration_elapsed_time
+            global_gauge_state -= global_gauge_speed*iteration_elapsed_time
 
-            game_elapsed_time = (pygame.time.get_ticks() - game_start_time)/1000
-            remaining_game_time = GAME_TIMEOUT - game_elapsed_time
+            if global_gauge_state <= 0:
+                s.send(my_pack(SERVER_GAME_FINISHED, []))
 
-            if round_gauge_state != last_round_gauge_state_sent:
-                print("Sending the gauge_status")
-                if round_elapsed_time > ROUND_TIMEOUT:
-                    if set([positions[p1_pos], positions[p2_pos]]) == set(holes):
-                        score = score + 1
-                    else:
-                        game_start_time = pygame.time.get_ticks()
-                        game_elapsed_time = 0
+                if s == writable[-1]:
+                    s.close()
+                    exit()
 
-                        last_score_sent = -1
-                        score = 0
-                        last_grid_sent = -1
-                        grid_id = 0
+            # This condition avoid sending +10000 each second...
+            if abs(last_global_gauge_state_sent - global_gauge_state) >= 200:
+                s.send(my_pack(SERVER_GLOBAL_GAUGE_STATE,
+                               [round(global_gauge_state)]))
 
-                    (grid, positions, holes) = init_round(M, N)
-                    grid_id += 1
-                    p1_pos = 0
-                    p2_pos = len(positions) - 1
+                if s == writable[-1]:
+                    last_global_gauge_state_sent = global_gauge_state
 
-                    speed_factor = 1.0
+            if round_gauge_state <= 0:
+                if set([positions[p1_pos], positions[p2_pos]]) == set(holes):
+                    score = score + 1
+                else:
+                    last_score_sent = -1
+                    score = 0
+                    last_grid_sent = -1
+                    grid_id = 0
 
-                    last_round_gauge_state_sent = -1
-                    round_start_time = pygame.time.get_ticks()
-                    round_elapsed_time = 0
-                    round_gauge_state = 100
+                    global_gauge_state = GAUGE_STATE_INIT
+                    global_gauge_speed = GLOBAL_GAUGE_SPEED
+                    last_global_gauge_state_sent = -1
 
-                s.send(my_pack(SERVER_GAUGE_STATE, [round_gauge_state]))
+                (grid, positions, holes, p1_pos, p2_pos) = init_round(M, N)
+                grid_id += 1
+
+                round_start_time = pygame.time.get_ticks()
+                last_iteration_start_time = round_start_time
+
+                round_gauge_state = GAUGE_STATE_INIT
+                round_gauge_speed = ROUND_GAUGE_SPEED_INIT
+                last_round_gauge_state_sent = -1
+
+            # This condition avoid sending +10000 each second...
+            if abs(last_round_gauge_state_sent - round_gauge_state) >= 200:
+                s.send(my_pack(SERVER_ROUND_GAUGE_STATE,
+                               [round(round_gauge_state),
+                                                    round(round_gauge_speed)]))
 
                 if s == writable[-1]:
                     last_round_gauge_state_sent = round_gauge_state

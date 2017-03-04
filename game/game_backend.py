@@ -70,7 +70,10 @@ def init_round(m, n):
 
     positions.append((m-1, 1))
 
-    return (grid, positions, holes)
+    p1_pos = 0
+    p2_pos = len(positions) - 1
+
+    return (grid, positions, holes, p1_pos, p2_pos)
 
 def move_left(grid, player_id, player_pos, positions, holes):
     (x, y) = positions[player_pos]
