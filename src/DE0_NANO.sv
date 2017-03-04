@@ -75,12 +75,15 @@ reset_delay	reset_delay_inst (
 );
 
 // MTL control
+logic CLOCK_33;
 logic [31:0] pixel_rgb;
 logic next_display_active;
 logic New_Frame;
 logic End_Frame;
-logic [10:0] current_x;
-logic [9:0] current_y;
+logic [10:0] next_x;
+logic [9:0] next_y;
+logic [32:0] tiles_addr, tiles_idx_addr, display_ctrl_addr;
+logic [32:0] tiles_readdata, tiles_idx_readdata, display_ctrl_readdata;
 
 // MTL DISPLAY CONTROLLER
 mtl_display_controller mtl_display_controller_inst (
@@ -91,8 +94,14 @@ mtl_display_controller mtl_display_controller_inst (
     .iEnd_Frame(End_Frame),
 	 .i_next_active(next_display_active),
     .o_pixel_data(pixel_rgb),
-    .i_current_x(current_x),
-    .i_current_y(current_y)
+    .i_next2_x(next_x),
+    .i_next2_y(next_y),
+	 .i_tiles_readdata(tiles_readdata),
+	 .o_tiles_addr(tiles_addr),
+	 .i_tiles_idx_readdata(tiles_idx_readdata),
+	 .o_tiles_idx_addr(tiles_idx_addr),
+	 .i_display_ctrl_readdata(display_ctrl_readdata),
+	 .o_display_ctrl_addr(display_ctrl_addr)
 );
 
 // MTL DISPLAY
@@ -111,8 +120,8 @@ mtl_display mtl_display_inst (
     .oLCD_B(MTL_B),	// Output LCD red color data 
     .oHD(MTL_HSD),	// Output LCD green color data 
     .oVD(MTL_VSD),	// Output LCD blue color data 
-    .o_current_x(current_x),
-    .o_current_y(current_y)
+    .o_next2_x(next_x),
+    .o_next2_y(next_y)
 );
 
 // SPI instantiation
@@ -153,13 +162,16 @@ sdram_pll sdram_pll_inst(
 
 // SoPC instantiation
 base u0 (
-    .clk_clk                            (CLOCK_50),
-    .reset_reset_n                      (KEY[0]),
+	// Main clock
+   .clk_clk                            (CLOCK_50),
+   .reset_reset_n                      (KEY[0]),
+	// Mailbox pi
 	.pi_mailbox_mem_s1_address   (mem_pi_addr),
 	.pi_mailbox_mem_s1_writedata (mem_pi_writedata),
 	.pi_mailbox_mem_s1_readdata  (mem_pi_readdata),
 	.pi_mailbox_mem_s1_write     (mem_pi_we),
 	.pi_mailbox_mem_s1_read      (mem_pi_read),
+	// SDRAM
 	.sdram_wire_addr (DRAM_ADDR),
 	.sdram_wire_ba   (DRAM_BA),
 	.sdram_wire_cas_n(DRAM_CAS_N),
@@ -168,7 +180,34 @@ base u0 (
 	.sdram_wire_dq   (DRAM_DQ),
 	.sdram_wire_dqm  (DRAM_DQM),
 	.sdram_wire_ras_n(DRAM_RAS_N),
-	.sdram_wire_we_n (DRAM_WE_N)
+	.sdram_wire_we_n (DRAM_WE_N),
+	// Display clock
+	.clk_display_clk             (CLOCK_33),
+	.reset_clk_display_reset_n   (KEY[0]),
+	// Tiles pixel memory
+	.tiles_ram_s2_address      (tiles_addr),
+	.tiles_ram_s2_chipselect   (1'b1),
+	.tiles_ram_s2_clken        (1'b1),
+	.tiles_ram_s2_write        (1'b0),
+	.tiles_ram_s2_readdata     (tiles_readdata),
+	.tiles_ram_s2_writedata    (32'b0),
+	.tiles_ram_s2_byteenable   (4'b1111),
+	// Tiles indices memory
+	.tiles_idx_ram_s2_address       (tiles_idx_addr),
+	.tiles_idx_ram_s2_chipselect    (1'b1),
+	.tiles_idx_ram_s2_clken         (1'b1),
+	.tiles_idx_ram_s2_write         (1'b0),
+	.tiles_idx_ram_s2_readdata      (tiles_idx_readdata),
+	.tiles_idx_ram_s2_writedata     (32'b0),
+	.tiles_idx_ram_s2_byteenable    (4'b1111),
+	// Control registers of mtl_display_controller
+	.display_ctrl_ram_s2_address    (display_ctrl_addr),
+	.display_ctrl_ram_s2_chipselect (1'b1),
+	.display_ctrl_ram_s2_clken      (1'b1),
+	.display_ctrl_ram_s2_write      (1'b0),
+	.display_ctrl_ram_s2_readdata   (display_ctrl_readdata),
+	.display_ctrl_ram_s2_writedata  (23'b0),
+	.display_ctrl_ram_s2_byteenable (4'b1111)
 );
 
 assign DRAM_CLK = sdram_pll_clk;

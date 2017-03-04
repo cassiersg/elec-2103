@@ -14,8 +14,8 @@ module mtl_display(
 	output  [7:0] 	oLCD_G,           	// Output LCD green color data  
 	output  [7:0] 	oLCD_B,            	// Output LCD blue color data
 
-    output [10:0] o_current_x,
-    output [9:0] o_current_y
+    output [10:0] o_next2_x,
+    output [9:0] o_next2_y
 );
 	
 	//============================================================================
@@ -35,67 +35,52 @@ module mtl_display(
 	// REG/WIRE declarations
 	//=============================================================================
     //
-	reg     [10:0]  x_cnt;  
-	reg     [9:0]	y_cnt; 
-	wire    [7:0]	read_red;
-	wire    [7:0]	read_green;
-	wire    [7:0]	read_blue; 
-	wire			display_area, display_area_prev;
-	reg		        mhd;
-	reg			    mvd;
+	logic [10:0] x_cnt, x_next;  
+	logic [9:0]	y_cnt, y_next; 
+	logic [7:0]	read_red, read_green, read_blue;
+	logic mhd, mvd;
+	logic current_display_active;
 
-	//=============================================================================
-	// Structural coding
-	//=============================================================================
-
-	//--- Assigning the right color data as a function -------------------------
-	//--- of the current pixel position ----------------------------------------
-
-	// This signal controls read requests to the SDRAM.
-	// When asserted, new data becomes available in 
-
-	// at each clock cycle.
-	assign	next_display_active = display_area_prev;
+	logic [11:0] next2_x_unmasked;
+	logic [10:0] next2_y_unmasked;
+	assign next2_x_unmasked = x_next - Horizontal_Blank - 11'b1;
+	assign next2_y_unmasked = y_next - Vertical_Blank;
+	assign o_next2_x = next2_x_unmasked >= 800 ? 11'b0 : next2_x_unmasked;
+   assign o_next2_y = next2_y_unmasked >= 480 ? 11'b0 : next2_y_unmasked;
+	
+	assign next_display_active = (
+			(x_next >= Horizontal_Blank) &&
+			(x_next < Horizontal_Blank + 800 ) &&
+			(y_next >= Vertical_Blank ) &&
+			(y_next < Vertical_Blank + 480));
+	assign current_display_active = next_display_active;
+	
+	// approximative, but doesn't matter (for now)
+	assign oNew_Frame = ((x_next == 11'd0)   && (y_next == 10'd0)  );	
+	assign oEnd_Frame = ((x_next == 11'd846) && (y_next == 10'd503));
 							
-	// This signal indicates the LCD active display area shifted back from
-	// 1 pixel in the x direction. This accounts for the 1-cycle delay
-	// in the sequential logic.
-	assign	display_area = ((x_cnt>(Horizontal_Blank-2)&&
-							(x_cnt<(H_LINE-Horizontal_Front_Porch-1))&&
-							(y_cnt>(Vertical_Blank-1))&& 
-							(y_cnt<(V_LINE-Vertical_Front_Porch))));
-
-	// This signal indicates the same LCD active display area, now shifted
-	// back from 2 pixels in the x direction, again for sequential delays.
-	assign	display_area_prev =	((x_cnt>(Horizontal_Blank-3)&&
-							(x_cnt<(H_LINE-Horizontal_Front_Porch-2))&&
-							(y_cnt>(Vertical_Blank-1))&& 
-							(y_cnt<(V_LINE-Vertical_Front_Porch))));	
 							
 	// Assigns the right color data.
-	always_ff @(posedge iCLK)
+	always_comb
     begin
 		// If the screen is reset, put at zero the color signals.
 		if (!iRST_n)
         begin
-			read_red 	<= 8'b0;
-			read_green 	<= 8'b0;
-			read_blue 	<= 8'b0;
-		// If we are in the active display area...
+			read_red 	= 8'b0;
+			read_green 	= 8'b0;
+			read_blue 	= 8'b0;
 		end
-        else if (display_area)
+        else if (current_display_active) // needed because screen is 480x801 pixels...
         begin
-            read_red 	<= iREAD_DATA[23:16];
-            read_green 	<= iREAD_DATA[15:8];
-            read_blue 	<= iREAD_DATA[7:0];
+            read_red 	= iREAD_DATA[23:16];
+            read_green 	= iREAD_DATA[15:8];
+            read_blue 	= iREAD_DATA[7:0];
         end
-		// If we aren't in the active display area, put at zero
-		// the color signals.
-		else
-        begin
-			read_red 	<= 8'b0;
-			read_green 	<= 8'b0;
-			read_blue 	<= 8'b0;
+		 else
+		 begin
+			read_red 	= 8'b0;
+			read_green 	= 8'b0;
+			read_blue 	= 8'b0;
 		end
 	end
 
@@ -103,50 +88,41 @@ module mtl_display(
 	//--- and generating the horiz. and vert. sync. signals ------------------------
 
 	always@(posedge iCLK or negedge iRST_n) begin
-		if (!iRST_n)
-		begin
-			x_cnt <= 11'd0;	
-			mhd  <= 1'd0;  
-		end	
-		else if (x_cnt == (H_LINE-1))
-		begin
-			x_cnt <= 11'd0;
-			mhd  <= 1'd0;
-		end	   
-		else
-		begin
-			x_cnt <= x_cnt + 11'd1;
-			mhd  <= 1'd1;
-		end	
+		if (!iRST_n) x_next <= 11'd0;	
+		else if (x_next == (H_LINE-1)) x_next <= 11'd0;
+		else x_next <= x_next + 11'd1;
+	end
+	
+	always_ff @(posedge iCLK or negedge iRST_n)
+	begin
+		if (!iRST_n) mhd <= 1'b0;
+		else if (x_cnt == 0) mhd <= 1'b0;
+		else mhd <= 1'b1;
 	end
 
 	always@(posedge iCLK or negedge iRST_n) begin
 		if (!iRST_n)
-			y_cnt <= 10'd0;
-		else if (x_cnt == (H_LINE-1))
+			y_next <= 10'd0;
+		else if (x_next == (H_LINE-1))
 		begin
-			if (y_cnt == (V_LINE-1))
-				y_cnt <= 10'd0;
+			if (y_next == (V_LINE-1))
+				y_next <= 10'd0;
 			else
-				y_cnt <= y_cnt + 10'd1;	
+				y_next <= y_next + 10'd1;	
 		end
 	end
 
 	always@(posedge iCLK  or negedge iRST_n) begin
-		if (!iRST_n)
-			mvd  <= 1'b1;
-		else if (y_cnt == 10'd0)
-			mvd  <= 1'b0;
-		else
-			mvd  <= 1'b1;
+		if (!iRST_n) mvd  <= 1'b1;
+		else if (y_cnt == 10'd0) mvd  <= 1'b0;
+		else mvd  <= 1'b1;
 	end	
 
-
-    assign o_current_x = x_cnt;
-    assign o_current_y = y_cnt;
-
-	assign oNew_Frame = ((x_cnt == 11'd0)   && (y_cnt == 10'd0)  );	
-	assign oEnd_Frame = ((x_cnt == 11'd846) && (y_cnt == 10'd503));	
+	always_ff @(posedge iCLK)
+	begin
+		x_cnt <= x_next;
+		y_cnt <= y_next;
+	end	
 
 	//--- Assigning synchronously the color and sync. signals ------------------
 
