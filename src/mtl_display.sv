@@ -26,9 +26,9 @@ module mtl_display(
 	// available in the project file folder
 	parameter H_LINE = 1056; 
 	parameter V_LINE = 525;
-	parameter Horizontal_Blank = 46;        // H_SYNC + H_Back_Porch
+	parameter Horizontal_Blank = 11'd46;        // H_SYNC + H_Back_Porch
 	parameter Horizontal_Front_Porch = 210;
-	parameter Vertical_Blank = 23;          // V_SYNC + V_BACK_PORCH
+	parameter Vertical_Blank = 10'd23;          // V_SYNC + V_BACK_PORCH
 	parameter Vertical_Front_Porch = 22;
 
 	//=============================================================================
@@ -41,12 +41,12 @@ module mtl_display(
 	logic mhd, mvd;
 	logic current_display_active;
 
-	logic [11:0] next2_x_unmasked;
-	logic [10:0] next2_y_unmasked;
+	logic [10:0] next2_x_unmasked;
+	logic [9:0] next2_y_unmasked;
 	assign next2_x_unmasked = x_next - Horizontal_Blank + 11'h2;
 	assign next2_y_unmasked = y_next - Vertical_Blank;
 	assign o_next2_x = next2_x_unmasked >= 800 ? 11'b0 : next2_x_unmasked;
-   assign o_next2_y = next2_y_unmasked >= 480 ? 11'b0 : next2_y_unmasked;
+   assign o_next2_y = next2_y_unmasked >= 480 ? 10'b0 : next2_y_unmasked;
 	
 	assign next_display_active = (
 			(x_next >= Horizontal_Blank) &&

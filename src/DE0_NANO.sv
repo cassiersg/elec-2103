@@ -82,17 +82,16 @@ logic New_Frame;
 logic End_Frame;
 logic [10:0] next_x;
 logic [9:0] next_y;
-logic [31:0] tiles_addr, tiles_idx_0_addr, tiles_idx_1_addr, display_ctrl_addr, colormap_addr;
-logic [31:0] tiles_readdata, tiles_idx_0_readdata, tiles_idx_1_readdata, display_ctrl_readdata, colormap_readdata;
+logic [31:0] tiles_addr, tiles_idx_0_addr, tiles_idx_1_addr, colormap_addr;
+logic [31:0] tiles_readdata, tiles_idx_0_readdata, tiles_idx_1_readdata, colormap_readdata;
 logic [31:0] display_control;
 
 assign tiles_idx_1_addr = tiles_idx_0_addr;
 
 // MTL DISPLAY CONTROLLER
 mtl_display_controller mtl_display_controller_inst (
-    .iCLK_50(CLOCK_50),
-    .iCLK_33(CLOCK_33),
-    .iRST(RST),
+    .display_clock(CLOCK_33),
+    .reset(RST),
     .iNew_Frame(New_Frame),
     .iEnd_Frame(End_Frame),
 	 .i_next_active(next_display_active),
@@ -103,8 +102,6 @@ mtl_display_controller mtl_display_controller_inst (
 	 .o_tiles_addr(tiles_addr),
 	 .i_tiles_idx_readdata(display_control ? tiles_idx_1_readdata: tiles_idx_0_readdata),
 	 .o_tiles_idx_addr(tiles_idx_0_addr),
-	 .i_display_ctrl_readdata(display_ctrl_readdata),
-	 .o_display_ctrl_addr(display_ctrl_addr),
 	 .i_colormap_readdata(colormap_readdata),
 	 .o_colormap_addr(colormap_addr)
 );

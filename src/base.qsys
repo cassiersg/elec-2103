@@ -585,7 +585,7 @@
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="false" />
-  <parameter name="clockRate" value="50000000" />
+  <parameter name="clockRate" value="33000000" />
   <parameter name="direction" value="Output" />
   <parameter name="edgeType" value="RISING" />
   <parameter name="generateIRQ" value="false" />
@@ -868,7 +868,7 @@
  <connection
    kind="clock"
    version="15.0"
-   start="clk_0.clk"
+   start="clk_display.clk"
    end="display_control.clk" />
  <connection kind="clock" version="15.0" start="clk_0.clk" end="colormap.clk1" />
  <connection kind="clock" version="15.0" start="clk_0.clk" end="tile_image.clk1" />
@@ -926,7 +926,7 @@
  <connection
    kind="reset"
    version="15.0"
-   start="clk_0.clk_reset"
+   start="clk_display.clk_reset"
    end="display_control.reset" />
  <connection
    kind="reset"

@@ -71,12 +71,12 @@ void task1(void* pdata)
 	colormap_ram[0xFF] = 0x0;
 
 	*display_control = 1;
+	printf("It's working, %i\n", sizeof(int));
 	while (1)
 	{
 		*display_control = !*display_control;
 		OSTimeDlyHMSM(0, 0, 2, 0);
 		continue;
-		printf("It's working, %i\n", sizeof(int));
 		while (1) {
 			volatile int * spi_ptr =   (int*) PI_MAILBOX_MEM_BASE;
 			volatile int * spi_ptr_fresh =   spi_ptr + 0x10;
