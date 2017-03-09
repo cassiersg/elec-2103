@@ -82,8 +82,11 @@ logic New_Frame;
 logic End_Frame;
 logic [10:0] next_x;
 logic [9:0] next_y;
-logic [32:0] tiles_addr, tiles_idx_addr, display_ctrl_addr, colormap_addr;
-logic [32:0] tiles_readdata, tiles_idx_readdata, display_ctrl_readdata, colormap_readdata;
+logic [31:0] tiles_addr, tiles_idx_0_addr, tiles_idx_1_addr, display_ctrl_addr, colormap_addr;
+logic [31:0] tiles_readdata, tiles_idx_0_readdata, tiles_idx_1_readdata, display_ctrl_readdata, colormap_readdata;
+logic [31:0] display_control;
+
+assign tiles_idx_1_addr = tiles_idx_0_addr;
 
 // MTL DISPLAY CONTROLLER
 mtl_display_controller mtl_display_controller_inst (
@@ -98,8 +101,8 @@ mtl_display_controller mtl_display_controller_inst (
     .i_next2_y(next_y),
 	 .i_tiles_readdata(tiles_readdata),
 	 .o_tiles_addr(tiles_addr),
-	 .i_tiles_idx_readdata(tiles_idx_readdata),
-	 .o_tiles_idx_addr(tiles_idx_addr),
+	 .i_tiles_idx_readdata(display_control ? tiles_idx_1_readdata: tiles_idx_0_readdata),
+	 .o_tiles_idx_addr(tiles_idx_0_addr),
 	 .i_display_ctrl_readdata(display_ctrl_readdata),
 	 .o_display_ctrl_addr(display_ctrl_addr),
 	 .i_colormap_readdata(colormap_readdata),
@@ -195,12 +198,18 @@ base u0 (
 	.tile_image_s2_writedata    (32'b0),
 //	.tile_image_s2_byteenable   (4'b1111),
 	// Tiles indices memory
-	.tile_idx_s2_address       (tiles_idx_addr),
-	.tile_idx_s2_chipselect    (1'b1),
-	.tile_idx_s2_clken         (1'b1),
-	.tile_idx_s2_write         (1'b0),
-	.tile_idx_s2_readdata      (tiles_idx_readdata),
-	.tile_idx_s2_writedata     (32'b0),
+	.tile_idx_0_s2_address       (tiles_idx_0_addr),
+	.tile_idx_0_s2_chipselect    (1'b1),
+	.tile_idx_0_s2_clken         (1'b1),
+	.tile_idx_0_s2_write         (1'b0),
+	.tile_idx_0_s2_readdata      (tiles_idx_0_readdata),
+	.tile_idx_0_s2_writedata     (32'b0),
+	.tile_idx_1_s2_address       (tiles_idx_1_addr),
+	.tile_idx_1_s2_chipselect    (1'b1),
+	.tile_idx_1_s2_clken         (1'b1),
+	.tile_idx_1_s2_write         (1'b0),
+	.tile_idx_1_s2_readdata      (tiles_idx_1_readdata),
+	.tile_idx_1_s2_writedata     (32'b0),
 //	.tile_idx_s2_byteenable    (4'b1111),
 	// Colormap
 	.colormap_s2_address    (colormap_addr),
@@ -209,7 +218,9 @@ base u0 (
 	.colormap_s2_write      (1'b0),
 	.colormap_s2_readdata   (colormap_readdata),
 	.colormap_s2_writedata  (32'b0),
-	.colormap_s2_byteenable (4'b1111)
+	.colormap_s2_byteenable (4'b1111),
+	// display control
+	.display_control_external_connection_export(display_control)
 );
 
 assign DRAM_CLK = sdram_pll_clk;

@@ -31,22 +31,25 @@ void task1(void* pdata)
 	int i, j;
 	
 	volatile char * tiles_ram = (char *) TILE_IMAGE_BASE;
-	volatile char * tiles_idx_ram = (char *) TILE_IDX_BASE;
+	volatile char * tiles_idx_0_ram = (char *) TILE_IDX_0_BASE;
+	volatile char * tiles_idx_1_ram = (char *) TILE_IDX_1_BASE;
 	volatile int * colormap_ram = (int *) COLORMAP_BASE;
+	volatile int * display_control = (int *) DISPLAY_CONTROL_BASE;
 
 	for (i=0; i<4*1500; i++) {
-			tiles_idx_ram[i] = 0;
+			tiles_idx_0_ram[i] = 0;
+			tiles_idx_1_ram[i] = 0;
 	}
-//	tiles_idx_ram[1000] = 2;
-//	tiles_idx_ram[1099] = 4;
-//	tiles_idx_ram[1100] = 4;
-//	tiles_idx_ram[1201] = 4;
+//	tiles_idx_0_ram[1000] = 2;
+//	tiles_idx_0_ram[1099] = 4;
+//	tiles_idx_0_ram[1100] = 4;
+//	tiles_idx_0_ram[1201] = 4;
 	for (i=0; i<8; i++) {
 		for (j=0; j<8; j++) {
 			int i_off, j_off;
 			for (i_off = 0; i_off < GRID_SCALE_FACTOR; i_off++) {
 				for (j_off = 0; j_off < GRID_SCALE_FACTOR; j_off++) {
-					tiles_idx_ram[TILES_ROW*(j*GRID_SCALE_FACTOR+j_off)+i*GRID_SCALE_FACTOR+i_off] = grid[j][i];
+					tiles_idx_0_ram[TILES_ROW*(j*GRID_SCALE_FACTOR+j_off)+i*GRID_SCALE_FACTOR+i_off] = grid[j][i];
 				}
 			}
 		}
@@ -54,9 +57,9 @@ void task1(void* pdata)
 	for (i=0; i<64; i++) {
 		for (j=0; j<4; j++) {
 			char tidx;
-			//if (i==0) tidx = 3;
-			//else if ((i & 0x7)==0) tidx = 2;
 			tidx = j;
+			if (i==0) tidx = 3;
+			//else if ((i & 0x7)==0) tidx = 2;
 			tiles_ram[i+j*64] = tidx;
 		}
 		tiles_ram[4*64+i] = (i & 0x3);
@@ -67,10 +70,13 @@ void task1(void* pdata)
 	colormap_ram[3] = 0x00FF00;
 	colormap_ram[0xFF] = 0x0;
 
+	*display_control = 1;
 	while (1)
 	{
+		*display_control = !*display_control;
+		OSTimeDlyHMSM(0, 0, 2, 0);
+		continue;
 		printf("It's working, %i\n", sizeof(int));
-
 		while (1) {
 			volatile int * spi_ptr =   (int*) PI_MAILBOX_MEM_BASE;
 			volatile int * spi_ptr_fresh =   spi_ptr + 0x10;
@@ -97,7 +103,6 @@ void task1(void* pdata)
 				}
 			}
 		}
-		OSTimeDlyHMSM(0, 0, 3, 0);
 	}
 }
 /* Prints "Hello World" and sleeps for three seconds */
