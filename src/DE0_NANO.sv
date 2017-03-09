@@ -82,8 +82,8 @@ logic New_Frame;
 logic End_Frame;
 logic [10:0] next_x;
 logic [9:0] next_y;
-logic [32:0] tiles_addr, tiles_idx_addr, display_ctrl_addr;
-logic [32:0] tiles_readdata, tiles_idx_readdata, display_ctrl_readdata;
+logic [32:0] tiles_addr, tiles_idx_addr, display_ctrl_addr, colormap_addr;
+logic [32:0] tiles_readdata, tiles_idx_readdata, display_ctrl_readdata, colormap_readdata;
 
 // MTL DISPLAY CONTROLLER
 mtl_display_controller mtl_display_controller_inst (
@@ -101,7 +101,9 @@ mtl_display_controller mtl_display_controller_inst (
 	 .i_tiles_idx_readdata(tiles_idx_readdata),
 	 .o_tiles_idx_addr(tiles_idx_addr),
 	 .i_display_ctrl_readdata(display_ctrl_readdata),
-	 .o_display_ctrl_addr(display_ctrl_addr)
+	 .o_display_ctrl_addr(display_ctrl_addr),
+	 .i_colormap_readdata(colormap_readdata),
+	 .o_colormap_addr(colormap_addr)
 );
 
 // MTL DISPLAY
@@ -185,29 +187,29 @@ base u0 (
 	.clk_display_clk             (CLOCK_33),
 	.reset_clk_display_reset_n   (KEY[0]),
 	// Tiles pixel memory
-	.tiles_ram_s2_address      (tiles_addr),
-	.tiles_ram_s2_chipselect   (1'b1),
-	.tiles_ram_s2_clken        (1'b1),
-	.tiles_ram_s2_write        (1'b0),
-	.tiles_ram_s2_readdata     (tiles_readdata),
-	.tiles_ram_s2_writedata    (32'b0),
-	.tiles_ram_s2_byteenable   (4'b1111),
+	.tile_image_s2_address      (tiles_addr),
+	.tile_image_s2_chipselect   (1'b1),
+	.tile_image_s2_clken        (1'b1),
+	.tile_image_s2_write        (1'b0),
+	.tile_image_s2_readdata     (tiles_readdata),
+	.tile_image_s2_writedata    (32'b0),
+//	.tile_image_s2_byteenable   (4'b1111),
 	// Tiles indices memory
-	.tiles_idx_ram_s2_address       (tiles_idx_addr),
-	.tiles_idx_ram_s2_chipselect    (1'b1),
-	.tiles_idx_ram_s2_clken         (1'b1),
-	.tiles_idx_ram_s2_write         (1'b0),
-	.tiles_idx_ram_s2_readdata      (tiles_idx_readdata),
-	.tiles_idx_ram_s2_writedata     (32'b0),
-	.tiles_idx_ram_s2_byteenable    (4'b1111),
-	// Control registers of mtl_display_controller
-	.display_ctrl_ram_s2_address    (display_ctrl_addr),
-	.display_ctrl_ram_s2_chipselect (1'b1),
-	.display_ctrl_ram_s2_clken      (1'b1),
-	.display_ctrl_ram_s2_write      (1'b0),
-	.display_ctrl_ram_s2_readdata   (display_ctrl_readdata),
-	.display_ctrl_ram_s2_writedata  (23'b0),
-	.display_ctrl_ram_s2_byteenable (4'b1111)
+	.tile_idx_s2_address       (tiles_idx_addr),
+	.tile_idx_s2_chipselect    (1'b1),
+	.tile_idx_s2_clken         (1'b1),
+	.tile_idx_s2_write         (1'b0),
+	.tile_idx_s2_readdata      (tiles_idx_readdata),
+	.tile_idx_s2_writedata     (32'b0),
+//	.tile_idx_s2_byteenable    (4'b1111),
+	// Colormap
+	.colormap_s2_address    (colormap_addr),
+	.colormap_s2_chipselect (1'b1),
+	.colormap_s2_clken      (1'b1),
+	.colormap_s2_write      (1'b0),
+	.colormap_s2_readdata   (colormap_readdata),
+	.colormap_s2_writedata  (32'b0),
+	.colormap_s2_byteenable (4'b1111)
 );
 
 assign DRAM_CLK = sdram_pll_clk;

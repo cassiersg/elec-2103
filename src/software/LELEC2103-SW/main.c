@@ -1,33 +1,3 @@
-/*************************************************************************
- * Copyright (c) 2004 Altera Corporation, San Jose, California, USA.      *
- * All rights reserved. All use of this software and documentation is     *
- * subject to the License Agreement located at the end of this file below.*
- **************************************************************************
- * Description:                                                           *
- * The following is a simple hello world program running MicroC/OS-II.The *
- * purpose of the design is to be a very simple application that just     *
- * demonstrates MicroC/OS-II running on NIOS II.The design doesn't account*
- * for issues such as checking system call return codes. etc.             *
- *                                                                        *
- * Requirements:                                                          *
- *   -Supported Example Hardware Platforms                                *
- *     Standard                                                           *
- *     Full Featured                                                      *
- *     Low Cost                                                           *
- *   -Supported Development Boards                                        *
- *     Nios II Development Board, Stratix II Edition                      *
- *     Nios Development Board, Stratix Professional Edition               *
- *     Nios Development Board, Stratix Edition                            *
- *     Nios Development Board, Cyclone Edition                            *
- *   -System Library Settings                                             *
- *     RTOS Type - MicroC/OS-II                                           *
- *     Periodic System Timer                                              *
- *   -Know Issues                                                         *
- *     If this design is run on the ISS, terminal output will take several*
- *     minutes per iteration.                                             *
- **************************************************************************/
-
-
 #include <stdio.h>
 #include "includes.h"
 #include "system.h"
@@ -42,45 +12,63 @@ OS_STK    task2_stk[TASK_STACKSIZE];
 #define TASK1_PRIORITY      1
 #define TASK2_PRIORITY      2
 
-/* Prints "Hello World" and sleeps for three seconds */
+#define TILES_ROW 100
+
+char grid[8][8] = {
+	{0, 0, 0, 0, 0, 0, 0, 0},
+	{0, 0, 0, 1, 0, 0, 2, 0},
+	{0, 1, 3, 1, 1, 0, 1, 0},
+	{0, 1, 1, 1, 1, 0, 1, 0},
+	{0, 1, 1, 1, 1, 0, 1, 0},
+	{0, 1, 1, 1, 1, 0, 1, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1},
+	{1, 1, 1, 1, 1, 1, 1, 1}
+};
+
 void task1(void* pdata)
 {
-	volatile int * tiles_ram = (int *) TILES_RAM_BASE;
-	volatile int * tiles_idx_ram = (int *) TILES_IDX_RAM_BASE;
-	// display fancy patterns
-	int i;
-	for (i=0; i < 1500; i++) {
-		int a = 0;
-		a |= ((4*i+3)%6) << 24;
-		a |= ((4*i+2)%6) << 16;
-		a |= ((4*i+1)%6) << 8;
-		a |= ((4*i)%6);
-		tiles_idx_ram[i] = a;
+	char grid_reversed;
+	int i, j;
+	
+	volatile char * tiles_ram = (char *) TILE_IMAGE_BASE;
+	volatile char * tiles_idx_ram = (char *) TILE_IDX_BASE;
+	volatile int * colormap_ram = (int *) COLORMAP_BASE;
+
+	for (i=0; i<4*1500; i++) {
+			tiles_idx_ram[i] = 0;
 	}
-	// set tile 0.
-	for (i = 0; i < 16; i++) {
-		tiles_ram[i] = 0x0;
-		tiles_ram[i+16] = 0x00FF0000;
-		tiles_ram[i+32] = 0x00FFFFFF;
-		tiles_ram[i+16+32] = 0x0000FF00;
+	tiles_idx_ram[1000] = 2;
+	tiles_idx_ram[1099] = 4;
+	tiles_idx_ram[1100] = 4;
+	tiles_idx_ram[1201] = 4;
+	for (i=0; i<8; i++) {
+		for (j=0; j<8; j++) {
+			grid_reversed = grid[j][i] ? 1 : 0;
+			tiles_idx_ram[j*TILES_ROW+i*2] = grid_reversed;
+			tiles_idx_ram[j*TILES_ROW+(i*2)+1] = grid_reversed;
+			//tiles_idx_ram[(1+j)*TILES_ROW+(i*2)] = grid_reversed;
+			//tiles_idx_ram[(1+j)*TILES_ROW+(i*2)+1] = grid_reversed;
+		}
 	}
-	for (i = 0; i < 4; i++) {
-		tiles_ram[8*i] = 0x000000FF;
-		tiles_ram[8*i+1] = 0x000000FF;
-		tiles_ram[8*i+2] = 0x000000FF;
-		tiles_ram[8*i+3] = 0x000000FF;
+	for (i=0; i<64; i++) {
+		for (j=0; j<4; j++) {
+			char tidx;
+			if (i==0) tidx = 3;
+			//else if ((i & 0x7)==0) tidx = 2;
+			else tidx = j;
+			tiles_ram[i+j*64] = tidx;
+		}
+		tiles_ram[4*64+i] = (i & 0x3);
 	}
-	for (i=0; i< 64; i++) {
-		tiles_ram[i+64*1] = 0x0000FF00;
-		tiles_ram[i+64*2] = 0x000000FF;
-		tiles_ram[i+64*3] = 0x00FF0000;
-		tiles_ram[i+64*4] = 0x00FFFFFF;
-		tiles_ram[i+64*5] = 0x0;
-	}
+	colormap_ram[0]  = 0;
+	colormap_ram[1] = 0xFFFFFF;
+	colormap_ram[2] = 0xFF0000;
+	colormap_ram[3] = 0x00FF00;
+	colormap_ram[0xFF] = 0x0;
 
 	while (1)
 	{
-		printf("It's working\n");
+		printf("It's working, %i\n", sizeof(int));
 
 		while (1) {
 			volatile int * spi_ptr =   (int*) PI_MAILBOX_MEM_BASE;
