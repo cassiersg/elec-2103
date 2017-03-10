@@ -374,6 +374,9 @@ set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 
 
 
+set_global_assignment -name SYSTEMVERILOG_FILE mailbox_mem.sv
+set_global_assignment -name SYSTEMVERILOG_FILE rpi_mmu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE display_mmu.sv
 set_global_assignment -name SYSTEMVERILOG_FILE mtl_display_controller.sv
 set_global_assignment -name SYSTEMVERILOG_FILE mtl_display.sv
 set_global_assignment -name SYSTEMVERILOG_FILE spi_slave.sv

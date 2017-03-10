@@ -76,7 +76,7 @@ void task1(void* pdata)
 	{
 		*display_control = !*display_control;
 		OSTimeDlyHMSM(0, 0, 2, 0);
-		continue;
+		//continue;
 		while (1) {
 			volatile int * spi_ptr =   (int*) PI_MAILBOX_MEM_BASE;
 			volatile int * spi_ptr_fresh =   spi_ptr + 0x10;

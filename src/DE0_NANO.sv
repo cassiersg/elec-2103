@@ -86,7 +86,33 @@ logic [31:0] tiles_addr, tiles_idx_0_addr, tiles_idx_1_addr, colormap_addr;
 logic [31:0] tiles_readdata, tiles_idx_0_readdata, tiles_idx_1_readdata, colormap_readdata;
 logic [31:0] display_control;
 
-assign tiles_idx_1_addr = tiles_idx_0_addr;
+logic [31:0] tile_idx_display_rd;
+logic [10:0] tile_idx_display_addr;
+
+logic [15:0] tile_idx_rpi_rd;
+logic [10:0] tile_idx_rpi_addr;
+
+logic tile_idx_rpi_we, tile_idx_0_we, tile_idx_1_we;
+logic [31:0] tile_idx_rpi_wd, tile_idx_0_wd, tile_idx_1_wd;
+
+display_mmu #(11) display_mmu_inst (
+	.tile_idx_0_rd(tiles_idx_0_readdata),
+	.tile_idx_1_rd(tiles_idx_1_readdata),
+	.tile_idx_display_rd(tile_idx_display_rd),
+	.tile_idx_rpi_rd(tile_idx_rpi_rd),
+	.tile_idx_display_addr(tile_idx_display_addr),
+	.tile_idx_rpi_addr(tile_idx_rpi_addr),
+	.tile_idx_0_addr(tiles_idx_0_addr),
+	.tile_idx_1_addr(tiles_idx_1_addr),
+	.tile_idx_0_we(tile_idx_0_we),
+	.tile_idx_1_we(tile_idx_1_we),
+	.tile_idx_0_wd(tile_idx_0_wd),
+	.tile_idx_1_wd(tile_idx_1_wd),
+	.tile_idx_rpi_we(tile_idx_rpi_we),
+	.tile_idx_rpi_wd(tile_idx_rpi_wd),
+	.tile_idx_select(display_control[0])
+);
+
 
 // MTL DISPLAY CONTROLLER
 mtl_display_controller mtl_display_controller_inst (
@@ -100,8 +126,8 @@ mtl_display_controller mtl_display_controller_inst (
     .i_next2_y(next_y),
 	 .i_tiles_readdata(tiles_readdata),
 	 .o_tiles_addr(tiles_addr),
-	 .i_tiles_idx_readdata(display_control ? tiles_idx_1_readdata: tiles_idx_0_readdata),
-	 .o_tiles_idx_addr(tiles_idx_0_addr),
+	 .i_tiles_idx_readdata(tile_idx_display_rd),
+	 .o_tiles_idx_addr(tile_idx_display_addr),
 	 .i_colormap_readdata(colormap_readdata),
 	 .o_colormap_addr(colormap_addr)
 );
@@ -125,6 +151,32 @@ mtl_display mtl_display_inst (
     .o_next2_x(next_x),
     .o_next2_y(next_y)
 );
+
+// RPi MMU
+logic message_we, message_re;
+logic [31:0] message_rd, message_wd;
+logic [15:0] message_addr;
+rpi_mmu rpi_mmu_inst(
+	// RPi SPI interface
+	.rpi_we(mem_pi_we),
+	.rpi_addr(mem_pi_addr),
+	.rpi_wd(mem_pi_writedata),
+	.rpi_rd(mem_pi_readdata),
+	.rpi_re(mem_pi_read),
+	// message memory
+	.message_addr(message_addr),
+	.message_we(message_we),
+	.message_wd(message_wd),
+	.message_rd(message_rd),
+	.message_re(message_re),
+	// tile idx memory
+	.tile_idx_addr(tile_idx_rpi_addr),
+	.tile_idx_we(tile_idx_rpi_we),
+	.tile_idx_wd(tile_idx_rpi_wd),
+	.tile_idx_rd(tile_idx_rpi_rd)
+	//.tile_idx_re()
+);
+
 
 // SPI instantiation
 logic mem_pi_we, mem_pi_read;
@@ -150,7 +202,7 @@ spi_slave spi_slave_instance(
 	.Data_Write (mem_pi_writedata),
 	.Data_Read  (mem_pi_readdata),
 	.mem_read(mem_pi_read),
-	.Clk        (CLOCK_50),
+	.Clk        (CLOCK_33),
 	.reset(~KEY[0])
 );
 
@@ -167,12 +219,14 @@ base u0 (
 	// Main clock
    .clk_clk                            (CLOCK_50),
    .reset_reset_n                      (KEY[0]),
-	// Mailbox pi
-	.pi_mailbox_mem_s1_address   (mem_pi_addr),
-	.pi_mailbox_mem_s1_writedata (mem_pi_writedata),
-	.pi_mailbox_mem_s1_readdata  (mem_pi_readdata),
-	.pi_mailbox_mem_s1_write     (mem_pi_we),
-	.pi_mailbox_mem_s1_read      (mem_pi_read),
+	// message pi
+	.message_mem_s2_address   (message_addr),
+	.message_mem_s2_writedata (message_wd),
+	.message_mem_s2_readdata  (message_rd),
+	.message_mem_s2_write     (message_we),
+	.message_mem_s2_chipselect(1'b1),
+	.message_mem_s2_clken(1'b1),
+	.message_mem_s2_byteenable(4'b1111),
 	// SDRAM
 	.sdram_wire_addr (DRAM_ADDR),
 	.sdram_wire_ba   (DRAM_BA),
@@ -193,21 +247,22 @@ base u0 (
 	.tile_image_s2_write        (1'b0),
 	.tile_image_s2_readdata     (tiles_readdata),
 	.tile_image_s2_writedata    (32'b0),
-//	.tile_image_s2_byteenable   (4'b1111),
+	.tile_image_s2_byteenable   (4'b1111),
 	// Tiles indices memory
 	.tile_idx_0_s2_address       (tiles_idx_0_addr),
 	.tile_idx_0_s2_chipselect    (1'b1),
 	.tile_idx_0_s2_clken         (1'b1),
-	.tile_idx_0_s2_write         (1'b0),
+	.tile_idx_0_s2_write         (tile_idx_0_we),
 	.tile_idx_0_s2_readdata      (tiles_idx_0_readdata),
-	.tile_idx_0_s2_writedata     (32'b0),
+	.tile_idx_0_s2_writedata     (tile_idx_0_wd),
+	.tile_idx_0_s2_byteenable    (4'b1111),
 	.tile_idx_1_s2_address       (tiles_idx_1_addr),
 	.tile_idx_1_s2_chipselect    (1'b1),
 	.tile_idx_1_s2_clken         (1'b1),
-	.tile_idx_1_s2_write         (1'b0),
+	.tile_idx_1_s2_write         (tile_idx_1_we),
 	.tile_idx_1_s2_readdata      (tiles_idx_1_readdata),
-	.tile_idx_1_s2_writedata     (32'b0),
-//	.tile_idx_s2_byteenable    (4'b1111),
+	.tile_idx_1_s2_writedata     (tile_idx_1_wd),
+	.tile_idx_1_s2_byteenable    (4'b1111),
 	// Colormap
 	.colormap_s2_address    (colormap_addr),
 	.colormap_s2_chipselect (1'b1),

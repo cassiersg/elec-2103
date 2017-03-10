@@ -1,13 +1,14 @@
 module mailbox_mem(
-	input logic clk,
-	input logic reset,
-
+	input logic clk0,
+	input logic reset0,
 	input logic [4:0] avs_s0_address,
 	input logic [31:0] avs_s0_writedata,
 	output logic [31:0] avs_s0_readdata,
 	input logic avs_s0_write,
 	input logic avs_s0_read,
 	
+	input logic clk1,
+	input logic reset1,
 	input logic [4:0] avs_s1_address,
 	input logic [31:0] avs_s1_writedata,
 	output logic [31:0] avs_s1_readdata,
@@ -23,7 +24,7 @@ logic addr_in_fresh_s0;
 assign base_addr_s0 = avs_s0_address[3:0];
 assign addr_in_fresh_s0 = avs_s0_address[4];
 
-always_ff @(posedge clk)
+always_ff @(posedge clk0)
 begin
 	if (avs_s0_write && ~addr_in_fresh_s0)
 	begin
@@ -48,7 +49,7 @@ logic addr_in_fresh_s1;
 assign base_addr_s1 = avs_s1_address[3:0];
 assign addr_in_fresh_s1 = avs_s1_address[4];
 
-always_ff @(posedge clk)
+always_ff @(posedge clk1)
 begin
 	if (avs_s1_write && ~addr_in_fresh_s1)
 	begin
