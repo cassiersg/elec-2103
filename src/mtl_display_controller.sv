@@ -12,13 +12,15 @@ module mtl_display_controller (
 	// display RAM
 	input logic [31:0] i_tiles_readdata,
 	input logic [31:0] i_colormap_readdata, i_tiles_idx_readdata,
-	output logic [31:0] o_tiles_addr, o_tiles_idx_addr, o_colormap_addr
+	output logic [11:0] o_tiles_addr, // 256*64=2^14 bytes =>  2^12 words => 12 bits address
+        output logic [10:0] o_tiles_idx_addr, // 6000 tiles => 1500 words => 11 bits address
+       output logic [7:0]  o_colormap_addr // 256 colors => 8 bits address
 );
 
 parameter TILES_PER_LINE = 100;
 
 logic [7:0] tile_idx;
-char_memory #(30) char_mem_tile_idx(
+char_memory #(11) char_mem_tile_idx(
 	.char_readdata(tile_idx),
 	.mem_readdata(i_tiles_idx_readdata),
 	.mem_address(o_tiles_idx_addr),
@@ -30,7 +32,7 @@ logic [5:0] tile_image_offset;
 always_ff @(posedge display_clock)
 	tile_image_offset = {i_next2_y[2:0], i_next2_x[2:0]};
 
-char_memory #(30) char_mem_tile_image (
+char_memory #(12) char_mem_tile_image (
 	.char_readdata(o_colormap_addr),
 	.mem_readdata(i_tiles_readdata),
 	.mem_address(o_tiles_addr),
