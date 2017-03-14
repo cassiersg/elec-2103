@@ -23,7 +23,7 @@ def pygame_init():
     pygame.display.set_caption("Shape Yourself, Wall is Coming!")
     return screen
 
-def draw_grid(display, grid):
+def draw_grid(display, grid, player_id):
     m = len(grid)
     n = len(grid[0])
 
@@ -34,9 +34,15 @@ def draw_grid(display, grid):
             elif grid[m-i-1][j] == WALL:
                 draw_case(display, GREY, j*CASE_SIZE, i*CASE_SIZE)
             elif grid[m-i-1][j] == P1:
-                draw_case(display, RED, j*CASE_SIZE, i*CASE_SIZE)
+                if player_id == P1:
+                    draw_case(display, RED, j*CASE_SIZE, i*CASE_SIZE)
+                else:
+                    draw_case(display, GREEN, j*CASE_SIZE, i*CASE_SIZE)
             elif grid[m-i-1][j] == P2:
-                draw_case(display, GREEN, j*CASE_SIZE, i*CASE_SIZE)
+                if player_id == P2:
+                    draw_case(display, RED, j*CASE_SIZE, i*CASE_SIZE)
+                else:
+                    draw_case(display, GREEN, j*CASE_SIZE, i*CASE_SIZE)
             elif grid[m-i-1][j] == HOLE:
                 draw_case(display, BLACK, j*CASE_SIZE, i*CASE_SIZE)
 

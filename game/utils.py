@@ -17,8 +17,7 @@ SERVER_ACTION_RESPONSE = 7
 SERVER_GRID_STATE = 8
 SERVER_ROUND_GAUGE_STATE = 9
 SERVER_SCORE = 10
-SERVER_SPEED = 11
-SERVER_GLOBAL_GAUGE_STATE = 12
+SERVER_GLOBAL_GAUGE_STATE = 11
 
 # Payload packing format
 PACKET_FMT = {
@@ -32,7 +31,6 @@ PACKET_FMT = {
     SERVER_ROUND_GAUGE_STATE: '!HH',
     SERVER_SCORE: '!I',
     SERVER_GLOBAL_GAUGE_STATE: '!H',
-    SERVER_SPEED: '!H',
 }
 
 HEADER_FMT = '!BH'
@@ -53,13 +51,17 @@ REFUSED = 1
 LEFT = 0
 RIGHT = 1
 
-def myrecv(socket):
-    header = socket.recv(3)
-    if header:
-        (packet_type, packet_length) = unpack(HEADER_FMT, header)
-        return (True, packet_type, packet_length)
+def myrecv(s):
+    try:
+        header = s.recv(3)
+    except (socket.timeout, ConnectionResetError) as e:
+        return None
     else:
-        return (False,)
+        if len(header) == 3:
+            (packet_type, packet_length) = unpack(HEADER_FMT, header)
+            return (packet_type, packet_length)
+        else:
+            return None
 
 def flatten_grid(grid):
     return [item for sublist in grid for item in sublist]
