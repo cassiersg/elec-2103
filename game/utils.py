@@ -51,6 +51,7 @@ REFUSED = 1
 LEFT = 0
 RIGHT = 1
 
+# SOON DEPRECATED
 def myrecv(s):
     try:
         header = s.recv(3)
@@ -62,6 +63,37 @@ def myrecv(s):
             return (packet_type, packet_length)
         else:
             return None
+
+def get_next_header(s):
+    expected_len = 3
+
+    try:
+        header = s.recv(expected_len)
+    except socket.timeout as e:
+        return None
+    else:
+        received_len = len(header)
+        while received_len < expected_len:
+            header += s.recv(expected_len-received_len)
+            received_len = len(header)
+
+        (packet_type, packet_length) = unpack(HEADER_FMT, header)
+        return (packet_type, packet_length)
+
+def get_next_payload(s, packet_len):
+    expected_len = packet_len
+
+    try:
+        payload = s.recv(expected_len)
+    except socket.timeout as e:
+        return None
+    else:
+        received_len = len(payload)
+        while received_len < expected_len:
+            payload += s.recv(expected_len-received_len)
+            received_len = len(payload)
+
+        return payload
 
 def flatten_grid(grid):
     return [item for sublist in grid for item in sublist]
