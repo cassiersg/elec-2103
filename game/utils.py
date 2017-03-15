@@ -54,7 +54,7 @@ RIGHT = 1
 def myrecv(s):
     try:
         header = s.recv(3)
-    except (socket.timeout, ConnectionResetError) as e:
+    except (socket.timeout, ) as e:
         return None
     else:
         if len(header) == 3:

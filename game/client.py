@@ -2,6 +2,7 @@ import socket
 import sys
 import time
 import pygame
+import client_desktop as cd
 
 from pygame.locals import *
 from utils import *
@@ -58,41 +59,37 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.close()
         sys.exit()
 
+    grid = None
+    score = 0
+    round_gauge_state = GAUGE_STATE_INIT
+    global_gauge_state = GAUGE_STATE_INIT
     grid_id = 0
-    action_id = player_id
+    action_id = 0
 
     s.settimeout(0.01)
 
-    last_accelerometer = -1
-    accelerometer = 0
+    cur_acc_value = 0
 
     while True:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                s.close()
-                sys.exit()
-            elif event.type == KEYDOWN:
-                if event.key == pygame.K_k:
-                    print("[CLIENT] Client sends left movement.")
-                    s.send(my_pack(CLIENT_ACTION, [player_id, action_id, grid_id, LEFT]))
-                elif event.key == pygame.K_m:
-                    print("[CLIENT] Client sends right movement.")
-                    s.send(my_pack(CLIENT_ACTION, [player_id, action_id, grid_id, RIGHT]))
-                elif event.key == pygame.K_o:
-                    print("[CLIENT] Client increases accelerometer angle")
-                    accelerometer = min(255, accelerometer+10)
-                elif event.key == pygame.K_l:
-                    print("[CLIENT] Client decreases accelerometer angle")
-                    accelerometer = max(0, accelerometer-10)
+        time.sleep(0.001)
+        (quit, new_acc_value, events) = cd.get_events(cur_acc_value)
 
-                action_id += 2
+        if quit:
+            pygame.quit()
+            s.close()
+            sys.exit()
 
-        if accelerometer != last_accelerometer:
-            s.send(my_pack(CLIENT_ANGLE, [player_id, accelerometer]))
-            last_accelerometer = accelerometer
+        for event in events:
+            if event == LEFT:
+                s.send(my_pack(CLIENT_ACTION, [player_id, action_id, grid_id, LEFT]))
+            elif event == RIGHT:
+                s.send(my_pack(CLIENT_ACTION, [player_id, action_id, grid_id, RIGHT]))
 
-        pygame.display.update()
+            action_id += 1
+
+        if new_acc_value != cur_acc_value:
+            cur_acc_value = new_acc_value
+            s.send(my_pack(CLIENT_ANGLE, [player_id, cur_acc_value]))
 
         header = myrecv(s)
         if header is not None:
@@ -102,26 +99,20 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             continue
 
         if packet_type == SERVER_GRID_STATE:
-            print("[CLIENT] Received new grid state.")
             unpacked_grid_state = my_unpack(SERVER_GRID_STATE, raw_payload)
             grid_id = unpacked_grid_state[0]
             flat_grid = unpacked_grid_state[1:]
             grid = unflatten_grid(flat_grid, grid_size_x, grid_size_y)
-            draw_grid(screen, unflatten_grid(flat_grid, grid_size_x, grid_size_y),
-                     player_id)
         elif packet_type == SERVER_ROUND_GAUGE_STATE:
-            #print("[CLIENT] Round gauge state received.")
-            (gauge_state, gauge_speed) = my_unpack(SERVER_ROUND_GAUGE_STATE, raw_payload)
-            #print(gauge_state)
-            draw_round_timer(screen, gauge_state)
+            (round_gauge_state, gauge_speed) = my_unpack(SERVER_ROUND_GAUGE_STATE, raw_payload)
         elif packet_type == SERVER_SCORE:
-            print("[CLIENT] Received new score.")
             (score,) = my_unpack(SERVER_SCORE, raw_payload)
-            write_score(screen, myfont, score)
         elif packet_type == SERVER_GLOBAL_GAUGE_STATE:
-            #print("[CLIENT] Global gauge state received.")
-            (gauge_state,) = my_unpack(SERVER_GLOBAL_GAUGE_STATE, raw_payload)
-            draw_global_timer(screen, gauge_state)
+            (global_gauge_state,) = my_unpack(SERVER_GLOBAL_GAUGE_STATE, raw_payload)
         elif packet_type == SERVER_GAME_FINISHED:
             s.close()
             exit()
+
+        if grid is not None:
+            cd.refresh(screen, grid, player_id, round_gauge_state,
+                   global_gauge_state, score)
