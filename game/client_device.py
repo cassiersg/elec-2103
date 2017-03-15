@@ -1,9 +1,9 @@
-
 from time import sleep
 import spidev
 import struct
 import datetime
 import game_global as gg
+from utils import *
 
 SCALE_FACTOR = 4
 TILES_ROW = 100
@@ -88,14 +88,14 @@ class DeviceHwInterface:
         quit = False
         events = []
 
-        touch = readspi(self.spi, 0x02)
-        if touch == 1:
+        touch = read_spi(self.spi, 0x02)
+        if touch[3] == 1:
             events.append(LEFT)
-	elif touch == 2:
-	    events.append(RIGHT)
+        elif touch[3] == 2:
+            events.append(RIGHT)
 
-	if events:
-            writespi(self.spi, 0x02, 0x00)
+        if events:
+            write_spi(self.spi, 0x02, 4*[0x00])
 
         return (False, cur_acc_value, events)
 
