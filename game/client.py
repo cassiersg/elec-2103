@@ -40,8 +40,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         sys.exit()
 
     # PyGame init
-    screen = pygame_init()
-    myfont = pygame.font.SysFont("Comic Sans MS", 28)
+    hw_interface = cd.DesktopHwInterface()
 
     # Advertising the server that we are ready with CLIENT_READY
     print("[CLIENT] Advertising the server that we are ready.")
@@ -72,7 +71,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     while True:
         time.sleep(0.001)
-        (quit, new_acc_value, events) = cd.get_events(cur_acc_value)
+        (quit, new_acc_value, events) = hw_interface.get_events(cur_acc_value)
 
         if quit:
             pygame.quit()
@@ -114,5 +113,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             exit()
 
         if grid is not None:
-            cd.refresh(screen, grid, player_id, round_gauge_state,
+            hw_interface.update_display(grid, player_id, round_gauge_state,
                    global_gauge_state, score)

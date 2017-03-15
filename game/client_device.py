@@ -3,6 +3,10 @@ from time import sleep
 import spidev
 import struct
 import datetime
+import game_global as gg
+
+SCALE_FACTOR = 4
+TILES_ROW = 100
 
 def setup():
     spi = spidev.SpiDev()
@@ -51,11 +55,34 @@ class DeviceHwInterface:
         write_spi(self.spi, 0x10000, tiles_idx[:3000])
         write_spi(self.spi, 0x10000+3000, tiles_idx[3000:])
 
-    def gen_tiles(self, grid, player_id, round_gauge, global_gauge):
-        pass # see C file
-    
+    def map_color(self, grid_id, player_id):
+        if grid_id == player_id:
+            return 2
+        elif grid_id == gg.P1 or grid_id == gg.P2:
+            return 3
+        elif grid_id == gg.STRUCT:
+            return 1
+        elif grid_id == gg.WALL:
+            return 4
+        elif grid_id == gg.HOLE:
+            return 0
+        else:
+            raise ValueError(str(grid_id))
+
+    def gen_tiles(self, grid, player_id, round_gauge, global_gauge, score):
+        tiles = 6000 * [0x00]
+        for i in range(0, gg.M):
+            for j in range(0, gg.N):
+                for i_off in range(0, SCALE_FACTOR):
+                    for j_off in range(0, SCALE_FACTOR):
+                        tiles[TILES_ROW*(j*SCALE_FACTOR+j_off)+i*SCALE_FACTOR+i_off] = self.map_color(grid[gg.N-j][i], player_id)
+        return tiles
+ 
     def update_display(self, *args):
         tiles = self.gen_tiles(*args)
         self.draw_tiles(tiles)
         self.pageflip()
+
+    def get_events(self, cur_acc_value):
+        return (False, cur_acc_value, [])
 

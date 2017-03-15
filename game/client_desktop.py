@@ -4,37 +4,40 @@ from game_global import *
 from utils import *
 from pygame.locals import *
 
-def get_events(cur_acc_value):
-    quit = False
-    events = []
+class DesktopHwInterface:
+    def __init__(self):
+        self.screen = pygame_init()
+    
+    def update_display(self, grid, player_id, round_gauge, global_gauge, score):
+        myfont = pygame.font.SysFont("Comic Sans MS", 28)
 
-    for event in pygame.event.get():
-        if event.type == QUIT:
-            quit = True
-        elif event.type == KEYDOWN:
-            if event.key == pygame.K_k:
-                print("[CLIENT] Client sends left movement.")
-                events.append(LEFT)
-            elif event.key == pygame.K_m:
-                print("[CLIENT] Client sends right movement.")
-                events.append(RIGHT)
-            elif event.key == pygame.K_o:
-                print("[CLIENT] Client increases accelerometer angle")
-                cur_acc_value = min(255, cur_acc_value+10)
-            elif event.key == pygame.K_l:
-                print("[CLIENT] Client decreases accelerometer angle")
-                cur_acc_value = max(0, cur_acc_value-10)
+        draw_grid(self.screen, grid, player_id)
+        draw_round_timer(self.screen, round_gauge)
+        write_score(self.screen, myfont, score)
+        draw_global_timer(self.screen, global_gauge)
 
-    return (quit, cur_acc_value, events)
+        pygame.display.update()
 
-def refresh(screen, grid, player_id, round_gauge_state, global_gauge_state,
-            score):
+    def get_events(self, cur_acc_value):
+        quit = False
+        events = []
 
-    myfont = pygame.font.SysFont("Comic Sans MS", 28)
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                quit = True
+            elif event.type == KEYDOWN:
+                if event.key == pygame.K_k:
+                    print("[CLIENT] Client sends left movement.")
+                    events.append(LEFT)
+                elif event.key == pygame.K_m:
+                    print("[CLIENT] Client sends right movement.")
+                    events.append(RIGHT)
+                elif event.key == pygame.K_o:
+                    print("[CLIENT] Client increases accelerometer angle")
+                    cur_acc_value = min(255, cur_acc_value+10)
+                elif event.key == pygame.K_l:
+                    print("[CLIENT] Client decreases accelerometer angle")
+                    cur_acc_value = max(0, cur_acc_value-10)
 
-    draw_grid(screen, grid, player_id)
-    draw_round_timer(screen, round_gauge_state)
-    write_score(screen, myfont, score)
-    draw_global_timer(screen, global_gauge_state)
+        return (quit, cur_acc_value, events)
 
-    pygame.display.update()

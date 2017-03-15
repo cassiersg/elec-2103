@@ -2,21 +2,22 @@ import game_global as gg
 
 import random as r
 
-'''
-    Initialize a new round. This function returns
-    - the grid, containing the wall, the structures, two holes and the two
-    players
-    - an ordered list of possible positions
-    - the positions of the two holes
-'''
 def init_round(m, n):
+    """Initialize a new round.
+    
+    Returns
+        - the grid, containing the wall, the structures, two holes and the two
+        players
+        - an ordered list of possible positions
+        - the positions of the two holes
+    """
     if m < 3 or n < 3:
         return None
 
-    # Building the grid
+    # Build the grid
     grid = [[gg.WALL for i in range(m)] for j in range(n)]
 
-    # Adding the floor
+    # Add the floor
     grid[0][:] = [gg.STRUCT for i in range(m)]
 
     # Adding players at the two extremites of the map
