@@ -142,7 +142,8 @@ ACDS_VERSION := 15.0
 ELF := LELEC2103-SW.elf
 
 # Paths to C, C++, and assembly source files.
-C_SRCS := main.c
+C_SRCS += main.c
+C_SRCS += old_touch_demo.c
 CXX_SRCS :=
 ASM_SRCS :=
 
