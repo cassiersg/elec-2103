@@ -28,7 +28,7 @@ def int2bytes3(x):
 def write_spi(spi, address, data):
     msg = [0x30] + int2bytes3(address) + [0x10] + int2bytes3(len(data)//4) + data
     spi.xfer2(msg)
-    
+
 def read_spi(spi, address, nb_words=1):
     msg = ([0x30] + int2bytes3(address)) + ([0x20] + int2bytes3(nb_words)) + 4*nb_words*[0x00]
     res = spi.xfer2(msg)
@@ -77,12 +77,25 @@ class DeviceHwInterface:
                     for j_off in range(0, SCALE_FACTOR):
                         tiles[TILES_ROW*(j*SCALE_FACTOR+j_off)+i*SCALE_FACTOR+i_off] = self.map_color(grid[gg.N-j][i], player_id)
         return tiles
- 
+
     def update_display(self, *args):
         tiles = self.gen_tiles(*args)
         self.draw_tiles(tiles)
         self.pageflip()
 
     def get_events(self, cur_acc_value):
-        return (False, cur_acc_value, [])
+        quit = False
+        events = []
+
+        left = readspi(self.spi, 0x02)
+        if left == 1:
+            events.append(LEFT)
+            writespi(self.spi, 0x02, 0x00)
+
+        right = readspi(self.spi, 0x03)
+        if right == 1:
+            events.append(RIGHT)
+            writespi(self.spi, 0x03, 0x00)
+
+        return (False, cur_acc_value, events)
 
