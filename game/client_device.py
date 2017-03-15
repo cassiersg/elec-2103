@@ -42,7 +42,7 @@ def set_display(spi, display_id):
 class DeviceHwInterface:
     def __init__(self):
         self.spi = setup()
-        set_display(spi, 0)
+        set_display(self.spi, 0)
         self.current_display = 0
 
     def pageflip(self):
@@ -53,7 +53,7 @@ class DeviceHwInterface:
     def draw_tiles(self, tiles_idx):
         assert len(tiles_idx) == 6000
         write_spi(self.spi, 0x10000, tiles_idx[:3000])
-        write_spi(self.spi, 0x10000+3000, tiles_idx[3000:])
+        write_spi(self.spi, 0x10000+3000//4, tiles_idx[3000:])
 
     def map_color(self, grid_id, player_id):
         if grid_id == player_id:
@@ -75,7 +75,8 @@ class DeviceHwInterface:
             for j in range(0, gg.N):
                 for i_off in range(0, SCALE_FACTOR):
                     for j_off in range(0, SCALE_FACTOR):
-                        tiles[TILES_ROW*(j*SCALE_FACTOR+j_off)+i*SCALE_FACTOR+i_off] = self.map_color(grid[gg.N-j][i], player_id)
+                        color = self.map_color(grid[gg.N-j-1][i], player_id)
+                        tiles[TILES_ROW*(j*SCALE_FACTOR+j_off)+i*SCALE_FACTOR+i_off] = color
         return tiles
 
     def update_display(self, *args):

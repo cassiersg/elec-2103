@@ -22,7 +22,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
     #server.setblocking(0)
 
     # Bind the socket to the port
-    server_address = ('localhost', 10000)
+    server_address = ('', 10000)
     print('starting up on {} port {}'.format(*server_address), file=sys.stderr)
     server.bind(server_address)
 

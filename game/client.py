@@ -90,27 +90,28 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             cur_acc_value = new_acc_value
             s.send(my_pack(CLIENT_ANGLE, [player_id, cur_acc_value]))
 
-        header = myrecv(s)
-        if header is not None:
-            (packet_type, packet_length) = header
-            raw_payload = s.recv(packet_length)
-        else:
-            continue
+        while True:
+            header = myrecv(s)
+            if header is not None:
+                (packet_type, packet_length) = header
+                raw_payload = s.recv(packet_length)
+            else:
+                break
 
-        if packet_type == SERVER_GRID_STATE:
-            unpacked_grid_state = my_unpack(SERVER_GRID_STATE, raw_payload)
-            grid_id = unpacked_grid_state[0]
-            flat_grid = unpacked_grid_state[1:]
-            grid = unflatten_grid(flat_grid, grid_size_x, grid_size_y)
-        elif packet_type == SERVER_ROUND_GAUGE_STATE:
-            (round_gauge_state, gauge_speed) = my_unpack(SERVER_ROUND_GAUGE_STATE, raw_payload)
-        elif packet_type == SERVER_SCORE:
-            (score,) = my_unpack(SERVER_SCORE, raw_payload)
-        elif packet_type == SERVER_GLOBAL_GAUGE_STATE:
-            (global_gauge_state,) = my_unpack(SERVER_GLOBAL_GAUGE_STATE, raw_payload)
-        elif packet_type == SERVER_GAME_FINISHED:
-            s.close()
-            exit()
+            if packet_type == SERVER_GRID_STATE:
+                unpacked_grid_state = my_unpack(SERVER_GRID_STATE, raw_payload)
+                grid_id = unpacked_grid_state[0]
+                flat_grid = unpacked_grid_state[1:]
+                grid = unflatten_grid(flat_grid, grid_size_x, grid_size_y)
+            elif packet_type == SERVER_ROUND_GAUGE_STATE:
+                (round_gauge_state, gauge_speed) = my_unpack(SERVER_ROUND_GAUGE_STATE, raw_payload)
+            elif packet_type == SERVER_SCORE:
+                (score,) = my_unpack(SERVER_SCORE, raw_payload)
+            elif packet_type == SERVER_GLOBAL_GAUGE_STATE:
+                (global_gauge_state,) = my_unpack(SERVER_GLOBAL_GAUGE_STATE, raw_payload)
+            elif packet_type == SERVER_GAME_FINISHED:
+                s.close()
+                exit()
 
         if grid is not None:
             hw_interface.update_display(grid, player_id, round_gauge_state,
