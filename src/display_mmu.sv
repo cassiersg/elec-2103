@@ -21,6 +21,8 @@ begin
         tile_idx_0_addr = tile_idx_rpi_addr;
 		  tile_idx_1_we = 1'b0;
 		  tile_idx_0_we = tile_idx_rpi_we;
+		  tile_idx_1_wd = 32'b0;
+		  tile_idx_0_wd = tile_idx_rpi_wd;
     end
     else
     begin
@@ -30,6 +32,8 @@ begin
         tile_idx_1_addr = tile_idx_rpi_addr;
 		  tile_idx_0_we = 1'b0;
 		  tile_idx_1_we = tile_idx_rpi_we;
+		  tile_idx_0_wd = 32'b0;
+		  tile_idx_1_wd = tile_idx_rpi_wd;
     end
 end
 

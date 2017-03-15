@@ -71,38 +71,16 @@ void task1(void* pdata)
 	colormap_ram[0xFF] = 0x0;
 
 	*display_control = 1;
+	volatile int* msg_reg = (int *) MESSAGE_MEM_BASE;
+	msg_reg[1] = *display_control;
+
+
 	printf("It's working, %i\n", sizeof(int));
 	while (1)
 	{
-		*display_control = !*display_control;
-		OSTimeDlyHMSM(0, 0, 2, 0);
-		//continue;
-		while (1) {
-			volatile int * spi_ptr =   (int*) PI_MAILBOX_MEM_BASE;
-			volatile int * spi_ptr_fresh =   spi_ptr + 0x10;
-			int last = 0xFFFFFFFF;
-			while (1)
-			{
-				int i;
-				for (i=0; i<10000; i++);
-
-				if (spi_ptr[0] != last) {
-					last = spi_ptr[0];
-					printf("%x  %x\n", spi_ptr[0], spi_ptr[1]);
-				}
-
-				if ((spi_ptr[0] & 0xFFFF) == 0xDEAD) {
-					printf("updating\n");
-					spi_ptr[0] = 0xBEEF00 | (spi_ptr[0] >> 16);
-					last = spi_ptr[0];
-				}
-
-				if (spi_ptr_fresh[2]) {
-					printf("new message %x\n", spi_ptr[2]);
-					spi_ptr[3] = 0xAAA;
-				}
-			}
-		}
+		*display_control = msg_reg[0];
+		msg_reg[1] = *display_control;
+		OSTimeDlyHMSM(0, 0, 0, 50);
 	}
 }
 /* Prints "Hello World" and sleeps for three seconds */
@@ -111,6 +89,16 @@ void task2(void* pdata)
 	while (1)
 	{
 		OSTimeDlyHMSM(0, 0, 3, 0);
+//		volatile int* msg_reg = (int *) MESSAGE_MEM_BASE;
+//		msg_reg[1] = 0x0000BEEF;
+//		printf("%x\n", msg_reg[0]);
+//		volatile char * tiles_idx_0_ram = (char *) TILE_IDX_0_BASE;
+//		volatile char * tiles_idx_1_ram = (char *) TILE_IDX_1_BASE;
+//		int i;
+//		for (i=0; i<20; i++) {
+//			printf("0 %i: %i\n", i, tiles_idx_0_ram[i]);
+//			printf("1 %i: %i\n", i, tiles_idx_1_ram[i]);
+//		}
 	}
 }
 /* The main function creates two task and starts multi-tasking */
