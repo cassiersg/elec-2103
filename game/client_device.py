@@ -88,15 +88,14 @@ class DeviceHwInterface:
         quit = False
         events = []
 
-        left = readspi(self.spi, 0x02)
-        if left == 1:
+        touch = readspi(self.spi, 0x02)
+        if touch == 1:
             events.append(LEFT)
-            writespi(self.spi, 0x02, 0x00)
+	elif touch == 2:
+	    events.append(RIGHT)
 
-        right = readspi(self.spi, 0x03)
-        if right == 1:
-            events.append(RIGHT)
-            writespi(self.spi, 0x03, 0x00)
+	if events:
+            writespi(self.spi, 0x02, 0x00)
 
         return (False, cur_acc_value, events)
 

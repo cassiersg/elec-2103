@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "includes.h"
 #include "system.h"
+#include "mtltouch.h"
 
 /* Definition of Task Stacks */
 #define   TASK_STACKSIZE       2048
@@ -83,24 +84,7 @@ void task1(void* pdata)
 		OSTimeDlyHMSM(0, 0, 0, 50);
 	}
 }
-/* Prints "Hello World" and sleeps for three seconds */
-void task2(void* pdata)
-{
-	while (1)
-	{
-		OSTimeDlyHMSM(0, 0, 3, 0);
-//		volatile int* msg_reg = (int *) MESSAGE_MEM_BASE;
-//		msg_reg[1] = 0x0000BEEF;
-//		printf("%x\n", msg_reg[0]);
-//		volatile char * tiles_idx_0_ram = (char *) TILE_IDX_0_BASE;
-//		volatile char * tiles_idx_1_ram = (char *) TILE_IDX_1_BASE;
-//		int i;
-//		for (i=0; i<20; i++) {
-//			printf("0 %i: %i\n", i, tiles_idx_0_ram[i]);
-//			printf("1 %i: %i\n", i, tiles_idx_1_ram[i]);
-//		}
-	}
-}
+
 /* The main function creates two task and starts multi-tasking */
 int main(void)
 {
@@ -116,7 +100,7 @@ int main(void)
 			0);
 
 
-	OSTaskCreateExt(task2,
+	OSTaskCreateExt(task_touch_sense,
 			NULL,
 			(void *)&task2_stk[TASK_STACKSIZE-1],
 			TASK2_PRIORITY,

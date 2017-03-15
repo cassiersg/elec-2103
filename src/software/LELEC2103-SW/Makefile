@@ -143,7 +143,7 @@ ELF := LELEC2103-SW.elf
 
 # Paths to C, C++, and assembly source files.
 C_SRCS += main.c
-C_SRCS += old_touch_demo.c
+C_SRCS += mtltouch.c
 CXX_SRCS :=
 ASM_SRCS :=
 
