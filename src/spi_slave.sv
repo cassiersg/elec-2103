@@ -42,7 +42,7 @@ begin
 	state <= spi_enabled ? nextstate : Command;
 	if (update_addr) base_addr <= Data_Write[27:0];
 	if (update_burst_size) burst_size <= Data_Write[27:0];
-	if (reset_addr_offset) addr_offset <= 28'b0;
+	if (reset_addr_offset | ~spi_enabled) addr_offset <= 28'b0;
 	if (inc_addr_offset) addr_offset <= addr_offset + 28'h1;
 end
 
