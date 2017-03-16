@@ -1,16 +1,21 @@
 #include <stdio.h>
+#include <assert.h>
 #include "includes.h"
 #include "system.h"
 #include "mtltouch.h"
+#include "gsensor.h"
+
 
 /* Definition of Task Stacks */
 #define   TASK_STACKSIZE       2048
 OS_STK    task1_stk[TASK_STACKSIZE];
 OS_STK    task2_stk[TASK_STACKSIZE];
+OS_STK    task3_stk[TASK_STACKSIZE];
 
 /* Definition of Task Priorities */
-#define TASK1_PRIORITY      1
-#define TASK2_PRIORITY      2
+#define TASK1_PRIORITY      4
+#define TASK2_PRIORITY      6
+#define TASK3_PRIORITY      8
 
 #define WHITE	0x000000
 #define BLACK	0xFFFFFF
@@ -66,11 +71,19 @@ void task1(void* pdata) {
 	*display_control = 1;
 	msg_reg[1] = *display_control;
 
+//	assert(ADXL345_SPI_Init(SPI_GSENSOR_BASE));
 	while (1) {
 		*display_control = msg_reg[0];
 		msg_reg[1] = *display_control;
 
-		OSTimeDlyHMSM(0, 0, 0, 25);
+		OSTimeDlyHMSM(0, 0, 0, 20);
+//
+//		OSTimeDlyHMSM(0, 0, 1, 0);
+//		alt_16 szXYZ[3];
+//		bool ready = ADXL345_SPI_IsDataReady(SPI_GSENSOR_BASE);
+//		bool readres = ADXL345_SPI_XYZ_Read(SPI_GSENSOR_BASE, szXYZ);
+//		printf("data ready: %d, x: %d, y: %d, z: %d, res: %d\n", ready, szXYZ[0], szXYZ[1], szXYZ[2], readres);
+
 	}
 }
 
@@ -96,6 +109,16 @@ int main(void) {
 			TASK_STACKSIZE,
 			NULL,
 			0);
+
+	OSTaskCreateExt(task_g_sense,
+				NULL,
+				(void *)&task3_stk[TASK_STACKSIZE-1],
+				TASK3_PRIORITY,
+				TASK3_PRIORITY,
+				task3_stk,
+				TASK_STACKSIZE,
+				NULL,
+				0);
 
 	OSStart();
 

@@ -33,6 +33,7 @@ void task_touch_sense(void *pdata)
     touch_state state = notouch;
     touch_state_data state_data;
 
+
     while (1) {
         int t_count = *mtl_touch_count;
         if (t_count > 1) {

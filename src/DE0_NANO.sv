@@ -26,7 +26,7 @@ module DE0_NANO(
 	output          G_SENSOR_CS_N,
 	input           G_SENSOR_INT,
 	output          I2C_SCLK,
-	input           I2C_SDAT,
+	inout           I2C_SDAT,
 
 	//////////// ADC //////////
 	output          ADC_CS_N,
@@ -276,7 +276,12 @@ base u0 (
 	// mtl touch
 	.mtl_touch_0_conduit_end_scl(MTL_TOUCH_I2C_SCL),
 	.mtl_touch_0_conduit_end_sda(MTL_TOUCH_I2C_SDA),
-	.mtl_touch_0_conduit_end_int_n(MTL_TOUCH_INT_n)
+	.mtl_touch_0_conduit_end_int_n(MTL_TOUCH_INT_n),
+	// G Sensor
+	.spi_gsensor_conduit_end_SDIO(I2C_SDAT),
+	.spi_gsensor_conduit_end_SCLK(I2C_SCLK),
+	.spi_gsensor_conduit_end_CS_n(G_SENSOR_CS_N),
+	.int_gsensor_external_connection_export(G_SENSOR_INT)
 );
 
 assign DRAM_CLK = sdram_pll_clk;
