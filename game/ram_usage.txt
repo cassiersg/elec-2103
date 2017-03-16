@@ -1,0 +1,7 @@
+# Messages
+0x00 : switch display command
+0x02 : movement (1 == LEFT, 2 == RIGHT)
+0x03 : accelerometer value
+
+# Tiles indexes
+0x10000 to 0x10000 + 3000//4
