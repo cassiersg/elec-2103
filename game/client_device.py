@@ -97,5 +97,8 @@ class DeviceHwInterface:
         if events:
             write_spi(self.spi, 0x02, 4*[0x00])
 
+        cur_acc_value = bytes2int(read_spi(self.spi, 0x03))
+        print((cur_acc_value + 512)//4)
+
         return (False, cur_acc_value, events)
 
