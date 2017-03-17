@@ -27,8 +27,7 @@ void task_touch_sense(void *pdata)
     volatile int *mtl_touch_x 		= MTL_TOUCH_X;
     volatile int *mtl_touch_y 		= MTL_TOUCH_Y;
     volatile int *mtl_touch_count 	= MTL_TOUCH_COUNT;
-    volatile int *mtl_touch_gesture = MTL_TOUCH_GESTURE;
-    volatile int *mtl_touch_ready	= MTL_TOUCH_READY;
+    //volatile int *mtl_touch_ready	= MTL_TOUCH_READY;
 
     touch_state state = notouch;
     touch_state_data state_data;

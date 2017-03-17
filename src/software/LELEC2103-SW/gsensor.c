@@ -11,9 +11,10 @@
 void task_g_sense(void *pdata) {
 	volatile int* msg_reg = (int *) MESSAGE_MEM_BASE;
 
+	OSTimeDlyHMSM(0, 0, 0, 100);
 	assert(ADXL345_SPI_Init(SPI_GSENSOR_BASE));
 	while (1) {
-		alt_16 szXYZ[3];
+		alt_u16 szXYZ[3];
 		assert(ADXL345_SPI_IsDataReady(SPI_GSENSOR_BASE));
 		assert(ADXL345_SPI_XYZ_Read(SPI_GSENSOR_BASE, szXYZ));
 		msg_reg[3] = szXYZ[1];
