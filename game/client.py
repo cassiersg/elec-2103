@@ -40,7 +40,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         sys.exit()
 
     # PyGame init
-    hw_interface = cd.DesktopHwInterface()
+    hw_interface = cd.HardwareInterface()
 
     # Advertising the server that we are ready with CLIENT_READY
     print("[CLIENT] Advertising the server that we are ready.")

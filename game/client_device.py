@@ -39,7 +39,7 @@ def set_display(spi, display_id):
     while bytes2int(read_spi(spi, 0x1)) != display_id:
         sleep(0.01)
 
-class DeviceHwInterface:
+class HardwareInterface:
     def __init__(self):
         self.spi = setup()
         set_display(self.spi, 0)

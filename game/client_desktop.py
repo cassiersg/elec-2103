@@ -4,10 +4,10 @@ from game_global import *
 from utils import *
 from pygame.locals import *
 
-class DesktopHwInterface:
+class HardwareInterface:
     def __init__(self):
         self.screen = pygame_init()
-    
+
     def update_display(self, grid, player_id, round_gauge, global_gauge, score):
         myfont = pygame.font.SysFont("Comic Sans MS", 28)
 
