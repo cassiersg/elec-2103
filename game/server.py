@@ -10,11 +10,10 @@ from utils import *
 from game_global import *
 from game_backend import *
 
-'''
-    TODO:
-    - send -> sendall
-    - 
-'''
+if len(sys.argv) != 2:
+    raise ValueError('Missing argument(s)')
+
+_, address = sys.argv
 
 # Create a TCP/IP socket
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
@@ -22,7 +21,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
     #server.setblocking(0)
 
     # Bind the socket to the port
-    server_address = ('', 10000)
+    server_address = (address, 10000)
     print('starting up on {} port {}'.format(*server_address), file=sys.stderr)
     server.bind(server_address)
 
@@ -106,7 +105,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                             message_queues[s].put(my_pack(SERVER_CONNECT, [ACCEPTED]))
                         elif client_role == PLAYER and players >= 2:
                             print("[SERVER] Too many players connected.")
-                            s.send(my_pack(SERVER_CONNECT, [DENIED]))
+                            s.sendall(my_pack(SERVER_CONNECT, [DENIED]))
                             continue
                         else:
                             print("[SERVER] A spectator just connects.")
@@ -173,7 +172,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
             except (queue.Empty, KeyError) as e:
                 pass
             else:
-                s.send(next_msg)
+                s.sendall(next_msg)
 
             # If the game has started already
             if game_started:
@@ -184,7 +183,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                 global_gauge_state -= global_gauge_speed*iteration_elapsed_time
 
                 if global_gauge_state <= 0:
-                    s.send(my_pack(SERVER_GAME_FINISHED, []))
+                    s.sendall(my_pack(SERVER_GAME_FINISHED, []))
 
                     if s == writable[-1]:
                         s.close()
@@ -192,7 +191,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
 
                 # This condition avoid sending +10000 each second...
                 if abs(last_global_gauge_state_sent - global_gauge_state) >= 500:
-                    s.send(my_pack(SERVER_GLOBAL_GAUGE_STATE,
+                    s.sendall(my_pack(SERVER_GLOBAL_GAUGE_STATE,
                                    [round(global_gauge_state)]))
 
                     if s == writable[-1]:
@@ -223,7 +222,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
 
                 # This condition avoid sending +10000 each second...
                 if abs(last_round_gauge_state_sent - round_gauge_state) >= 500:
-                    s.send(my_pack(SERVER_ROUND_GAUGE_STATE,
+                    s.sendall(my_pack(SERVER_ROUND_GAUGE_STATE,
                                    [round(round_gauge_state),
                                                         round(round_gauge_speed)]))
 
@@ -232,14 +231,14 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
 
                 if grid_id != last_grid_sent:
                     print("[SERVER] Sending new grid")
-                    s.send(my_pack(SERVER_GRID_STATE, [grid_id] + flatten_grid(grid)))
+                    s.sendall(my_pack(SERVER_GRID_STATE, [grid_id] + flatten_grid(grid)))
 
                     # If the updated grid was sent to everyone
                     if s == writable[-1]:
                         last_grid_sent = grid_id
 
                 if last_score_sent != score:
-                    s.send(my_pack(SERVER_SCORE, [score]))
+                    s.sendall(my_pack(SERVER_SCORE, [score]))
 
                     if s == writable[-1]:
                         last_score_sent = score

@@ -10,10 +10,15 @@ from utils import *
 from game_global import *
 from game_frontend import *
 
-# Hardcoded server address
-server_address = ('localhost', 10000)
+if len(sys.argv) != 3:
+    raise ValueError('Missing argument')
 
-role = PLAYER if sys.argv[1] == 'player' else SPECTATOR
+_, address, role = sys.argv
+
+# Hardcoded server address
+server_address = (address, 10000)
+
+role = PLAYER if role == 'player' else SPECTATOR
 
 # Create a TCP/IP socket
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
