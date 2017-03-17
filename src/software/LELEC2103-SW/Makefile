@@ -144,6 +144,9 @@ ELF := LELEC2103-SW.elf
 # Paths to C, C++, and assembly source files.
 C_SRCS += main.c
 C_SRCS += mtltouch.c
+C_SRCS += terasic/accelerometer_adxl345_spi.c
+C_SRCS += terasic/terasic_spi.c
+C_SRCS += gsensor.c
 CXX_SRCS :=
 ASM_SRCS :=
 
