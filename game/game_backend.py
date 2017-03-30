@@ -1,6 +1,7 @@
-import game_global as gg
-
 import random as r
+
+import game_global as gg
+import net
 
 def init_round(m, n):
     """Initialize a new round.
@@ -103,3 +104,26 @@ def move_right(grid, player_id, player_pos, positions, holes):
     grid[y][x] = gg.HOLE if (x, y) in holes else gg.WALL
     grid[y_next][x_next] = player_id
     return player_pos+1
+
+class GridState:
+    def __init__(self, m, n):
+        self.grid, self.positions, self.holes, p1_pos, p2_pos = init_round(m, n)
+        self._player_pos = [p1_pos, p2_pos]
+
+    def move(self, player_id, direction):
+        if direction == net.LEFT:
+            function = move_left
+        elif direction == net.RIGHT:
+            function = move_right
+        else:
+            raise ValueError(player_id)
+        self._player_pos[player_id-1] = function(
+            self.grid, player_id, self.get_player_pos(player_id), self.positions, self.holes)
+
+    def get_player_pos(self, player_id):
+        return self._player_pos[player_id-1]
+
+    def is_winning(self):
+        p1_pos, p2_pos = self._player_pos
+        return set([self.positions[p1_pos], self.positions[p2_pos]]) == set(self.holes)
+

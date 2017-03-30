@@ -8,6 +8,7 @@ from time import sleep
 from datetime import datetime
 from utils import *
 from game_global import *
+import game_backend
 from game_backend import *
 import net
 
@@ -35,7 +36,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
     pygame.init()
 
     # Initialize the whole thing
-    (grid, positions, holes, p1_pos, p2_pos) = init_round(M, N)
+    grid_state = game_backend.GridState(M, N)
 
     last_score_sent = -1
     score = 0
@@ -100,16 +101,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                 elif packet_type == CLIENT_ACTION:
                     print("[SERVER] Client action received.")
                     (player_id, action_id, player_grid_id, move_type) = payload
-                    if move_type == RIGHT:
-                        if player_id == 1:
-                            p1_pos = move_right(grid, player_id, p1_pos, positions, holes)
-                        elif player_id == 2:
-                            p2_pos = move_right(grid, player_id, p2_pos, positions, holes)
-                    elif move_type == LEFT:
-                        if player_id == 1:
-                            p1_pos = move_left(grid, player_id, p1_pos, positions, holes)
-                        elif player_id == 2:
-                            p2_pos = move_left(grid, player_id, p2_pos, positions, holes)
+                    grid_state.move(player_id, move_type)
                     grid_id += 1
                 elif packet_type == CLIENT_ANGLE:
                     print("[SERVER] Client angle received.")
@@ -132,7 +124,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                 glob_gauge_s.send(SERVER_GLOBAL_GAUGE_STATE, round(global_gauge_state))
 
                 if round_gauge_state <= 0:
-                    if set([positions[p1_pos], positions[p2_pos]]) == set(holes):
+                    if grid_state.is_winning():
                         score = score + 1
                     else:
                         last_score_sent = -1
@@ -143,7 +135,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                         global_gauge_state = GAUGE_STATE_INIT
                         global_gauge_speed = GLOBAL_GAUGE_SPEED
 
-                    (grid, positions, holes, p1_pos, p2_pos) = init_round(M, N)
+                    grid_state = game_backend.GridState(M, N)
                     grid_id += 1
 
                     round_start_time = pygame.time.get_ticks()
@@ -156,7 +148,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
 
                 if grid_id != last_grid_sent:
                     print("[SERVER] Sending new grid")
-                    s.send(SERVER_GRID_STATE, *([grid_id] + flatten_grid(grid)))
+                    s.send(SERVER_GRID_STATE, *([grid_id] + flatten_grid(grid_state.grid)))
 
                     # If the updated grid was sent to everyone
                     if s == ps[-1]:
