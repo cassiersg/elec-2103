@@ -50,10 +50,20 @@ void init_tiles_ram() {
 	volatile char * tiles_ram = (char *) TILE_IMAGE_BASE;
 
 	int i, j;
+	// constant color tiles
 	for (i = 0; i < 64; i++) {
-		for (j = 0; j < 10; j++) {
+		for (j = 0; j < 16; j++) {
 			char tidx = (i == 0) ? 3 : j;
 			tiles_ram[i+j*64] = tidx;
+		}
+	}
+	// progressive tiles
+	for (j=0; j < 8; j++) {
+		for (i=0; i < 8*j; i++) {
+			tiles_ram[i+(j+16)*64] = 3; // green
+		}
+		for (i=8*j; i < 64; i++) {
+			tiles_ram[i+(j+16)*64] = 2; // red
 		}
 	}
 }
