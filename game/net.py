@@ -112,8 +112,6 @@ class PacketSocket:
             if m is not None:
                 return m
             time.sleep(delay)
-        
-
 
 #TODO: declare ConnectionLost
 

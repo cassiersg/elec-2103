@@ -20,7 +20,6 @@ if len(sys.argv) != 3:
 
 _, address, role = sys.argv
 
-# Hardcoded server address
 server_address = (address, 10000)
 
 role = utils.PLAYER if role == 'player' else utils.SPECTATOR
@@ -36,7 +35,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
 
     # Waiting for the SERVER_CONNECT answer
     print("[CLIENT] Waiting for server's response.")
-    
+
     (packet_type, payload) = s.recv_block()
 
     if packet_type == utils.SERVER_CONNECT:
@@ -102,7 +101,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
         if new_acc_value != cur_acc_value:
             cur_acc_value = new_acc_value
             acc_sender.send(net.CLIENT_ANGLE, player_id, cur_acc_value)
-        
+
         for packet_type, payload in s.recv_all():
             print("packet_type: {}, payload: {}".format(packet_type, payload))
             if packet_type == utils.SERVER_GRID_STATE:
