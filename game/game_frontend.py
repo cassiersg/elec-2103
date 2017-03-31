@@ -23,7 +23,7 @@ def pygame_init():
     pygame.display.set_caption("Shape Yourself, Wall is Coming!")
     return screen
 
-def draw_grid(display, grid, player_id):
+def draw_grid(display, grid, players_xy, player_id):
     m = len(grid)
     n = len(grid[0])
 
@@ -33,18 +33,19 @@ def draw_grid(display, grid, player_id):
                 draw_case(display, WHITE, j*CASE_SIZE, i*CASE_SIZE)
             elif grid[m-i-1][j] == WALL:
                 draw_case(display, GREY, j*CASE_SIZE, i*CASE_SIZE)
-            elif grid[m-i-1][j] == P1:
-                if player_id == P1:
-                    draw_case(display, RED, j*CASE_SIZE, i*CASE_SIZE)
-                else:
-                    draw_case(display, GREEN, j*CASE_SIZE, i*CASE_SIZE)
-            elif grid[m-i-1][j] == P2:
-                if player_id == P2:
-                    draw_case(display, RED, j*CASE_SIZE, i*CASE_SIZE)
-                else:
-                    draw_case(display, GREEN, j*CASE_SIZE, i*CASE_SIZE)
             elif grid[m-i-1][j] == HOLE:
                 draw_case(display, BLACK, j*CASE_SIZE, i*CASE_SIZE)
+            else:
+                ValueError(grid[m-i-1][j])
+    x1, y1, x2, y2 = players_xy
+    if player_id == 1:
+        c1, c2 = RED, GREEN
+    elif player_id == 2:
+        c1, c2 = GREEN, RED
+    else:
+        raise ValueError(player_id)
+    draw_case(display, c1, x1*CASE_SIZE, (m-y1-1)*CASE_SIZE)
+    draw_case(display, c2, x2*CASE_SIZE, (m-y2-1)*CASE_SIZE)
 
 def draw_case(display, color, x, y):
     pygame.draw.rect(display, color, (x, y, CASE_SIZE, CASE_SIZE))

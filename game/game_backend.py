@@ -1,4 +1,6 @@
 import random as r
+import copy
+import utils
 
 import game_global as gg
 import net
@@ -20,10 +22,6 @@ def init_round(m, n):
 
     # Add the floor
     grid[0][:] = [gg.STRUCT for i in range(m)]
-
-    # Adding players at the two extremites of the map
-    grid[1][0] = gg.P1
-    grid[1][m-1] = gg.P2
 
     # List of possible positions ordered from "left" to "right"
     positions = [(0,1), (1,1)]
@@ -77,33 +75,6 @@ def init_round(m, n):
 
     return (grid, positions, holes, p1_pos, p2_pos)
 
-def move_left(grid, player_id, player_pos, positions, holes):
-    (x, y) = positions[player_pos]
-
-    if grid[y][x] != player_id or player_pos <= 0:
-        return player_pos
-
-    (x_next, y_next) = positions[player_pos-1]
-    if grid[y_next][x_next] not in [gg.WALL, gg.HOLE]:
-        return player_pos
-
-    grid[y][x] = gg.HOLE if (x, y) in holes else gg.WALL
-    grid[y_next][x_next] = player_id
-    return player_pos-1
-
-def move_right(grid, player_id, player_pos, positions, holes):
-    (x, y) = positions[player_pos]
-
-    if grid[y][x] != player_id or player_pos >= len(positions) - 1:
-        return player_pos
-
-    (x_next, y_next) = positions[player_pos+1]
-    if grid[y_next][x_next] not in [gg.WALL, gg.HOLE]:
-        return player_pos
-
-    grid[y][x] = gg.HOLE if (x, y) in holes else gg.WALL
-    grid[y_next][x_next] = player_id
-    return player_pos+1
 
 class GridState:
     def __init__(self, m, n):
@@ -112,13 +83,12 @@ class GridState:
 
     def move(self, player_id, direction):
         if direction == net.LEFT:
-            function = move_left
+            function = self.move_left
         elif direction == net.RIGHT:
-            function = move_right
+            function = self.move_right
         else:
             raise ValueError(player_id)
-        self._player_pos[player_id-1] = function(
-            self.grid, player_id, self.get_player_pos(player_id), self.positions, self.holes)
+        self._player_pos[player_id-1] = function(player_id)
 
     def get_player_pos(self, player_id):
         return self._player_pos[player_id-1]
@@ -126,4 +96,51 @@ class GridState:
     def is_winning(self):
         p1_pos, p2_pos = self._player_pos
         return set([self.positions[p1_pos], self.positions[p2_pos]]) == set(self.holes)
+
+    @staticmethod
+    def other_player(player_id):
+        return 1 if player_id == 2 else 2
+
+    def move_left(self, player_id):
+        cur_player_pos = self.get_player_pos(player_id)
+        (x, y) = self.positions[cur_player_pos]
+
+        if cur_player_pos <= 0:
+            return cur_player_pos
+
+        (x_next, y_next) = self.positions[cur_player_pos-1]
+        other_player_pos = self.get_player_pos(self.other_player(player_id))
+        if (self.grid[y_next][x_next] not in [gg.WALL, gg.HOLE] or
+            (x_next, y_next) == self.positions[other_player_pos]):
+            return cur_player_pos
+
+        return cur_player_pos-1
+
+    def move_right(self, player_id):
+        cur_player_pos = self.get_player_pos(player_id)
+        (x, y) = self.positions[cur_player_pos]
+
+        if cur_player_pos >= len(self.positions) - 1:
+            return cur_player_pos
+
+        (x_next, y_next) = self.positions[cur_player_pos+1]
+        other_player_pos = self.get_player_pos(self.other_player(player_id))
+        if (self.grid[y_next][x_next] not in [gg.WALL, gg.HOLE] or
+            (x_next, y_next) == self.positions[other_player_pos]):
+            return cur_player_pos
+
+        return cur_player_pos+1
+
+    def serialize_net(self):
+        n_grid = copy.deepcopy(self.grid)
+        x1, y1 = self.positions[self.get_player_pos(1)]
+        x2, y2 = self.positions[self.get_player_pos(2)]
+        return utils.flatten_grid(n_grid)
+
+    def serialize_player_pos(self):
+        x1, y1 = self.positions[self.get_player_pos(1)]
+        x2, y2 = self.positions[self.get_player_pos(2)]
+        return (x1, y1, x2, y2)
+
+
 

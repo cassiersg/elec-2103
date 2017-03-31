@@ -23,7 +23,7 @@ _, address, role = sys.argv
 # Hardcoded server address
 server_address = (address, 10000)
 
-role = utils.PLAYER if role == 'player' else utils.SPECTATOR
+role = net.PLAYER if role == 'player' else net.SPECTATOR
 
 # Create a TCP/IP socket
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
@@ -39,9 +39,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
     
     (packet_type, payload) = s.recv_block()
 
-    if packet_type == utils.SERVER_CONNECT:
+    if packet_type == net.SERVER_CONNECT:
         (server_answer,) = payload
-        if server_answer == utils.ACCEPTED:
+        if server_answer == net.ACCEPTED:
             print("[CLIENT] Connection accepted by the server.")
         else:
             print("[CLIENT] Connection refused by the server.")
@@ -61,7 +61,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
     print("[CLIENT] Waiting for the start of the game.")
     (packet_type, payload) = s.recv_block()
 
-    if packet_type == utils.SERVER_START_GAME:
+    if packet_type == net.SERVER_START_GAME:
         (player_id, grid_size_x, grid_size_y) = payload
         print("[CLIENT] Starting the game with player id " + str(player_id) + ".")
     else:
@@ -77,6 +77,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
 
     cur_acc_value = 0
 
+    players_xy = None
+
     event_sender = net.MaxFreqSender(s, 0.05) # should not be limiting
     acc_sender = net.MaxFreqSender(s, 0.2)
 
@@ -90,12 +92,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
             sys.exit()
 
         for event in events:
-            if event == utils.LEFT:
+            if event == net.LEFT:
                 print("sending left")
-                event_sender.send(net.CLIENT_ACTION, player_id, action_id, grid_id, utils.LEFT)
-            elif event == utils.RIGHT:
+                event_sender.send(net.CLIENT_ACTION, player_id, action_id, grid_id, net.LEFT)
+            elif event == net.RIGHT:
                 print("sending right")
-                event_sender.send(net.CLIENT_ACTION, player_id, action_id, grid_id, utils.RIGHT)
+                event_sender.send(net.CLIENT_ACTION, player_id, action_id, grid_id, net.RIGHT)
 
             action_id += 1
 
@@ -105,25 +107,28 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
         
         for packet_type, payload in s.recv_all():
             print("packet_type: {}, payload: {}".format(packet_type, payload))
-            if packet_type == utils.SERVER_GRID_STATE:
+            if packet_type == net.SERVER_GRID_STATE:
                 print("received server grid state")
-                grid_id, *flat_grid = payload
+                flat_grid = payload
                 grid = utils.unflatten_grid(flat_grid, grid_size_x, grid_size_y)
-            elif packet_type == utils.SERVER_ROUND_GAUGE_STATE:
+            elif packet_type == net.SERVER_PLAYER_POSITIONS:
+                print("received server player positions")
+                (positions_id, *players_xy) = payload
+            elif packet_type == net.SERVER_ROUND_GAUGE_STATE:
                 print("received server round gauge state")
                 (round_gauge_state, gauge_speed) = payload
-            elif packet_type == utils.SERVER_SCORE:
+            elif packet_type == net.SERVER_SCORE:
                 print("received server score")
                 (score,) = payload
-            elif packet_type == utils.SERVER_GLOBAL_GAUGE_STATE:
+            elif packet_type == net.SERVER_GLOBAL_GAUGE_STATE:
                 print("received server global gauge state")
                 (global_gauge_state,) = payload
-            elif packet_type == utils.SERVER_GAME_FINISHED:
+            elif packet_type == net.SERVER_GAME_FINISHED:
                 s.close()
                 exit()
             else:
                 ValueError("unknown packet type {}".format(packet_type))
 
-        if grid is not None:
-            hw_interface.update_display(grid, player_id, round_gauge_state,
+        if grid is not None and players_xy is not None:
+            hw_interface.update_display(grid, players_xy, player_id, round_gauge_state,
                    global_gauge_state, score)

@@ -7,6 +7,7 @@ import pygame
 from time import sleep
 from datetime import datetime
 from utils import *
+import game_global
 from game_global import *
 import game_backend
 from game_backend import *
@@ -37,23 +38,24 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
 
     # Initialize the whole thing
     grid_state = game_backend.GridState(M, N)
+    need_send_grid = True
 
     last_score_sent = -1
     score = 0
 
-    last_grid_sent = -1
-    grid_id = 0
+    last_positions_sent = -1
+    positions_id = 0
 
     round_start_time = pygame.time.get_ticks()
     last_iteration_start_time = round_start_time
 
     iteration_elapsed_time = 0
 
-    round_gauge_state = GAUGE_STATE_INIT
-    round_gauge_speed = ROUND_GAUGE_SPEED_INIT
+    round_gauge_state = game_global.GAUGE_STATE_INIT
+    round_gauge_speed = game_global.ROUND_GAUGE_SPEED_INIT
 
-    global_gauge_state = GAUGE_STATE_INIT
-    global_gauge_speed = GLOBAL_GAUGE_SPEED
+    global_gauge_state = game_global.GAUGE_STATE_INIT
+    global_gauge_speed = game_global.GLOBAL_GAUGE_SPEED
 
     # Client angles
     angles = [0, 0]
@@ -64,7 +66,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
 
     while True:
         # Wait, unless a client connects
-        readable, *_ = select.select([server], [], [], 0.02)
+        readable, *_ = select.select([server], [], [], 0.05)
         for s in readable:
             assert s is server
             # A "readable" socket is ready to accept a connection
@@ -78,32 +80,32 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         # Read messages from clients
         for s in ps:
             for packet_type, payload in s.recv_all():
-                if packet_type == CLIENT_CONNECT:
+                if packet_type == net.CLIENT_CONNECT:
                     client_role, = payload
-                    if client_role == PLAYER and players < 2:
+                    if client_role == net.PLAYER and players < 2:
                         players += 1
                         print("[SERVER] A player just connects.")
-                        s.send(SERVER_CONNECT, ACCEPTED)
-                    elif client_role == PLAYER and players >= 2:
+                        s.send(net.SERVER_CONNECT, net.ACCEPTED)
+                    elif client_role == net.PLAYER and players >= 2:
                         print("[SERVER] Too many players connected.")
-                        s.send(SERVER_CONNECT, DENIED)
+                        s.send(net.SERVER_CONNECT, net.DENIED)
                         continue
                     else:
                         print("[SERVER] A spectator just connects.")
-                        s.send(SERVER_CONNECT, ACCEPTED)
-                elif packet_type == CLIENT_READY:
+                        s.send(net.SERVER_CONNECT, net.ACCEPTED)
+                elif packet_type == net.CLIENT_READY:
                     print("[SERVER] A client is ready to play.")
                     players_ready += 1
-                    s.send(SERVER_START_GAME, players_ready, M, N)
+                    s.send(net.SERVER_START_GAME, players_ready, M, N)
                     if players_ready == 2:
                         print("[SERVER] Two clients are ready to play.")
                         game_started = True
-                elif packet_type == CLIENT_ACTION:
+                elif packet_type == net.CLIENT_ACTION:
                     print("[SERVER] Client action received.")
-                    (player_id, action_id, player_grid_id, move_type) = payload
+                    (player_id, action_id, player_positions_id, move_type) = payload
                     grid_state.move(player_id, move_type)
-                    grid_id += 1
-                elif packet_type == CLIENT_ANGLE:
+                    positions_id += 1
+                elif packet_type == net.CLIENT_ANGLE:
                     print("[SERVER] Client angle received.")
                     (player_id, angle) = payload
                     angles[player_id-1] = angle
@@ -119,9 +121,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                 global_gauge_state -= global_gauge_speed*iteration_elapsed_time
 
                 if global_gauge_state <= 0:
-                    s.send(SERVER_GAME_FINISHED)
+                    s.send(net.SERVER_GAME_FINISHED)
 
-                glob_gauge_s.send(SERVER_GLOBAL_GAUGE_STATE, round(global_gauge_state))
+                glob_gauge_s.send(net.SERVER_GLOBAL_GAUGE_STATE, round(global_gauge_state))
 
                 if round_gauge_state <= 0:
                     if grid_state.is_winning():
@@ -129,33 +131,40 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
                     else:
                         last_score_sent = -1
                         score = 0
-                        last_grid_sent = -1
-                        grid_id = 0
+                        last_positions_sent = -1
+                        positions_id = 0
 
-                        global_gauge_state = GAUGE_STATE_INIT
-                        global_gauge_speed = GLOBAL_GAUGE_SPEED
+                        global_gauge_state = game_global.GAUGE_STATE_INIT
+                        global_gauge_speed = game_global.GLOBAL_GAUGE_SPEED
 
                     grid_state = game_backend.GridState(M, N)
-                    grid_id += 1
+                    need_send_grid = True
+                    positions_id += 1
 
                     round_start_time = pygame.time.get_ticks()
                     last_iteration_start_time = round_start_time
 
-                    round_gauge_state = GAUGE_STATE_INIT
-                    round_gauge_speed = ROUND_GAUGE_SPEED_INIT
+                    round_gauge_state = game_global.GAUGE_STATE_INIT
+                    round_gauge_speed = game_global.ROUND_GAUGE_SPEED_INIT
 
-                round_gauge_s.send(SERVER_ROUND_GAUGE_STATE, round(round_gauge_state), round(round_gauge_speed))
+                round_gauge_s.send(net.SERVER_ROUND_GAUGE_STATE, round(round_gauge_state), round(round_gauge_speed))
 
-                if grid_id != last_grid_sent:
-                    print("[SERVER] Sending new grid")
-                    s.send(SERVER_GRID_STATE, *([grid_id] + flatten_grid(grid_state.grid)))
-
-                    # If the updated grid was sent to everyone
+                if need_send_grid:
+                    s.send(net.SERVER_GRID_STATE, *grid_state.serialize_net())
+                    print("[SERVER] Sending new grid", repr(s))
                     if s == ps[-1]:
-                        last_grid_sent = grid_id
+                        need_send_grid = False
+ 
+                if positions_id != last_positions_sent:
+                    print("[SERVER] Sending new position list")
+                    s.send(net.SERVER_PLAYER_POSITIONS, positions_id, *grid_state.serialize_player_pos())
+
+                    # If the updated position list was sent to everyone
+                    if s == ps[-1]:
+                        last_positions_sent = positions_id
 
                 if last_score_sent != score:
-                    s.send(SERVER_SCORE, score)
+                    s.send(net.SERVER_SCORE, score)
 
                     if s == ps[-1]:
                         last_score_sent = score

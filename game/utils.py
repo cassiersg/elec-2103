@@ -5,51 +5,6 @@ from struct import *
 
 from game_global import *
 
-# Packet types
-CLIENT_CONNECT = 0
-SERVER_CONNECT = 1
-CLIENT_READY = 2
-SERVER_START_GAME = 3
-CLIENT_ACTION = 4
-CLIENT_ANGLE = 5
-SERVER_GAME_FINISHED = 6
-SERVER_ACTION_RESPONSE = 7
-SERVER_GRID_STATE = 8
-SERVER_ROUND_GAUGE_STATE = 9
-SERVER_SCORE = 10
-SERVER_GLOBAL_GAUGE_STATE = 11
-
-# Payload packing format
-PACKET_FMT = {
-    CLIENT_CONNECT: '!B',
-    SERVER_CONNECT:'!B',
-    SERVER_START_GAME: '!BBB',
-    CLIENT_ACTION: '!BIIB',
-    CLIENT_ANGLE: '!BB',
-    SERVER_ACTION_RESPONSE: '!IB',
-    SERVER_GRID_STATE: '!I' + str(M*N) + 'B',
-    SERVER_ROUND_GAUGE_STATE: '!HH',
-    SERVER_SCORE: '!I',
-    SERVER_GLOBAL_GAUGE_STATE: '!H',
-}
-
-HEADER_FMT = '!BH'
-
-# Client role
-PLAYER = 0
-SPECTATOR = 1
-
-# Server accept status
-ACCEPTED = 0
-DENIED = 1
-
-# Server action answer status
-ACCEPTED = 0
-REFUSED = 1
-
-# Move types
-LEFT = 0
-RIGHT = 1
 
 # SOON DEPRECATED
 def myrecv(s):

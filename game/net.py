@@ -13,9 +13,10 @@ CLIENT_ANGLE = 5
 SERVER_GAME_FINISHED = 6
 SERVER_ACTION_RESPONSE = 7
 SERVER_GRID_STATE = 8
-SERVER_ROUND_GAUGE_STATE = 9
-SERVER_SCORE = 10
-SERVER_GLOBAL_GAUGE_STATE = 11
+SERVER_PLAYER_POSITIONS = 9
+SERVER_ROUND_GAUGE_STATE = 10
+SERVER_SCORE = 11
+SERVER_GLOBAL_GAUGE_STATE = 12
 
 # Payload packing format
 PACKET_FMT = {
@@ -27,7 +28,8 @@ PACKET_FMT = {
     CLIENT_ANGLE: '!BB',
     SERVER_GAME_FINISHED: '!',
     SERVER_ACTION_RESPONSE: '!IB',
-    SERVER_GRID_STATE: '!I' + str(game_global.M*game_global.N) + 'B',
+    SERVER_GRID_STATE:          '!' + str(game_global.M*game_global.N) + 'B',
+    SERVER_PLAYER_POSITIONS:     '!IBBBB',
     SERVER_ROUND_GAUGE_STATE: '!HH',
     SERVER_SCORE: '!I',
     SERVER_GLOBAL_GAUGE_STATE: '!H',
@@ -112,10 +114,6 @@ class PacketSocket:
             if m is not None:
                 return m
             time.sleep(delay)
-        
-
-
-#TODO: declare ConnectionLost
 
 class MaxFreqSender:
     def __init__(self, packet_socket, period):

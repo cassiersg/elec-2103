@@ -3,15 +3,16 @@ from game_frontend import *
 from game_global import *
 from utils import *
 from pygame.locals import *
+import net
 
 class HardwareInterface:
     def __init__(self):
         self.screen = pygame_init()
 
-    def update_display(self, grid, player_id, round_gauge, global_gauge, score):
+    def update_display(self, grid, players_xy, player_id, round_gauge, global_gauge, score):
         myfont = pygame.font.SysFont("Comic Sans MS", 28)
 
-        draw_grid(self.screen, grid, player_id)
+        draw_grid(self.screen, grid, players_xy, player_id)
         draw_round_timer(self.screen, round_gauge)
         write_score(self.screen, myfont, score)
         draw_global_timer(self.screen, global_gauge)
@@ -28,10 +29,10 @@ class HardwareInterface:
             elif event.type == KEYDOWN:
                 if event.key == pygame.K_k:
                     print("[CLIENT] Client sends left movement.")
-                    events.append(LEFT)
+                    events.append(net.LEFT)
                 elif event.key == pygame.K_m:
                     print("[CLIENT] Client sends right movement.")
-                    events.append(RIGHT)
+                    events.append(net.RIGHT)
                 elif event.key == pygame.K_o:
                     print("[CLIENT] Client increases accelerometer angle")
                     cur_acc_value = min(255, cur_acc_value+10)
