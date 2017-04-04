@@ -1,6 +1,5 @@
-import os
-import pickle
 import game_global as gg
+from client_desktop import TILE_SIZE
 
 SCALE_FACTOR = 4
 TILES_ROW = 100
@@ -11,8 +10,6 @@ class TileRenderer:
 
     def display(self, *args):
         tiles = self._gen_tiles(*args)
-        if 'EXPORT_GAME_TILES' in os.environ:
-            export_tile_list(tiles)
         self.hw_interface.display_tiles(tiles)
 
     @staticmethod
@@ -26,40 +23,63 @@ class TileRenderer:
         else:
             raise ValueError(str(grid_id))
 
+    def set_wall(self, tiles, grid, round_gauge):
+        for x in range(TILES_ROW):
+            for y in range(60):
+                v = round(10 * TILE_SIZE * SCALE_FACTOR * round_gauge / gg.GAUGE_STATE_INIT)
+                v2 = round(v / TILE_SIZE)
+                try:
+                    if x >= v2:
+                        if (x-v2)//SCALE_FACTOR < gg.N and (x-v2+1)//SCALE_FACTOR >= gg.N:
+                            tiles[y*TILES_ROW+x] = 32 + (TILE_SIZE - v % TILE_SIZE)
+                        c1 = (grid[(x-v2+1)//SCALE_FACTOR][y//SCALE_FACTOR] == gg.WALL)
+                        c2 = (grid[(x-v2)//SCALE_FACTOR][y//SCALE_FACTOR] == gg.WALL)
+                        if c1 and c2:
+                            c = self._map_color(gg.WALL)
+                        elif c1:
+                            c = 24 + (TILE_SIZE - v % TILE_SIZE)
+                        elif c2:
+                            c = 32 + (TILE_SIZE - v % TILE_SIZE)
+                        else:
+                            c = tiles[y*TILES_ROW+x]
+                        tiles[y*TILES_ROW+x] = c
+                except IndexError:
+                    pass
+
+    def _set_grid_case(self, tiles, grid_x, grid_y, color):
+        for i_off in range(0, SCALE_FACTOR):
+            for j_off in range(0, SCALE_FACTOR):
+                tiles[TILES_ROW*(grid_x*SCALE_FACTOR+j_off)+grid_y*SCALE_FACTOR+i_off] = color
+
     def _gen_tiles(self, grid, players_xy, player_id, round_gauge, global_gauge, score):
         tiles = 6000 * [0x00]
         for i in range(0, gg.M):
             for j in range(0, gg.N):
-                for i_off in range(0, SCALE_FACTOR):
-                    for j_off in range(0, SCALE_FACTOR):
-                        color = self._map_color(grid[gg.N-j-1][i])
-                        tiles[TILES_ROW*(j*SCALE_FACTOR+j_off)+i*SCALE_FACTOR+i_off] = color
+                if grid[j][i] != gg.WALL:
+                    color = self._map_color(grid[j][i])
+                    self._set_grid_case(tiles, i, j, color)
         x1, y1, x2, y2 = players_xy
         if player_id == 1:
             c1, c2 = 2, 3
         elif player_id == 2:
             c1, c2 = 3, 2
-        for i_off in range(0, SCALE_FACTOR):
-            for j_off in range(0, SCALE_FACTOR):
-                tiles[TILES_ROW*((gg.N-y1-1)*SCALE_FACTOR+j_off)+x1*SCALE_FACTOR+i_off] = c1
-                tiles[TILES_ROW*((gg.N-y2-1)*SCALE_FACTOR+j_off)+x2*SCALE_FACTOR+i_off] = c2
+        self.set_wall(tiles, grid,round_gauge)
+        self._set_grid_case(tiles, x1, y1, c1)
+        self._set_grid_case(tiles, x2, y2, c2)
 
         for j in range(0, SCALE_FACTOR*gg.N):
+            tiles_gauge = SCALE_FACTOR*gg.N
+            fill_level_tiles = tiles_gauge-j-1
+            int_fill_level_asked = int(tiles_gauge*global_gauge//int(gg.GAUGE_STATE_INIT))
+            if fill_level_tiles > int_fill_level_asked:
+                color = 3
+            elif fill_level_tiles < int_fill_level_asked:
+                color = 2
+            else:
+                partial_fill_level = ((8*tiles_gauge*global_gauge)//int(gg.GAUGE_STATE_INIT)) - 8*int_fill_level_asked
+                color = 16 + 7-partial_fill_level
             for i_off in range(0, SCALE_FACTOR):
-                if (SCALE_FACTOR*gg.N-j-1)/(SCALE_FACTOR*gg.N) > round_gauge/gg.GAUGE_STATE_INIT:
-                    color = 3
-                else:
-                    color = 2
                 tiles[TILES_ROW*j+(1+gg.M)*SCALE_FACTOR+i_off] = color
  
         return tiles
 
-
-def export_tile_list(tiles):
-    """For debug"""
-    l = os.listdir('./tiles_lists')
-    l.sort()
-    n = int(l[-1][1:]) + 1
-    fn = './tiles_lists/t{:03d}'.format(n)
-    with open(fn, 'wb') as f:
-        pickle.dump(tiles, f)

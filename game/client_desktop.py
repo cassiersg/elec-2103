@@ -8,16 +8,19 @@ import net
 class HardwareInterface:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((TILE_X*TILE_SIZE, TILE_Y*TILE_SIZE))
+        self.screen = pygame.display.set_mode((TILE_Y*TILE_SIZE, TILE_X*TILE_SIZE))
         self.screen.fill(BLACK)
         pygame.display.set_caption("Shape Yourself, Wall is Coming!")
 
     def display_tiles(self, tile_idx):
+        s = pygame.Surface((TILE_X*TILE_SIZE, TILE_Y*TILE_SIZE))
         for i in range(TILE_X*TILE_Y):
             t = tile_idx[i]
             coord_x =  TILE_SIZE*(i % TILE_X)
             coord_y = TILE_SIZE*(i // TILE_X)
-            self.screen.blit(tiles_surfaces[t], (coord_x, coord_y))
+            s.blit(tiles_surfaces[t], (coord_x, coord_y))
+        s = pygame.transform.rotate(s, 90)
+        self.screen.blit(s, (0, 0))
         pygame.display.flip()
         
     def get_events(self, cur_acc_value):
@@ -66,13 +69,27 @@ tiles_image = TILE_NB * TILE_SIZE**2 * [0]
 
 for i in range(64):
     for j in range(16):
-        tiles_image[i+j*TILE_SIZE**2] = 3 if i == 0 else j
+        tiles_image[i+j*TILE_SIZE**2] = j
 
 for j in range(8):
     for i in range(8*j):
         tiles_image[i+(j+16)*TILE_SIZE**2] = 3 # green
     for i in range(8*j, TILE_SIZE**2):
         tiles_image[i+(j+16)*TILE_SIZE**2] = 2 # red
+
+for t in range(8):
+    for j in range(8):
+        for i in range(t):
+            tiles_image[i+j*TILE_SIZE+(24+t)*TILE_SIZE**2] = 0 # black
+        for i in range(t, TILE_SIZE):
+            tiles_image[i+j*TILE_SIZE+(24+t)*TILE_SIZE**2] = 4 # gray
+
+for t in range(8):
+    for j in range(8):
+        for i in range(t):
+            tiles_image[i+j*TILE_SIZE+(32+t)*TILE_SIZE**2] = 4 # gray
+        for i in range(t, TILE_SIZE):
+            tiles_image[i+j*TILE_SIZE+(32+t)*TILE_SIZE**2] = 0 # black
 
 tiles_surfaces = []
 for i in range(TILE_NB):
