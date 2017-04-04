@@ -4,6 +4,7 @@ import time
 import pygame
 import utils
 import net
+import rendering
 
 if utils.runs_on_rpi():
     import client_device as cd
@@ -52,6 +53,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
         sys.exit()
 
     hw_interface = cd.HardwareInterface()
+    renderer = rendering.TileRenderer(hw_interface)
 
     print("[CLIENT] Advertising the server that we are ready.")
     s.send(net.CLIENT_READY)
@@ -129,5 +131,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
                 ValueError("unknown packet type {}".format(packet_type))
 
         if grid is not None and players_xy is not None:
-            hw_interface.update_display(grid, players_xy, player_id, round_gauge_state,
+            renderer.display(grid, players_xy, player_id, round_gauge_state,
                    global_gauge_state, score)

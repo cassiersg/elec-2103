@@ -1,28 +1,28 @@
+import os
+import pickle
 import pygame
-from game_frontend import *
-from game_global import *
-from utils import *
+import game_global as gg
 from pygame.locals import *
 import net
 
 class HardwareInterface:
     def __init__(self):
-        self.screen = pygame_init()
+        pygame.init()
+        self.screen = pygame.display.set_mode((TILE_X*TILE_SIZE, TILE_Y*TILE_SIZE))
+        self.screen.fill(BLACK)
+        pygame.display.set_caption("Shape Yourself, Wall is Coming!")
 
-    def update_display(self, grid, players_xy, player_id, round_gauge, global_gauge, score):
-        myfont = pygame.font.SysFont("Comic Sans MS", 28)
-
-        draw_grid(self.screen, grid, players_xy, player_id)
-        draw_round_timer(self.screen, round_gauge)
-        write_score(self.screen, myfont, score)
-        draw_global_timer(self.screen, global_gauge)
-
-        pygame.display.update()
-
+    def display_tiles(self, tile_idx):
+        for i in range(TILE_X*TILE_Y):
+            t = tile_idx[i]
+            coord_x =  TILE_SIZE*(i % TILE_X)
+            coord_y = TILE_SIZE*(i // TILE_X)
+            self.screen.blit(tiles_surfaces[t], (coord_x, coord_y))
+        pygame.display.flip()
+        
     def get_events(self, cur_acc_value):
         quit = False
         events = []
-
         for event in pygame.event.get():
             if event.type == QUIT:
                 quit = True
@@ -39,6 +39,46 @@ class HardwareInterface:
                 elif event.key == pygame.K_l:
                     print("[CLIENT] Client decreases accelerometer angle")
                     cur_acc_value = max(0, cur_acc_value-10)
-
         return (quit, cur_acc_value, events)
+
+TILE_SIZE = 8
+TILE_NB = 100
+TILE_X = 100
+TILE_Y = 60
+
+BLACK = (  0,   0,   0)
+GRAY  = (192, 192, 192)
+WHITE = (255, 255, 255)
+RED   = (255,   0,   0)
+GREEN = (  0, 255,   0)
+BLUE  = (  0,   0, 255)
+
+colormap = [
+    BLACK,
+    WHITE,
+    RED,
+    GREEN,
+    GRAY,
+]
+colormap.extend((256-len(colormap))*[BLACK])
+
+tiles_image = TILE_NB * TILE_SIZE**2 * [0]
+
+for i in range(64):
+    for j in range(16):
+        tiles_image[i+j*TILE_SIZE**2] = 3 if i == 0 else j
+
+for j in range(8):
+    for i in range(8*j):
+        tiles_image[i+(j+16)*TILE_SIZE**2] = 3 # green
+    for i in range(8*j, TILE_SIZE**2):
+        tiles_image[i+(j+16)*TILE_SIZE**2] = 2 # red
+
+tiles_surfaces = []
+for i in range(TILE_NB):
+    s = pygame.Surface((TILE_SIZE, TILE_SIZE))
+    for j in range(TILE_SIZE**2):
+        c = tiles_image[i*TILE_SIZE**2+j]
+        s.set_at((j % TILE_SIZE, j // TILE_SIZE), colormap[c])
+    tiles_surfaces.append(s)
 
