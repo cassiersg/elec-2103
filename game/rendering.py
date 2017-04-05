@@ -1,8 +1,7 @@
 import game_global as gg
-from client_desktop import TILE_SIZE
+from tiles import TILE_SIZE, TILE_X
 
 SCALE_FACTOR = 4
-TILES_ROW = 100
 
 class TileRenderer:
     def __init__(self, hw_interface):
@@ -24,14 +23,14 @@ class TileRenderer:
             raise ValueError(str(grid_id))
 
     def set_wall(self, tiles, grid, round_gauge):
-        for x in range(TILES_ROW):
+        for x in range(TILE_X):
             for y in range(60):
                 v = round(10 * TILE_SIZE * SCALE_FACTOR * round_gauge / gg.GAUGE_STATE_INIT)
                 v2 = round(v / TILE_SIZE)
                 try:
                     if x >= v2:
                         if (x-v2)//SCALE_FACTOR < gg.N and (x-v2+1)//SCALE_FACTOR >= gg.N:
-                            tiles[y*TILES_ROW+x] = 32 + (TILE_SIZE - v % TILE_SIZE)
+                            tiles[y*TILE_X+x] = 32 + (TILE_SIZE - v % TILE_SIZE)
                         c1 = (grid[(x-v2+1)//SCALE_FACTOR][y//SCALE_FACTOR] == gg.WALL)
                         c2 = (grid[(x-v2)//SCALE_FACTOR][y//SCALE_FACTOR] == gg.WALL)
                         if c1 and c2:
@@ -41,15 +40,15 @@ class TileRenderer:
                         elif c2:
                             c = 32 + (TILE_SIZE - v % TILE_SIZE)
                         else:
-                            c = tiles[y*TILES_ROW+x]
-                        tiles[y*TILES_ROW+x] = c
+                            c = tiles[y*TILE_X+x]
+                        tiles[y*TILE_X+x] = c
                 except IndexError:
                     pass
 
     def _set_grid_case(self, tiles, grid_x, grid_y, color):
         for i_off in range(0, SCALE_FACTOR):
             for j_off in range(0, SCALE_FACTOR):
-                tiles[TILES_ROW*(grid_x*SCALE_FACTOR+j_off)+grid_y*SCALE_FACTOR+i_off] = color
+                tiles[TILE_X*(grid_x*SCALE_FACTOR+j_off)+grid_y*SCALE_FACTOR+i_off] = color
 
     def _gen_tiles(self, grid, players_xy, player_id, round_gauge, global_gauge, score):
         tiles = 6000 * [0x00]
@@ -79,7 +78,7 @@ class TileRenderer:
                 partial_fill_level = ((8*tiles_gauge*global_gauge)//int(gg.GAUGE_STATE_INIT)) - 8*int_fill_level_asked
                 color = 16 + 7-partial_fill_level
             for i_off in range(0, SCALE_FACTOR):
-                tiles[TILES_ROW*j+(1+gg.M)*SCALE_FACTOR+i_off] = color
+                tiles[TILE_X*j+(1+gg.M)*SCALE_FACTOR+i_off] = color
  
         return tiles
 
