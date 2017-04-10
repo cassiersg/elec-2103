@@ -1,5 +1,5 @@
 BIN=main
-OBJS=main.o gl_utils.o gl_platform.o utils.o
+OBJS=main.o gl_utils.o gl_platform.o utils.o shaders.o
 
 # needs glm (`apt install libglm-dev` on rpi)
 
@@ -37,4 +37,10 @@ $(BIN): $(OBJS)
 clean:
 	@rm -f $(BIN) $(OBJS)
 	@rm -f img.bmp
+	@rm -f shaders.cpp
+
+shaders.cpp: vertex_shader.glsl fragment_shader.glsl
+	rm  -f $@
+	xxd -i vertex_shader.glsl >> $@
+	xxd -i fragment_shader.glsl >> $@
 

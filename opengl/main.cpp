@@ -11,6 +11,7 @@
 #include "gl_platform.hpp"
 #include "gl_utils.hpp"
 #include "utils.hpp"
+#include "shaders.hpp"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -19,31 +20,6 @@
 
 #define SIZE_VEC(x) (sizeof((x))/sizeof((x)[0]))
 
-static const char *vertex_shader_src =  
-"attribute vec3 vPosition;    \n"
-"attribute vec3 color;    \n"
-"attribute vec3 normal;    \n"
-"varying vec3 colorout;    \n"
-"uniform mat4 VP; \n"
-"uniform mat4 model; \n"
-"uniform vec3 lightdir; \n"
-"void main()                  \n"
-"{                            \n"
-"   gl_Position = VP*model*vec4(vPosition.xyz, 1.0);  \n"
-"   vec4 norm_local = model * vec4(normal, 0.0); \n"
-"   float diff = max(0.0, dot(normalize(normal.xyz), normalize(-lightdir)));\n"
-"   float c_light_coeff = 0.3; \n"
-"   colorout = 1.0/(1.0+c_light_coeff) * (c_light_coeff+diff) * color;\n"
-"}                            \n";
-
-static const char *fragment_shader_src =  
-"precision mediump float;\n"
-"varying vec3 colorout;\n"
-"void main()                                  \n"
-"{                                            \n"
-//"  gl_FragColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );\n"
-"  gl_FragColor = vec4 (colorout, 1.0 );\n"
-"}                                            \n";
 
 // Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
 // A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
@@ -110,7 +86,7 @@ cubes_gl_data init_cube_drawing(int width, int height)
     env.width = width;
     env.height = height;
    // Draw whatever you want here
-   env.program = gen_program(vertex_shader_src, fragment_shader_src);
+   env.program = gen_program(vertex_shader_glsl, fragment_shader_glsl);
    assert(env.program);
     // Position attributes
     env.vertex_loc = glGetAttribLocation(env.program, "vPosition");

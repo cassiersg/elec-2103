@@ -7,6 +7,7 @@ src/software/LELEC2103-SW/.force_relink
 eclipse/*
 opengl/*.bmp
 opengl/main
+opengl/shaders.cpp
 
 ### AlteraQuartusII ###
 ##list taken from http://www.alterawiki.com/wiki/Version_Control (01.10.2015)
