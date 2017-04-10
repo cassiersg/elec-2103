@@ -1,4 +1,4 @@
-#include "gl_platform.h"
+#include "gl_platform.hpp"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +11,7 @@
 #include "GLES/gl.h"
 #include "GLES2/gl2.h"
 
-#include "gl_utils.h"
+#include "gl_utils.hpp"
 
 #define check() assert(glGetError() == 0)
 

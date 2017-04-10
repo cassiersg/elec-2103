@@ -1,4 +1,4 @@
-#include "gl_utils.h"
+#include "gl_utils.hpp"
 
 #include <stdlib.h>
 #include <assert.h>

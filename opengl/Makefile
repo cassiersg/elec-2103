@@ -1,5 +1,4 @@
 BIN=main
-HEADERS=gl_utils.h gl_platform.h utils.c
 OBJS=main.o gl_utils.o gl_platform.o utils.o
 
 # needs glm (`apt install libglm-dev` on rpi)
@@ -19,6 +18,8 @@ else
     LIBS+=-lGLESv2 -lEGL
 endif
 
+CPPFLAGS+=$(CFLAGS) $(INCLUDES)
+
 run: $(BIN)
 	./$(BIN)
 
@@ -27,9 +28,8 @@ open: run
 
 all: $(BIN)
 
-%.o: %.c $(HEADERS)
-	@rm -f $@ 
-	g++ -c $< $(CFLAGS) $(INCLUDES) -g -o $@
+%.o: %.cpp
+	g++ -c $< $(CPPFLAGS) -g -o $@
 
 $(BIN): $(OBJS)
 	g++ -o $@ $^ $(LDFLAGS) $(LIBS)

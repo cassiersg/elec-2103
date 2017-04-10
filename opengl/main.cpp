@@ -8,9 +8,9 @@
 #include "GLES/gl.h"
 #include "GLES2/gl2.h"
 
-#include "gl_platform.h"
-#include "gl_utils.h"
-#include "utils.h"
+#include "gl_platform.hpp"
+#include "gl_utils.hpp"
+#include "utils.hpp"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
