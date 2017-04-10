@@ -6,7 +6,7 @@ src/software/LELEC2103-SW/obj/*
 src/software/LELEC2103-SW/.force_relink
 eclipse/*
 opengl/*.bmp
-opengl/triangle
+opengl/main
 
 ### AlteraQuartusII ###
 ##list taken from http://www.alterawiki.com/wiki/Version_Control (01.10.2015)

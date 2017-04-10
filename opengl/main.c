@@ -6,6 +6,8 @@
 #include <unistd.h>
 
 #include "platform.h"
+//#define GLEW_STATIC
+//#include "glew.h"
 
 #if RPI
 #include "bcm_host.h"
@@ -15,6 +17,13 @@
 #include "GLES2/gl2.h"
 #include "EGL/egl.h"
 #include "EGL/eglext.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#define SIZE_VEC(x) (sizeof((x))/sizeof((x)[0]))
+
 
 #ifndef M_PI
    #define M_PI 3.141592654
@@ -80,7 +89,7 @@ GLuint loadShader ( GLenum type, const char *shaderSrc )
       
       if ( infoLen > 1 )
       {
-         char* infoLog = malloc (sizeof(char) * infoLen );
+         char* infoLog = (char *) malloc (sizeof(char) * infoLen );
 
          glGetShaderInfoLog ( shader, infoLen, NULL, infoLog );
          printf( "Error compiling shader:\n%s\n", infoLog );            
@@ -98,17 +107,29 @@ GLuint loadShader ( GLenum type, const char *shaderSrc )
 GLuint gen_program(void)
 {
    const char *vShaderStr =  
-      "attribute vec4 vPosition;    \n"
+      "attribute vec3 vPosition;    \n"
+      "attribute vec3 color;    \n"
+      "attribute vec3 normal;    \n"
+      "varying vec3 colorout;    \n"
+      "uniform mat4 VP; \n"
+      "uniform mat4 model; \n"
+      "uniform vec3 lightdir; \n"
       "void main()                  \n"
       "{                            \n"
-      "   gl_Position = vPosition;  \n"
+      "   gl_Position = VP*model*vec4(vPosition.xyz, 1.0);  \n"
+      "   vec4 norm_local = model * vec4(normal, 0.0); \n"
+      "   float diff = max(0.0, dot(normalize(normal.xyz), normalize(-lightdir)));\n"
+      "   float c_light_coeff = 0.3; \n"
+      "   colorout = 1.0/(1.0+c_light_coeff) * (c_light_coeff+diff) * color;\n"
       "}                            \n";
    
    const char *fShaderStr =  
-      "precision mediump float;\n"\
+      "precision mediump float;\n"
+      "varying vec3 colorout;\n"
       "void main()                                  \n"
       "{                                            \n"
-      "  gl_FragColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );\n"
+      //"  gl_FragColor = vec4 ( 1.0, 0.0, 0.0, 1.0 );\n"
+      "  gl_FragColor = vec4 (colorout, 1.0 );\n"
       "}                                            \n";
 
    GLuint vertexShader;
@@ -180,7 +201,7 @@ void assertOpenGLError(const char *msg)
     }
 }
 
-void export_bmp(char *fname, int width, int height, char* img)
+void export_bmp(char *fname, int width, int height, unsigned char* img)
 {
     FILE *f;
     int filesize = 54 + 3*width*height;
@@ -237,37 +258,182 @@ void draw_triangle(int width, int height)
    GLuint program = gen_program();
    assert(program);
 
-   GLfloat vVertices[] = {  0.0f,  0.5f, 0.0f,
-                           -0.5f, -0.5f, 0.0f,
-                            0.5f, -0.5f, 0.0f };
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it closer to the camera than the former one
+    glDepthFunc(GL_LESS); 
 
    // Set the viewport
    glViewport ( 0, 0, width, height );
    assertOpenGLError("glviewport");
 
-   // Clear the color buffer
-   glClear ( GL_COLOR_BUFFER_BIT );
+   // Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
+   // A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
+   static const GLfloat g_vertex_buffer_data[] = { 
+       // front
+       -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+       -1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+       -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        // back
+        1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+        1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+       -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+        1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+       -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+       -1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+        // right
+        1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
+        1.0f, 1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
+        1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        1.0f,-1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        // left
+       -1.0f,-1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+       -1.0f,-1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+       -1.0f, 1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+       -1.0f,-1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+       -1.0f, 1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+       -1.0f, 1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+        // bottom
+        1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
+       -1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
+        1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
+        1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
+       -1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
+       -1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
+       // up
+        1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+        1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
+       -1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
+        1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+       -1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
+       -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+   };
 
+   // One color for each vertex.
+   static const GLfloat g_color_buffer_data[] = { 
+       // front -- red
+       1.0f, 0.0f, 0.0f,
+       1.0f, 0.0f, 0.0f,
+       1.0f, 0.0f, 0.0f,
+       1.0f, 0.0f, 0.0f,
+       1.0f, 0.0f, 0.0f,
+       1.0f, 0.0f, 0.0f,
+        // back -- green
+       0.0f, 1.0f, 0.0f,
+       0.0f, 1.0f, 0.0f,
+       0.0f, 1.0f, 0.0f,
+       0.0f, 1.0f, 0.0f,
+       0.0f, 1.0f, 0.0f,
+       0.0f, 1.0f, 0.0f,
+        // right -- blue
+       0.0f, 0.0f, 1.0f,
+       0.0f, 0.0f, 1.0f,
+       0.0f, 0.0f, 1.0f,
+       0.0f, 0.0f, 1.0f,
+       0.0f, 0.0f, 1.0f,
+       0.0f, 0.0f, 1.0f,
+       // left -- yellow
+       1.0f, 1.0f, 0.0f,
+       1.0f, 1.0f, 0.0f,
+       1.0f, 1.0f, 0.0f,
+       1.0f, 1.0f, 0.0f,
+       1.0f, 1.0f, 0.0f,
+       1.0f, 1.0f, 0.0f,
+       // bottom -- purple
+       1.0f, 0.0f, 1.0f,
+       1.0f, 0.0f, 1.0f,
+       1.0f, 0.0f, 1.0f,
+       1.0f, 0.0f, 1.0f,
+       1.0f, 0.0f, 1.0f,
+       1.0f, 0.0f, 1.0f,
+       // up -- 
+       0.0f, 1.0f, 1.0f,
+       0.0f, 1.0f, 1.0f,
+       0.0f, 1.0f, 1.0f,
+       0.0f, 1.0f, 1.0f,
+       0.0f, 1.0f, 1.0f,
+       0.0f, 1.0f, 1.0f,
+   };
+   GLfloat g_color_buffer_data_uniform[sizeof(g_color_buffer_data)];
+   for (int i=0; i < SIZE_VEC(g_color_buffer_data_uniform)/3; i++) {
+       g_color_buffer_data_uniform[3*i] =  1.0f;
+       g_color_buffer_data_uniform[3*i+1] =  0.0f;
+       g_color_buffer_data_uniform[3*i+2] =  0.0f;
+   }
+
+   // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+   glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+   // Camera matrix
+   glm::mat4 View       = glm::lookAt(
+           glm::vec3(2,-2,5), // Camera is at (2,2,-5), in World Space
+           glm::vec3(0,0,0), // and looks at the origin
+           glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+           );
+   // Model matrix : an identity matrix (model will be at the origin)
+   glm::mat4 Model      = glm::mat4(1.0f);
+   // Our ModelViewProjection : multiplication of our 3 matrices
+   glm::mat4 VP = Projection * View;
+
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    // Use the program object
    glUseProgram ( program);
    assertOpenGLError("gluseprogram");
-
    // Load the vertex data
-   glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
+           g_vertex_buffer_data);
+    glEnableVertexAttribArray(0);
+    assertOpenGLError("gl enable vertex attrix array");
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0,
+            g_color_buffer_data_uniform);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
+           g_vertex_buffer_data+3);
+    glEnableVertexAttribArray(2);
+
+    glm::vec3 lightdir = glm::vec3(0, 0.2, -1);
+
+    // Get matrix's uniform location and set matrix
+    GLint VPloc = glGetUniformLocation(program, "VP");
+    glUniformMatrix4fv(VPloc, 1, GL_FALSE, glm::value_ptr(VP));
+    GLint modelloc = glGetUniformLocation(program, "model");
+    glUniformMatrix4fv(modelloc, 1, GL_FALSE, glm::value_ptr(Model));
+    GLint lightdirloc = glGetUniformLocation(program, "lightdir");
+    glUniform3fv(lightdirloc, 1, glm::value_ptr(lightdir));
+
+
+    glDrawArrays(GL_TRIANGLES, 0, 6*6);
+
+
+
+    /*
+   glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), vertices );
    assertOpenGLError("glvertexattrixpointer");
    glEnableVertexAttribArray ( 0 );
    assertOpenGLError("gl enable vertex attrix array");
-   glDrawArrays ( GL_TRIANGLES, 0, 3 );
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), vertices );
+   assertOpenGLError("glvertexattrixpointer");
+   glEnableVertexAttribArray ( 1 );
+   assertOpenGLError("gl enable vertex attrix array");
+   glDrawArrays ( GL_TRIANGLES, 0, 6 );
    assertOpenGLError("gl draw arrays");
+   */
 
 }
 
 void export_buffer(int width, int height)
 {
     // Export
-    unsigned char *buffer = (char*)malloc(width * height * 4);
+    unsigned char *buffer = (unsigned char*)malloc(width * height * 4);
     assert(buffer != NULL);
-    unsigned char *buffer2= (char*)malloc(width * height * 3);
+    unsigned char *buffer2= (unsigned char*)malloc(width * height * 3);
     assert(buffer2 != NULL);
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
     assertOpenGLError("glReadPixels");
@@ -279,7 +445,7 @@ void export_buffer(int width, int height)
         }
        //printf("i: %i, v: %i, v: %i, v: %i, v: %i\n", i, buffer[4*i], buffer[4*i+1], buffer[4*i+2], buffer[4*i+3]);
    }
-   export_bmp("test1.bmp", width, height, buffer2);
+   export_bmp((char *)"test1.bmp", width, height, buffer2);
    free(buffer);
 }
 
@@ -305,11 +471,13 @@ static void init_ogl(GLOBAL_GL_SCREEN_STATE *state, int width, int height)
        EGL_NONE
    };
 
+   printf("01\n");
 
    // get an EGL display connection
    state->display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
    assert(state->display!=EGL_NO_DISPLAY);
    check();
+   printf("02\n");
 
    // initialize the EGL display connection
    assert(eglInitialize(state->display, NULL, NULL) != EGL_FALSE);
@@ -318,6 +486,7 @@ static void init_ogl(GLOBAL_GL_SCREEN_STATE *state, int width, int height)
    // get an appropriate EGL frame buffer configuration
    assert(eglChooseConfig(state->display, attribute_list, &config, 1, &num_configs) != EGL_FALSE);
    check();
+   printf("03\n");
 
    // get an appropriate EGL frame buffer configuration
    assert(eglBindAPI(EGL_OPENGL_ES_API) != EGL_FALSE);
@@ -326,6 +495,7 @@ static void init_ogl(GLOBAL_GL_SCREEN_STATE *state, int width, int height)
    // create an EGL rendering context
    state->context = eglCreateContext(state->display, config, EGL_NO_CONTEXT, context_attributes);
    assert(state->context!=EGL_NO_CONTEXT);
+   printf("04\n");
 
 #if RPI
    // Not working without that, don't know why
@@ -371,10 +541,13 @@ static void init_ogl(GLOBAL_GL_SCREEN_STATE *state, int width, int height)
    // Not on RPI, MESA allows to create context without surface
    assert(eglMakeCurrent(state->display, EGL_NO_SURFACE, EGL_NO_SURFACE, state->context) != EGL_FALSE);
    check();
+   printf("05\n");
 
     // Create framebuffer
     glGenFramebuffers(1, &state->canvasFrameBuffer);
+   printf("07\n");
     glBindFramebuffer(GL_FRAMEBUFFER, state->canvasFrameBuffer);
+   printf("06\n");
 
     // Attach renderbuffer
     glGenRenderbuffers(1, &state->canvasRenderBuffer);
@@ -382,6 +555,7 @@ static void init_ogl(GLOBAL_GL_SCREEN_STATE *state, int width, int height)
     glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, width, height);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, state->canvasRenderBuffer);
     assertOpenGLError("framebuffer");
+   printf("07\n");
 #endif
 
    // Maybe not necessary (?)
@@ -454,12 +628,16 @@ void draw_export(void)
    GLuint program = gen_program();
    assert(program);
 
-   GLfloat vVertices[] = {  0.0f,  0.5f, 0.0f,
+   GLfloat vertices[] = {  0.0f,  0.5f, 0.0f,
                            -0.5f, -0.5f, 0.0f,
                             0.5f, -0.5f, 0.0f };
 
    // Set the viewport
    glViewport ( 0, 0, width, height );
+
+   // Setup OpenGL options
+   glEnable(GL_DEPTH_TEST);
+
 
    // Clear the color buffer
    glClear ( GL_COLOR_BUFFER_BIT );
@@ -468,7 +646,7 @@ void draw_export(void)
    glUseProgram ( program);
 
    // Load the vertex data
-   glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
+   glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vertices );
    glEnableVertexAttribArray ( 0 );
    glDrawArrays ( GL_TRIANGLES, 0, 3 );
 
@@ -509,8 +687,10 @@ int main ()
 #endif
 
    // Start OGLES
+   printf("0\n");
    init_ogl(state, width, height);
    assert(glCreateProgram());
+   printf("1\n");
 
    draw_triangle(width, height);
    export_buffer(width, height);

@@ -1,5 +1,5 @@
-BIN=triangle
-MAIN_SRC=triangle.c
+BIN=main
+MAIN_SRC=main.c
 AUX_SRC=platform.h
 
 UNAME_M := $(shell uname -m)
@@ -11,24 +11,31 @@ ifeq ($(UNAME_M),armv7l)
 
     INCLUDES+=-I$(SDKSTAGE)/opt/vc/include/ -I$(SDKSTAGE)/opt/vc/include/interface/vcos/pthreads -I$(SDKSTAGE)/opt/vc/include/interface/vmcs_host/linux -I./ -I$(SDKSTAGE)/opt/vc/src/hello_pi/libs/ilclient -I$(SDKSTAGE)/opt/vc/src/hello_pi/libs/vgfont
     OUT_EXT=.o
-    LINKER=$(CC)
+    LINKER=g++
     C_OPT=-c
 else
     # other (linux)
-    LIBS+=-lGLESv2 -lEGL -lm -lX11
+    LIBS+=-lGLESv2 -lEGL -lm -lX11 -Llib/ -lGLEW `pkg-config --libs --cflags glm`
     LINKER=true
     OUT_EXT=
     C_OPT=
 endif
 
+run: $(BIN)
+	./$(BIN)
+
+open: run
+	xdg-open img.bmp
+
 all: $(BIN)
 
 $(BIN): $(MAIN_SRC) $(AUX_SRC)
 	@rm -f $@ 
-	$(CC) $(C_OPT) $(MAIN_SRC) $(CFLAGS) $(INCLUDES) $(LIBS) -g -o $@$(OUT_EXT)
+	g++ $(C_OPT) $(MAIN_SRC) $(CFLAGS) $(INCLUDES) $(LIBS) -g -o $@$(OUT_EXT)
 	$(LINKER) -o $@ $@.o $(LDFLAGS)
 
 clean:
 	@rm -f $(BIN) $(LIB) *.o
+	@rm -f img.bmp
 
 
