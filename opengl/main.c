@@ -387,17 +387,20 @@ void draw_triangle(int width, int height)
    assertOpenGLError("gluseprogram");
    // Load the vertex data
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
+    GLint vertexloc = glGetAttribLocation(program, "vPosition");
+    GLint colorloc = glGetAttribLocation(program, "color");
+    GLint normalloc = glGetAttribLocation(program, "normal");
+    glVertexAttribPointer(vertexloc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
            g_vertex_buffer_data);
-    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(vertexloc);
     assertOpenGLError("gl enable vertex attrix array");
     // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0,
+    glVertexAttribPointer(colorloc, 3, GL_FLOAT, GL_FALSE, 0,
             g_color_buffer_data_uniform);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
+    glEnableVertexAttribArray(colorloc);
+    glVertexAttribPointer(normalloc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
            g_vertex_buffer_data+3);
-    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(normalloc);
 
     glm::vec3 lightdir = glm::vec3(0, 0.2, -1);
 
