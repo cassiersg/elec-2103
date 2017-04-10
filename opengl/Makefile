@@ -2,6 +2,8 @@ BIN=main
 MAIN_SRC=main.c
 AUX_SRC=platform.h
 
+# needs glm (libglm-dev on rpi)
+
 UNAME_M := $(shell uname -m)
 ifeq ($(UNAME_M),armv7l)
     # RPI
@@ -15,7 +17,7 @@ ifeq ($(UNAME_M),armv7l)
     C_OPT=-c
 else
     # other (linux)
-    LIBS+=-lGLESv2 -lEGL -lm -lX11 -Llib/ -lGLEW `pkg-config --libs --cflags glm`
+    LIBS+=-lGLESv2 -lEGL -lm -lX11 -Llib/ -lGLEW
     LINKER=true
     OUT_EXT=
     C_OPT=
