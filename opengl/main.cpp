@@ -19,8 +19,6 @@
 
 #define SIZE_VEC(x) (sizeof((x))/sizeof((x)[0]))
 
-void draw_cube(int width, int height);
-
 static const char *vertex_shader_src =  
 "attribute vec3 vPosition;    \n"
 "attribute vec3 color;    \n"
@@ -47,11 +45,81 @@ static const char *fragment_shader_src =
 "  gl_FragColor = vec4 (colorout, 1.0 );\n"
 "}                                            \n";
 
-void draw_cube(int width, int height)
+// Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
+// A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
+static const GLfloat g_vertex_buffer_data[] = { 
+    // front
+    -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    // back
+    1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+    1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+    1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+    -1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+    // right
+    1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+    1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
+    1.0f, 1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
+    1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
+    1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+    1.0f,-1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+    // left
+    -1.0f,-1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f,-1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+    // bottom
+    1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
+    1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
+    1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
+    -1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
+    // up
+    1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+    1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
+    -1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
+    1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+    -1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+};
+
+typedef struct {
+    GLuint program;
+    GLint vertex_loc;
+    GLint color_loc;
+    GLint normal_loc;
+    GLint VP_loc;
+    GLint model_loc;
+    GLint lightdir_loc;
+    int width;
+    int height;
+} cubes_gl_data;
+
+cubes_gl_data init_cube_drawing(int width, int height)
 {
+    cubes_gl_data env;
+    env.width = width;
+    env.height = height;
    // Draw whatever you want here
-   GLuint program = gen_program(vertex_shader_src, fragment_shader_src);
-   assert(program);
+   env.program = gen_program(vertex_shader_src, fragment_shader_src);
+   assert(env.program);
+    // Position attributes
+    env.vertex_loc = glGetAttribLocation(env.program, "vPosition");
+    env.color_loc = glGetAttribLocation(env.program, "color");
+    env.normal_loc = glGetAttribLocation(env.program, "normal");
+    env.VP_loc = glGetUniformLocation(env.program, "VP");
+    env.model_loc = glGetUniformLocation(env.program, "model");
+    env.lightdir_loc = glGetUniformLocation(env.program, "lightdir");
+
 
     // Enable depth test
     glEnable(GL_DEPTH_TEST);
@@ -62,104 +130,26 @@ void draw_cube(int width, int height)
    glViewport ( 0, 0, width, height );
    assertOpenGLError("glviewport");
 
-   // Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
-   // A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
-   static const GLfloat g_vertex_buffer_data[] = { 
-       // front
-       -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-       -1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-        1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-       -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-        1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-        // back
-        1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
-        1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
-       -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
-        1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
-       -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
-       -1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
-        // right
-        1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
-        1.0f, 1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
-        1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
-        1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        1.0f,-1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-        // left
-       -1.0f,-1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-       -1.0f,-1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
-       -1.0f, 1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
-       -1.0f,-1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-       -1.0f, 1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
-       -1.0f, 1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-        // bottom
-        1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
-       -1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
-        1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
-        1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
-       -1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
-       -1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
-       // up
-        1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-        1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
-       -1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
-        1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-       -1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
-       -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-   };
+   // Use the program object
+   glUseProgram(env.program);
+   assertOpenGLError("gluseprogram");
 
-   // One color for each vertex.
-   static const GLfloat g_color_buffer_data[] = { 
-       // front -- red
-       1.0f, 0.0f, 0.0f,
-       1.0f, 0.0f, 0.0f,
-       1.0f, 0.0f, 0.0f,
-       1.0f, 0.0f, 0.0f,
-       1.0f, 0.0f, 0.0f,
-       1.0f, 0.0f, 0.0f,
-        // back -- green
-       0.0f, 1.0f, 0.0f,
-       0.0f, 1.0f, 0.0f,
-       0.0f, 1.0f, 0.0f,
-       0.0f, 1.0f, 0.0f,
-       0.0f, 1.0f, 0.0f,
-       0.0f, 1.0f, 0.0f,
-        // right -- blue
-       0.0f, 0.0f, 1.0f,
-       0.0f, 0.0f, 1.0f,
-       0.0f, 0.0f, 1.0f,
-       0.0f, 0.0f, 1.0f,
-       0.0f, 0.0f, 1.0f,
-       0.0f, 0.0f, 1.0f,
-       // left -- yellow
-       1.0f, 1.0f, 0.0f,
-       1.0f, 1.0f, 0.0f,
-       1.0f, 1.0f, 0.0f,
-       1.0f, 1.0f, 0.0f,
-       1.0f, 1.0f, 0.0f,
-       1.0f, 1.0f, 0.0f,
-       // bottom -- purple
-       1.0f, 0.0f, 1.0f,
-       1.0f, 0.0f, 1.0f,
-       1.0f, 0.0f, 1.0f,
-       1.0f, 0.0f, 1.0f,
-       1.0f, 0.0f, 1.0f,
-       1.0f, 0.0f, 1.0f,
-       // up -- 
-       0.0f, 1.0f, 1.0f,
-       0.0f, 1.0f, 1.0f,
-       0.0f, 1.0f, 1.0f,
-       0.0f, 1.0f, 1.0f,
-       0.0f, 1.0f, 1.0f,
-       0.0f, 1.0f, 1.0f,
-   };
-   GLfloat g_color_buffer_data_uniform[sizeof(g_color_buffer_data)];
-   for (int i=0; i < SIZE_VEC(g_color_buffer_data_uniform)/3; i++) {
-       g_color_buffer_data_uniform[3*i] =  1.0f;
-       g_color_buffer_data_uniform[3*i+1] =  0.0f;
-       g_color_buffer_data_uniform[3*i+2] =  0.0f;
-   }
+   // Load the vertex data
+    glVertexAttribPointer(env.vertex_loc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
+           g_vertex_buffer_data);
+    glEnableVertexAttribArray(env.vertex_loc);
+    assertOpenGLError("gl enable vertex attrix array");
+    // Load normals
+    glVertexAttribPointer(env.normal_loc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
+           g_vertex_buffer_data+3);
+    glEnableVertexAttribArray(env.normal_loc);
+
+   return env;
+}
+
+void draw_cube(cubes_gl_data *env)
+{
+   glVertexAttrib3f(env->color_loc, 1.0f, 0.0f, 0.0f);
 
    // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
    glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
@@ -176,54 +166,15 @@ void draw_cube(int width, int height)
 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   // Use the program object
-   glUseProgram ( program);
-   assertOpenGLError("gluseprogram");
-   // Load the vertex data
-    // Position attribute
-    GLint vertexloc = glGetAttribLocation(program, "vPosition");
-    GLint colorloc = glGetAttribLocation(program, "color");
-    GLint normalloc = glGetAttribLocation(program, "normal");
-    glVertexAttribPointer(vertexloc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
-           g_vertex_buffer_data);
-    glEnableVertexAttribArray(vertexloc);
-    assertOpenGLError("gl enable vertex attrix array");
-    // Color attribute
-    glVertexAttribPointer(colorloc, 3, GL_FLOAT, GL_FALSE, 0,
-            g_color_buffer_data_uniform);
-    glEnableVertexAttribArray(colorloc);
-    glVertexAttribPointer(normalloc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
-           g_vertex_buffer_data+3);
-    glEnableVertexAttribArray(normalloc);
 
     glm::vec3 lightdir = glm::vec3(0, 0.2, -1);
 
     // Get matrix's uniform location and set matrix
-    GLint VPloc = glGetUniformLocation(program, "VP");
-    glUniformMatrix4fv(VPloc, 1, GL_FALSE, glm::value_ptr(VP));
-    GLint modelloc = glGetUniformLocation(program, "model");
-    glUniformMatrix4fv(modelloc, 1, GL_FALSE, glm::value_ptr(Model));
-    GLint lightdirloc = glGetUniformLocation(program, "lightdir");
-    glUniform3fv(lightdirloc, 1, glm::value_ptr(lightdir));
-
+    glUniformMatrix4fv(env->VP_loc, 1, GL_FALSE, glm::value_ptr(VP));
+    glUniformMatrix4fv(env->model_loc, 1, GL_FALSE, glm::value_ptr(Model));
+    glUniform3fv(env->lightdir_loc, 1, glm::value_ptr(lightdir));
 
     glDrawArrays(GL_TRIANGLES, 0, 6*6);
-
-
-
-    /*
-   glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), vertices );
-   assertOpenGLError("glvertexattrixpointer");
-   glEnableVertexAttribArray ( 0 );
-   assertOpenGLError("gl enable vertex attrix array");
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat), vertices );
-   assertOpenGLError("glvertexattrixpointer");
-   glEnableVertexAttribArray ( 1 );
-   assertOpenGLError("gl enable vertex attrix array");
-   glDrawArrays ( GL_TRIANGLES, 0, 6 );
-   assertOpenGLError("gl draw arrays");
-   */
-
 }
 
 int main ()
@@ -236,9 +187,9 @@ int main ()
 
    // Start OGLES
    platform_gl_init(width, height);
-   assert(glCreateProgram());
 
-   draw_cube(width, height);
+   cubes_gl_data env = init_cube_drawing(width, height);
+   draw_cube(&env);
    unsigned char *buf = glbuf2rgb(width, height);
    export_bmp((char *)"img.bmp", width, height, buf);
    free(buf);
