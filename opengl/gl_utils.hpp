@@ -10,7 +10,6 @@ GLuint loadShader ( GLenum type, const char *shaderSrc );
 
 GLuint gen_program(const char* vertex_shader_src, const char* fragment_shader_src);
 
-// freing the returned buffer is at charge to the caller
-unsigned char* glbuf2rgb(int width, int height);
+void glbuf2rgb(unsigned char *buffer, int width, int height);
 
 #endif

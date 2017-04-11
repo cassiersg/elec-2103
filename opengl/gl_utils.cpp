@@ -113,17 +113,18 @@ GLuint gen_program(const char* vertex_shader_src, const char* fragment_shader_sr
    return programObject;
 }
 
-unsigned char* glbuf2rgb(int width, int height)
+void glbuf2rgb(unsigned char *buffer, int width, int height)
 {
-    unsigned char *buffer = (unsigned char*)malloc(width * height * 4);
-    assert(buffer != NULL);
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    unsigned char *buf2 = (unsigned char*)malloc(width * height * 4);
+    assert(buf2 != NULL);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf2);
     assertOpenGLError("glReadPixels");
     // pack pixels to remove Alpha of RGBA
     for (int i=0; i<width*height; i++) {
         for (int j=0; j<3; j++) {
-            buffer[3*i+j] = buffer[4*i+j];
+            buffer[3*i+j] = buf2[4*i+j];
         }
     }
-    return buffer;
+    free(buf2);
 }
+
