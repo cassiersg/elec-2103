@@ -25,6 +25,7 @@ typedef struct
 #else
     unsigned int canvasFrameBuffer;
     unsigned int canvasRenderBuffer;
+    unsigned int depth_rb;
 #endif
    EGLDisplay display;
    EGLSurface surface;
@@ -34,6 +35,7 @@ typedef struct
 static GLOBAL_GL_SCREEN_STATE _state, *state=&_state;
 
 static void assertEGLError(const char *msg);
+
 static void assertEGLError(const char *msg)
 {
     EGLint error = eglGetError();
@@ -140,6 +142,13 @@ void platform_gl_init(int width, int height)
     glBindRenderbuffer(GL_RENDERBUFFER, state->canvasRenderBuffer);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, width, height);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, state->canvasRenderBuffer);
+
+    glGenRenderbuffers(1, &state->depth_rb);
+    glBindRenderbuffer(GL_RENDERBUFFER, state->depth_rb);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
+    //-------------------------
+    //Attach depth buffer to FBO
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, state->depth_rb);
     assertOpenGLError("framebuffer");
 #endif
 
@@ -173,10 +182,9 @@ void platform_gl_exit()
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDeleteRenderbuffers(1, &state->canvasRenderBuffer);
+    glDeleteRenderbuffers(1, &state->depth_rb);
     glDeleteFramebuffers(1, &state->canvasFrameBuffer);
 #endif
    eglDestroyContext( state->display, state->context );
    eglTerminate( state->display );
-
-   printf("\ncube closed\n");
 }
