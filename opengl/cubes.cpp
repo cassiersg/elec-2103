@@ -179,3 +179,16 @@ void cubes_exit(void)
 {
     platform_gl_exit();
 }
+
+void cubes_image_export(unsigned char *str, int buf_size)
+{
+    assert(buf_size >= 4*width*height);
+    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, str);
+    assertOpenGLError("glReadPixels");
+    for (int i=0; i<width*height; i++) {
+        unsigned char r = str[4*i];
+        unsigned char b = str[4*i+2];
+        str[4*i] = b;
+        str[4*i+2] = r;
+    }
+}

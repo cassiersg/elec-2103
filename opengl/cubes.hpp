@@ -8,6 +8,7 @@ void draw_cubes(void);
 
 void cubes_init();
 void cubes_exit();
+void cubes_image_export(unsigned char *str, int buf_size);
 
 #endif
 
