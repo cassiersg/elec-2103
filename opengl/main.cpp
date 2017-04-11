@@ -80,6 +80,11 @@ typedef struct {
     int height;
 } cubes_gl_data;
 
+typedef struct {
+    glm::vec3 lightdir;
+    glm::mat4 VP;
+} cubes_draw_settings;
+
 cubes_gl_data init_cube_drawing(int width, int height)
 {
     cubes_gl_data env;
@@ -113,45 +118,58 @@ cubes_gl_data init_cube_drawing(int width, int height)
    // Load the vertex data
     glVertexAttribPointer(env.vertex_loc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
            g_vertex_buffer_data);
-    glEnableVertexAttribArray(env.vertex_loc);
-    assertOpenGLError("gl enable vertex attrix array");
     // Load normals
     glVertexAttribPointer(env.normal_loc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
            g_vertex_buffer_data+3);
+    // Enable/Disable attributes
+    glEnableVertexAttribArray(env.vertex_loc);
     glEnableVertexAttribArray(env.normal_loc);
+    glDisableVertexAttribArray(env.color_loc);
 
    return env;
 }
 
-void draw_cube(cubes_gl_data *env)
+void draw_cube(cubes_gl_data *env, cubes_draw_settings *params, glm::vec3 color, glm::mat4 model)
 {
-   glVertexAttrib3f(env->color_loc, 1.0f, 0.0f, 0.0f);
-
-   // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-   glm::mat4 Projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
-   // Camera matrix
-   glm::mat4 View       = glm::lookAt(
-           glm::vec3(2,-2,5), // Camera is at (2,2,-5), in World Space
-           glm::vec3(0,0,0), // and looks at the origin
-           glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
-           );
-   // Model matrix : an identity matrix (model will be at the origin)
-   glm::mat4 Model      = glm::mat4(1.0f);
-   // Our ModelViewProjection : multiplication of our 3 matrices
-   glm::mat4 VP = Projection * View;
-
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glm::vec3 lightdir = glm::vec3(0, 0.2, -1);
-
-    // Get matrix's uniform location and set matrix
-    glUniformMatrix4fv(env->VP_loc, 1, GL_FALSE, glm::value_ptr(VP));
-    glUniformMatrix4fv(env->model_loc, 1, GL_FALSE, glm::value_ptr(Model));
-    glUniform3fv(env->lightdir_loc, 1, glm::value_ptr(lightdir));
+    // Set uniforms & attributes
+    glUniformMatrix4fv(env->VP_loc, 1, GL_FALSE, glm::value_ptr(params->VP));
+    glUniformMatrix4fv(env->model_loc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniform3fv(env->lightdir_loc, 1, glm::value_ptr(params->lightdir));
+    glVertexAttrib3fv(env->color_loc, glm::value_ptr(color));
 
     glDrawArrays(GL_TRIANGLES, 0, 6*6);
 }
+
+void draw_cubes(cubes_gl_data *env)
+{
+    cubes_draw_settings params;
+    params.lightdir = glm::vec3(0, 0.2, -1);
+    // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
+    // Camera matrix
+    glm::mat4 view = glm::lookAt(
+            glm::vec3(0,-2,10), // Camera is at (2,2,-5), in World Space
+            glm::vec3(0,0,0), // and looks at the origin
+            glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
+            );
+    // Our ModelViewProjection : multiplication of our 3 matrices
+    params.VP = projection * view;
+
+    // reset background
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::vec3 color = glm::vec3(1.0f, 0.0f, 0.0f);
+    draw_cube(env, &params, color, model);
+
+    model = glm::translate(glm::mat4(1.0f), glm::vec3(3.0f, 0.0f, 0.0f));
+    draw_cube(env, &params, color, model);
+
+    model = glm::translate(glm::mat4(1.0f), glm::vec3(-3.0f, 0.0f, 0.0f));
+    draw_cube(env, &params, color, model);
+}
+
 
 int main ()
 {
@@ -165,7 +183,7 @@ int main ()
    platform_gl_init(width, height);
 
    cubes_gl_data env = init_cube_drawing(width, height);
-   draw_cube(&env);
+   draw_cubes(&env);
    unsigned char *buf = glbuf2rgb(width, height);
    export_bmp((char *)"img.bmp", width, height, buf);
    free(buf);
