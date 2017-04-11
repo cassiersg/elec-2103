@@ -8,6 +8,7 @@ eclipse/*
 opengl/*.bmp
 opengl/main
 opengl/shaders.cpp
+opengl/cubes_wrap.cpp
 
 ### AlteraQuartusII ###
 ##list taken from http://www.alterawiki.com/wiki/Version_Control (01.10.2015)

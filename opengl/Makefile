@@ -1,5 +1,5 @@
 BIN=main
-OBJS=main.o gl_utils.o gl_platform.o utils.o shaders.o
+OBJS=main.o gl_utils.o gl_platform.o utils.o shaders.o cubes.o cubes_wrap.o
 
 # needs glm (`apt install libglm-dev` on rpi)
 
@@ -18,7 +18,11 @@ else
     LIBS+=-lGLESv2 -lEGL
 endif
 
+LIBS+=`pkg-config --libs python3`
+CFLAGS+=-fPIC `pkg-config --cflags python3`
 CPPFLAGS+=$(CFLAGS) $(INCLUDES)
+
+default: all
 
 run: $(BIN)
 	./$(BIN)
@@ -26,7 +30,7 @@ run: $(BIN)
 open: run
 	xdg-open img.bmp
 
-all: $(BIN)
+all: $(BIN) _cubes.so
 
 %.o: %.cpp
 	g++ -c $< $(CPPFLAGS) -g -o $@
@@ -37,10 +41,18 @@ $(BIN): $(OBJS)
 clean:
 	@rm -f $(BIN) $(OBJS)
 	@rm -f img.bmp
-	@rm -f shaders.cpp
+	@rm -f shaders.cpp cubes_wrap.cpp _cubes.so
+	@rm -rf __pycache__
 
 shaders.cpp: vertex_shader.glsl fragment_shader.glsl
 	rm  -f $@
 	xxd -i vertex_shader.glsl >> $@
 	xxd -i fragment_shader.glsl >> $@
+
+cubes_wrap.cpp: cubes.i
+	swig -c++ -python $<
+	mv cubes_wrap.cxx $@
+
+_cubes.so: $(OBJS)
+	g++ -o $@ $^ $(LDFLAGS) $(LIBS) -shared
 
