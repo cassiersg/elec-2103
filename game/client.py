@@ -4,7 +4,8 @@ import time
 import pygame
 import utils
 import net
-import rendering
+#import tile_rendering as rendering
+import opengl_rendering as rendering
 
 if utils.runs_on_rpi():
     import client_device as cd
@@ -53,7 +54,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
         sys.exit()
 
     hw_interface = cd.HardwareInterface()
-    renderer = rendering.TileRenderer(hw_interface)
+    renderer = rendering.Renderer(hw_interface)
 
     print("[CLIENT] Advertising the server that we are ready.")
     s.send(net.CLIENT_READY)

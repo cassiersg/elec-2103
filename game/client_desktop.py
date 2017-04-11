@@ -6,10 +6,13 @@ from pygame.locals import *
 import net
 from tiles import TILE_X, TILE_Y, TILE_SIZE, TILE_NB, BLACK, colormap, tiles_image
 
+form_factor = (800, 480) # for opengl renderer
+#form_factor = (480, 800) # for tiling renderer
+
 class HardwareInterface:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((TILE_Y*TILE_SIZE, TILE_X*TILE_SIZE))
+        self.screen = pygame.display.set_mode(form_factor)
         self.screen.fill(BLACK)
         pygame.display.set_caption("Shape Yourself, Wall is Coming!")
 

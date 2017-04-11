@@ -3,7 +3,7 @@ from tiles import TILE_SIZE, TILE_X
 
 SCALE_FACTOR = 4
 
-class TileRenderer:
+class Renderer:
     def __init__(self, hw_interface):
         self.hw_interface = hw_interface
 
