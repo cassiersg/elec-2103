@@ -2,6 +2,20 @@
 import game_global as gg
 import opengl.cubes as cubes
 import pygame
+import pickle
+import random
+import os
+
+v = []
+def log_args(grid, players_xy, player_id, round_gauge, global_gauge, score):
+    global v
+    if v is not None and random.random() < 0.05:
+        v.append((grid, players_xy, player_id, round_gauge, global_gauge, score))
+        if len(v) >= 30:
+            with open("display_args.pkl", "wb") as f:
+                pickle.dump(v, f)
+                v = None
+
 
 class Renderer:
     def __init__(self, hw_interface):
@@ -9,6 +23,8 @@ class Renderer:
         cubes.cubes_init()
 
     def display(self, grid, players_xy, player_id, round_gauge, global_gauge, score):
+        if os.environ.get('LOG_RENDER_ARGS'):
+            log_args(grid, players_xy, player_id, round_gauge, global_gauge, score)
         # works only for desktop
         grid = bytearray(x for y in grid for x in y)
         p1x, p1y, p2x, p2y = players_xy

@@ -1,5 +1,5 @@
 BIN=main
-OBJS=main.o gl_utils.o gl_platform.o utils.o shaders.o cubes.o cubes_wrap.o
+OBJS=main.o gl_utils.o gl_platform.o utils.o shaders.o cubes.o cubes_wrap.o compression.o
 
 # needs glm (`apt install libglm-dev` on rpi)
 

@@ -14,6 +14,7 @@
 #include "gl_utils.hpp"
 #include "utils.hpp"
 #include "shaders.hpp"
+#include "compression.hpp"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -228,4 +229,15 @@ void cubes_image_export(unsigned char *buf, int buf_size)
         buf[4*i] = b;
         buf[4*i+2] = r;
     }
+}
+
+int cubes_export_chunks(unsigned char *buf, int buf_size, int max_chunk_size)
+{
+    unsigned char *pixels = (unsigned char *) malloc(4*width*height);
+    assert(pixels != NULL);
+    cubes_image_export(pixels, 4*width*height);
+    int res = (int ) make_chunks(
+            (unsigned int *) pixels, width*height, (unsigned int *) buf,
+            buf_size/4, max_chunk_size);
+    return res;
 }

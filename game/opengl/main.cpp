@@ -8,6 +8,7 @@
 #include "gl_utils.hpp"
 #include "utils.hpp"
 #include "cubes.hpp"
+#include "compression.hpp"
 
 static const int m = 15;
 static const int n = 7;
@@ -23,6 +24,8 @@ static const unsigned char example_grid[n][m] = {
 
 static const int round_gauge = 20000;
 int main() {
+    test_huffman_color();
+    printf("huffman color ok\n");
     cubes_init();
     draw_cubes((unsigned char *) example_grid, m*n, n, m, 0, 1, 14, 1, 1, round_gauge);
 

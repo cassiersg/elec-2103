@@ -46,3 +46,30 @@ void export_bmp(char *fname, int width, int height, unsigned char* img)
 
 }
 
+void export_raw(char *fname, int width, int height, unsigned char* img)
+{
+    FILE *f;
+    f = fopen(fname,"wb");
+    fwrite(img, 4, width*height, f);
+    fclose(f);
+
+}
+
+unsigned int uint_min(unsigned int a, unsigned int b)
+{
+    return a < b ? a: b;
+}
+
+void cat_bits(unsigned int **buf, int *fill, unsigned int val, int n_bits)
+{
+    **buf |= val << *fill;
+    int new_fill = *fill + n_bits;
+    if (new_fill >= 32) {
+        *buf += 1;
+        new_fill -= 32;
+        if (*fill != 0) {
+            **buf |= val >> (32-*fill);
+        }
+    }
+    *fill = new_fill;
+}
