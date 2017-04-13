@@ -241,3 +241,26 @@ int cubes_export_chunks(unsigned char *buf, int buf_size, int max_chunk_size)
             buf_size/4, max_chunk_size);
     return res;
 }
+
+void cubes_test_current_image(void)
+{
+    unsigned char *pixels = (unsigned char *) malloc(4*width*height);
+    assert(pixels != NULL);
+    cubes_image_export(pixels, 4*width*height);
+    unsigned int *compressed = (unsigned int*) malloc(4*width*height);
+    assert(compressed != NULL);
+    size_t output_size = width*height;
+    int n_chunks = chunk_compress_huffman((unsigned int *) pixels, width*height,
+            compressed, &output_size,
+            32);
+    unsigned int *pixels2 = (unsigned int*) malloc(4*width*height);
+    assert(pixels2 != NULL);
+    chunk_decompress_huffman(compressed, pixels2, n_chunks);
+    for (int i=0; i< width*height; i++) {
+        assert(pixels2[i] == ((unsigned int *) pixels)[i]);
+        if (pixels2[i] != 0xff334c4c) {
+            printf("pixels: %x, pixels2: %x\n", ((unsigned int *) pixels)[i], pixels2[i]);
+        }
+    }
+    printf("succeded compress/decompress test\n");
+}

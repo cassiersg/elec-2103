@@ -19,5 +19,7 @@ void cubes_image_export(unsigned char *str, int str_size);
 %pybuffer_mutable_binary(unsigned char *str, int str_size);
 int cubes_export_chunks(unsigned char *str, int str_size, int max_chunk_size);
 
+void cubes_test_current_image(void);
+
 const int width;
 const int height;

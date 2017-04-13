@@ -10,6 +10,7 @@ void cubes_init();
 void cubes_exit();
 void cubes_image_export(unsigned char *buf, int buf_size);
 int cubes_export_chunks(unsigned char *buf, int buf_size, int max_chunk_size);
+void cubes_test_current_image(void);
 
 #endif
 
