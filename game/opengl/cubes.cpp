@@ -253,6 +253,7 @@ void cubes_test_current_image(void)
     int n_chunks = chunk_compress_huffman((unsigned int *) pixels, width*height,
             compressed, &output_size,
             32);
+    printf("compressed size: %u bytes\n", 4*output_size);
     unsigned int *pixels2 = (unsigned int*) malloc(4*width*height);
     assert(pixels2 != NULL);
     chunk_decompress_huffman(compressed, pixels2, n_chunks);
