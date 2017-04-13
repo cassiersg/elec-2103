@@ -31,12 +31,14 @@ for (grid, players_xy, player_id, round_gauge, global_gauge, score) in v:
 # colors
 print('generating color encoder/decoder')
 _, (codes, tree) = huffman.encode([x for x, _ in sequences_int])
+print('max color code length :', max(l for s, (s_c, i_c, l) in codes))
 generate_huffman_encoder(codes, 'opengl/huffman_encode_colors.cpp')
 generate_huffman_decoder(tree, 'opengl/huffman_decode_colors.cpp')
 
 # lengths
 print('generating length encoder/decoder')
 _, (codes, tree) = huffman.encode([x for _, x in sequences_int])
+print('max length code length :', max(l for s, (s_c, i_c, l) in codes))
 generate_huffman_encoder(codes, 'opengl/huffman_encode_lengths.cpp')
 generate_huffman_decoder(tree, 'opengl/huffman_decode_lengths.cpp')
 
