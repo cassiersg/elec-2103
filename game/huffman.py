@@ -38,4 +38,12 @@ def disp_huffman(x):
     print('tot len', ltot, 'avg len', ltot/len(x))
     pprint.pprint(tree)
 
+def huffman_avg_len(values):
+    """average length of Huffman coded values"""
+    symb2freq, (huff, tree) = encode(values)
+    ltot = 0
+    for p in huff:
+        (s_code, int_code, l) = p[1]
+        ltot += l*symb2freq[p[0]]
+    return ltot/len(values)
 

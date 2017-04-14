@@ -30,15 +30,27 @@ for (grid, players_xy, player_id, round_gauge, global_gauge, score) in v:
 
 # colors
 print('generating color encoder/decoder')
-_, (codes, tree) = huffman.encode([x for x, _ in sequences_int])
-print('max color code length :', max(l for s, (s_c, i_c, l) in codes))
+colors = [c for c, _ in sequences_int]
+_, (codes, tree) = huffman.encode(colors)
+print('max color code length:', max(l for s, (s_c, i_c, l) in codes))
 generate_huffman_encoder(codes, 'opengl/huffman_encode_colors.cpp')
 generate_huffman_decoder(tree, 'opengl/huffman_decode_colors.cpp')
+avg_color = huffman.huffman_avg_len(colors)
 
 # lengths
 print('generating length encoder/decoder')
-_, (codes, tree) = huffman.encode([x for _, x in sequences_int])
-print('max length code length :', max(l for s, (s_c, i_c, l) in codes))
+lengths = [l for _, l in sequences_int]
+_, (codes, tree) = huffman.encode(lengths)
+print('max length code length:', max(l for s, (s_c, i_c, l) in codes))
 generate_huffman_encoder(codes, 'opengl/huffman_encode_lengths.cpp')
 generate_huffman_decoder(tree, 'opengl/huffman_decode_lengths.cpp')
+avg_length = huffman.huffman_avg_len(lengths)
+print('=== Training set performance ===')
+chunks_per_frame = len(sequences_int)/len(v)
+print('Average chunks per frame: {}'.format(int(chunks_per_frame)))
+print('Average pixels per chunk: {:.3g}'.format(800*480/chunks_per_frame))
+print('Color average bits: {:.3g}'.format(avg_color))
+print('Chunk size average bits: {:.3g}'.format(avg_length))
+print('Average bits per chunk: {:.3g}'.format(avg_color + avg_length))
+print('Average kbits per frame: {:.3g}'.format((avg_color + avg_length)*chunks_per_frame/1000))
 
