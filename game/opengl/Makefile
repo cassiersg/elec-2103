@@ -15,7 +15,7 @@ ifeq ($(UNAME_M),armv7l)
     INCLUDES+=-I$(SDKSTAGE)/opt/vc/include/ -I$(SDKSTAGE)/opt/vc/include/interface/vcos/pthreads -I$(SDKSTAGE)/opt/vc/include/interface/vmcs_host/linux -I./ -I$(SDKSTAGE)/opt/vc/src/hello_pi/libs/ilclient -I$(SDKSTAGE)/opt/vc/src/hello_pi/libs/vgfont
 else
     # other (linux)
-    LIBS+=-lGLESv2 -lEGL
+    LIBS+=-lGLESv2 -lEGL -lX11
 endif
 
 LIBS+=`pkg-config --libs python3`

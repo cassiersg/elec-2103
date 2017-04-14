@@ -15,24 +15,19 @@
 
 #define check() assert(glGetError() == 0)
 
+#ifdef RPI
 typedef struct
 {
-#ifdef RPI
    uint32_t screen_width;
    uint32_t screen_height;
    DISPMANX_DISPLAY_HANDLE_T dispman_display;
    DISPMANX_ELEMENT_HANDLE_T dispman_element;
-#else
-    unsigned int canvasFrameBuffer;
-    unsigned int canvasRenderBuffer;
-    unsigned int depth_rb;
-#endif
    EGLDisplay display;
    EGLSurface surface;
    EGLContext context;
 } GLOBAL_GL_SCREEN_STATE;
-
 static GLOBAL_GL_SCREEN_STATE _state, *state=&_state;
+#endif
 
 static void assertEGLError(const char *msg);
 
@@ -44,6 +39,9 @@ static void assertEGLError(const char *msg)
         assert(0);
     }
 }
+
+
+#ifdef RPI
 
 void platform_gl_init(int width, int height)
 {
@@ -89,7 +87,6 @@ void platform_gl_init(int width, int height)
    state->context = eglCreateContext(state->display, config, EGL_NO_CONTEXT, context_attributes);
    assert(state->context!=EGL_NO_CONTEXT);
 
-#ifdef RPI
    // Not working without that, don't know why
    static EGL_DISPMANX_WINDOW_T nativewindow;
    DISPMANX_UPDATE_HANDLE_T dispman_update;
@@ -129,35 +126,113 @@ void platform_gl_init(int width, int height)
    assert(eglMakeCurrent(state->display, state->surface, state->surface, state->context)
            != EGL_FALSE);
    check();
+}
+
 #else
-   // Not on RPI, MESA allows to create context without surface
-   assert(eglMakeCurrent(state->display, EGL_NO_SURFACE, EGL_NO_SURFACE, state->context) != EGL_FALSE);
-   check();
 
-    // Create framebuffer
-    glGenFramebuffers(1, &state->canvasFrameBuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, state->canvasFrameBuffer);
 
-    // Attach renderbuffer
-    glGenRenderbuffers(1, &state->canvasRenderBuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, state->canvasRenderBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA4, width, height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, state->canvasRenderBuffer);
+#include  <X11/Xlib.h>
+#include  <X11/Xatom.h>
+#include  <X11/Xutil.h>
 
-    glGenRenderbuffers(1, &state->depth_rb);
-    glBindRenderbuffer(GL_RENDERBUFFER, state->depth_rb);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
-    //-------------------------
-    //Attach depth buffer to FBO
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, state->depth_rb);
-    assertOpenGLError("framebuffer");
+// X11 related local variables
+static Display *x_display = NULL;
+
+EGLBoolean CreateEGLContext( EGLNativeWindowType hWnd,
+                              EGLint attribList[])
+{
+   EGLint numConfigs;
+   EGLDisplay display;
+   EGLContext context;
+   EGLSurface surface;
+   EGLConfig config;
+   EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE, EGL_NONE };
+
+   // Get Display
+   display = eglGetDisplay((EGLNativeDisplayType)x_display);
+   assert(display != EGL_NO_DISPLAY);
+   // Initialize EGL
+   assert(eglInitialize(display, NULL, NULL));
+   // Get configs
+   assert(eglGetConfigs(display, NULL, 0, &numConfigs));
+   // Choose config
+   assert(eglChooseConfig(display, attribList, &config, 1, &numConfigs));
+   // Create a surface
+   surface = eglCreateWindowSurface(display, config, (EGLNativeWindowType)hWnd, NULL);
+   assert(surface != EGL_NO_SURFACE);
+   // Create a GL context
+   context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs );
+   assert(context != EGL_NO_CONTEXT);
+   // Make the context current
+   assert(eglMakeCurrent(display, surface, surface, context));
+   
+   return EGL_TRUE;
+} 
+
+EGLNativeWindowType WinCreate(int width, int height)
+{
+    XSetWindowAttributes swa;
+    XSetWindowAttributes  xattr;
+    XWMHints hints;
+    XEvent xev;
+    // X11 native display initialization
+    x_display = XOpenDisplay(NULL);
+    assert(x_display != NULL);
+    Window root = DefaultRootWindow(x_display);
+    swa.event_mask  =  ExposureMask | PointerMotionMask | KeyPressMask;
+    Window win = XCreateWindow(
+               x_display, root,
+               0, 0, width, height, 0,
+               CopyFromParent, InputOutput,
+               CopyFromParent, CWEventMask,
+               &swa);
+    xattr.override_redirect = 0;
+    XChangeWindowAttributes(x_display, win, CWOverrideRedirect, &xattr);
+    hints.input = 1;
+    hints.flags = InputHint;
+    XSetWMHints(x_display, win, &hints);
+    // make the window visible on the screen
+    //XMapWindow (x_display, win);
+    //XStoreName (x_display, win, "");
+    // get identifiers for the provided atom name strings
+    Atom wm_state = XInternAtom (x_display, "_NET_WM_STATE", 0);
+    memset ( &xev, 0, sizeof(xev) );
+    xev.type                 = ClientMessage;
+    xev.xclient.window       = win;
+    xev.xclient.message_type = wm_state;
+    xev.xclient.format       = 32;
+    xev.xclient.data.l[0]    = 1;
+    xev.xclient.data.l[1]    = 0;
+    XSendEvent (
+       x_display,
+       DefaultRootWindow ( x_display ),
+       0,
+       SubstructureNotifyMask,
+       &xev );
+    return (EGLNativeWindowType) win;
+}
+
+void platform_gl_init(int width, int height)
+{
+   EGLint attribList[] =
+   {
+       EGL_RED_SIZE,       5,
+       EGL_GREEN_SIZE,     6,
+       EGL_BLUE_SIZE,      5,
+       EGL_ALPHA_SIZE,     EGL_DONT_CARE,
+       EGL_DEPTH_SIZE,     8,
+       EGL_STENCIL_SIZE,   EGL_DONT_CARE,
+       EGL_SAMPLE_BUFFERS, 0,
+       EGL_NONE
+   };
+
+   EGLNativeWindowType win = WinCreate(width, height);
+  
+   assert(CreateEGLContext(win, attribList));
+}
+
 #endif
 
-   // Maybe not necessary (?)
-   // Enable back face culling.
-   glEnable(GL_CULL_FACE);
-   //glMatrixMode(GL_MODELVIEW); // ??  works only on RPI
-}
 
 void platform_gl_exit()
 {
@@ -179,13 +254,7 @@ void platform_gl_exit()
 
    // Release OpenGL resources
    eglMakeCurrent( state->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT );
-#else
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glDeleteRenderbuffers(1, &state->canvasRenderBuffer);
-    glDeleteRenderbuffers(1, &state->depth_rb);
-    glDeleteFramebuffers(1, &state->canvasFrameBuffer);
-#endif
    eglDestroyContext( state->display, state->context );
    eglTerminate( state->display );
+#endif
 }
