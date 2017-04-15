@@ -10,6 +10,10 @@ game/opengl/main
 game/opengl/shaders.cpp
 game/opengl/*_wrap.cpp
 game/opengl/cubes.py
+game/opengl/compression.py
+game/opengl/chunker.py
+game/opengl/huffman_encode_*.cpp
+game/opengl/huffman_decode_*.cpp
 
 
 ## Modelsim
