@@ -11,6 +11,15 @@ game/opengl/shaders.cpp
 game/opengl/cubes_wrap.cpp
 game/opengl/cubes.py
 
+
+## Modelsim
+*.mti
+*.mpf
+modelsim/transcript
+*.wlf
+modelsim/work
+
+
 ### AlteraQuartusII ###
 ##list taken from http://www.alterawiki.com/wiki/Version_Control (01.10.2015)
 
