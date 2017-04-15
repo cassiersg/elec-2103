@@ -10,7 +10,7 @@ if ((code >> 0) & 0x1) {
   } else {
    if ((code >> 3) & 0x1) {
     if ((code >> 4) & 0x1) {
-     decoded = 0xff1e1e1e;
+     decoded = 0xff1d1d1d;
      code_len = 5;
     } else {
      decoded = 0xff494949;

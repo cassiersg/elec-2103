@@ -30,7 +30,7 @@ run: $(BIN)
 open: run
 	xdg-open img.bmp
 
-all: $(BIN) _cubes.so
+all: $(BIN) _cubes.so _compression.so
 
 %.o: %.cpp
 	g++ -c $< $(CPPFLAGS) -g -o $@
@@ -41,7 +41,7 @@ $(BIN): $(OBJS)
 clean:
 	@rm -f $(BIN) $(OBJS)
 	@rm -f img.bmp
-	@rm -f shaders.cpp cubes_wrap.cpp _cubes.so
+	@rm -f shaders.cpp cubes_wrap.cpp _cubes.so cubes.py compression.py
 	@rm -rf __pycache__
 
 shaders.cpp: vertex_shader.glsl fragment_shader.glsl
@@ -53,6 +53,12 @@ cubes_wrap.cpp: cubes.i
 	swig -c++ -python $<
 	mv cubes_wrap.cxx $@
 
+compression_wrap.cpp: compression.i
+	swig -c++ -python $<
+	mv compression_wrap.cxx $@
+
 _cubes.so: $(OBJS)
 	g++ -o $@ $^ $(LDFLAGS) $(LIBS) -shared
 
+_compression.so: $(OBJS) compression_wrap.o
+	g++ -o $@ $^ $(LDFLAGS) $(LIBS) -shared

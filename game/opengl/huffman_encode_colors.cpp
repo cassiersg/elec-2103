@@ -3,7 +3,7 @@ case 0xff334c4c: code = 0x001; n_bits =  1; break;
 case 0xff757575: code = 0x000; n_bits =  2; break;
 case 0xffeaeaea: code = 0x006; n_bits =  3; break;
 case 0xff494949: code = 0x00a; n_bits =  5; break;
-case 0xff1e1e1e: code = 0x01a; n_bits =  5; break;
+case 0xff1d1d1d: code = 0x01a; n_bits =  5; break;
 case 0xffeaea00: code = 0x002; n_bits =  6; break;
 case 0xffea0000: code = 0x022; n_bits =  6; break;
 case 0xff3b3b3b: code = 0x032; n_bits =  6; break;

@@ -8,7 +8,7 @@ eclipse/*
 game/opengl/*.bmp
 game/opengl/main
 game/opengl/shaders.cpp
-game/opengl/cubes_wrap.cpp
+game/opengl/*_wrap.cpp
 game/opengl/cubes.py
 
 

@@ -91,11 +91,12 @@ unsigned int make_chunks(
 
 int chunk_compress_huffman(
         unsigned int *input, size_t input_len,
-        unsigned int *output, size_t *output_len,
-        unsigned int max_chunk_size)
+        unsigned int *output, size_t output_len,
+        unsigned int max_chunk_size,
+        unsigned int *output_used)
 {
     chunker_iter iter = new_chunk_iter(input, input_len, max_chunk_size);
-    unsigned int *output_end = output + *output_len;
+    unsigned int *output_end = output + output_len;
     int fill = 0;
     unsigned int color, chunk_len;
     int n_chunks = 0;
@@ -111,7 +112,7 @@ int chunk_compress_huffman(
         }
         n_chunks++;
     }
-    *output_len -= output_end - output; // upper bound on len used
+    *output_used = output_len - (output_end - output); // upper bound on len used
     return n_chunks;
 }
 
@@ -147,20 +148,23 @@ static void huffman_decode_color_buf(
     }
 }
 
-void chunk_decompress_huffman(
-        unsigned int *input,
-        unsigned int *output,
+size_t chunk_decompress_huffman(
+        unsigned int *input, size_t input_len,
+        unsigned int *output, size_t output_len,
         int n_chunks)
 {
     int offset = 0;
+    size_t output_idx = 0;
     for (int i=0; i < n_chunks; i++) {
         unsigned int color = huffman_decode_color_block(&input, &offset);
         unsigned int length = huffman_decode_length_block(&input, &offset);
         for (int j=0; j < length; j++) {
-            *output = color;
-            output++;
+            assert(output_idx < output_len);
+            output[output_idx] = color;
+            output_idx ++;
         }
     }
+    return output_idx;
 }
 
 static unsigned int huffman_decode_color_block(

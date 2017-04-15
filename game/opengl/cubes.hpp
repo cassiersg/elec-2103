@@ -9,13 +9,6 @@ void draw_cubes(unsigned char *grid, int grid_size, int n, int m, int p1x, int p
 void cubes_init();
 void cubes_exit();
 void cubes_image_export(unsigned char *buf, int buf_size);
-int cubes_export_chunks(unsigned char *buf, int buf_size, int max_chunk_size);
-void cubes_test_current_image(void);
-int cubes_export_compressed(
-        unsigned char *buf,
-        int buf_size,
-        int max_chunk_size,
-        int *buf_output_len);
 
 #endif
 
