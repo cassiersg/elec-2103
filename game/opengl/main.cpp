@@ -40,9 +40,6 @@ static void test_compression_current_image(void)
     assert(chunk_decompress_huffman(compressed, 0, pixels2, width*height, n_chunks) == width*height);
     for (int i=0; i< width*height; i++) {
         assert(pixels2[i] == ((unsigned int *) pixels)[i]);
-        if (pixels2[i] != 0xff334c4c) {
-            printf("pixels: %x, pixels2: %x\n", ((unsigned int *) pixels)[i], pixels2[i]);
-        }
     }
 }
 
