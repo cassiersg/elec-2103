@@ -89,7 +89,6 @@ unsigned int make_chunks(
     return i;
 }
 
-
 int chunk_compress_huffman(
         unsigned int *input, size_t input_len,
         unsigned int *output, size_t *output_len,

@@ -265,3 +265,18 @@ void cubes_test_current_image(void)
     }
     printf("succeded compress/decompress test\n");
 }
+
+int cubes_export_compressed(
+        unsigned char *buf,
+        int buf_size,
+        int max_chunk_size,
+        int *buf_output_len)
+{
+    unsigned char *pixels = (unsigned char *) malloc(4*width*height);
+    assert(pixels != NULL);
+    cubes_image_export(pixels, 4*width*height);
+    *buf_output_len = buf_size/4;
+    int res = chunk_compress_huffman((unsigned int *) pixels, width*height,
+            (unsigned int *) buf, (size_t *) buf_output_len, max_chunk_size);
+    return res;
+}
