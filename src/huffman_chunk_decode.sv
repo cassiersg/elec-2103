@@ -27,7 +27,7 @@ huffman_color_decoder color_decoder(
     .out(color_next), // output
     .code_len(len_code_color) // output
 );
-assign code_length = wide_buffer >> (offset + len_code_color);
+assign code_length = (wide_buffer >> (offset + len_code_color));
 // Purely combinational code
 huffman_length_decoder length_decoder(
     .code(code_length), // input
@@ -36,14 +36,14 @@ huffman_length_decoder length_decoder(
 );
 
 always_comb
-if (read_next_chunk && increment_address)
+if (pixel_read_next && read_next_chunk && increment_address)
     address_next_gated = address + 1;
 else
     address_next_gated = address;
 
 assign offset_tot = offset + len_code_color + len_code_length;
 assign increment_address = offset_tot >= 32;
-assign offset_next = increment_address ? offset_tot - 32 : offset_tot;
+assign offset_next = increment_address ? offset_tot - 6'd32 : offset_tot;
 assign buffer_lsb_next = increment_address ? buffer_msb : buffer_lsb;
 
 assign read_next_chunk = (length_counter == 1);
@@ -66,7 +66,7 @@ begin
             buffer_lsb <= buffer_lsb_next;
             offset <= offset_next;
         end else begin
-            length_counter <= length_counter - 1;
+            length_counter <= length_counter - 8'b1;
         end
     end
 end
@@ -76,7 +76,7 @@ endmodule
 module huffman_color_decoder(
     input logic [15:0] code,
     output logic [31:0] out,
-    output logic [4:0] code_len
+    output logic [7:0] code_len
 );
 logic [31:0] decoded;
 assign out = decoded;
@@ -89,7 +89,7 @@ endmodule
 module huffman_length_decoder(
     input logic [15:0] code,
     output logic [7:0] out,
-    output logic [4:0] code_len
+    output logic [7:0] code_len
 );
 logic [31:0] decoded;
 assign out = decoded[7:0];
