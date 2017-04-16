@@ -2,15 +2,17 @@
 if ((code >> 0) & 0x1) {
  if ((code >> 1) & 0x1) {
   if ((code >> 2) & 0x1) {
-   decoded = 0x10;
-   code_len = 3;
-  } else {
    if ((code >> 3) & 0x1) {
     if ((code >> 4) & 0x1) {
-     decoded = 0x1;
-     code_len = 5;
+     if ((code >> 5) & 0x1) {
+      decoded = 0xa;
+      code_len = 6;
+     } else {
+      decoded = 0x200;
+      code_len = 6;
+     }
     } else {
-     decoded = 0x100;
+     decoded = 0x9;
      code_len = 5;
     }
    } else {
@@ -18,88 +20,86 @@ if ((code >> 0) & 0x1) {
      decoded = 0x4;
      code_len = 5;
     } else {
-     decoded = 0x9;
-     code_len = 5;
-    }
-   }
-  }
- } else {
-  if ((code >> 2) & 0x1) {
-   decoded = 0x20;
-   code_len = 3;
-  } else {
-   if ((code >> 3) & 0x1) {
-    if ((code >> 4) & 0x1) {
-     if ((code >> 5) & 0x1) {
-      decoded = 0xe;
-      code_len = 6;
-     } else {
-      decoded = 0x800;
-      code_len = 6;
-     }
-    } else {
      decoded = 0x8;
      code_len = 5;
     }
-   } else {
-    decoded = 0x80;
-    code_len = 4;
    }
+  } else {
+   decoded = 0x10;
+   code_len = 3;
+  }
+ } else {
+  if ((code >> 2) & 0x1) {
+   if ((code >> 3) & 0x1) {
+    if ((code >> 4) & 0x1) {
+     decoded = 0xb;
+     code_len = 5;
+    } else {
+     decoded = 0x100;
+     code_len = 5;
+    }
+   } else {
+    if ((code >> 4) & 0x1) {
+     decoded = 0x1;
+     code_len = 5;
+    } else {
+     if ((code >> 5) & 0x1) {
+      decoded = 0x800;
+      code_len = 6;
+     } else {
+      decoded = 0xd;
+      code_len = 6;
+     }
+    }
+   }
+  } else {
+   decoded = 0x20;
+   code_len = 3;
   }
  }
 } else {
  if ((code >> 1) & 0x1) {
   if ((code >> 2) & 0x1) {
    if ((code >> 3) & 0x1) {
-    decoded = 0x6;
+    decoded = 0x2;
     code_len = 4;
    } else {
     if ((code >> 4) & 0x1) {
      decoded = 0x7;
      code_len = 5;
     } else {
-     decoded = 0x200;
+     decoded = 0x5;
      code_len = 5;
     }
    }
   } else {
-   if ((code >> 3) & 0x1) {
-    decoded = 0x2;
-    code_len = 4;
-   } else {
-    if ((code >> 4) & 0x1) {
-     decoded = 0xb;
-     code_len = 5;
-    } else {
-     decoded = 0xa;
-     code_len = 5;
-    }
-   }
+   decoded = 0x40;
+   code_len = 3;
   }
  } else {
   if ((code >> 2) & 0x1) {
-   decoded = 0x40;
-   code_len = 3;
+   if ((code >> 3) & 0x1) {
+    decoded = 0x6;
+    code_len = 4;
+   } else {
+    decoded = 0x3;
+    code_len = 4;
+   }
   } else {
    if ((code >> 3) & 0x1) {
+    decoded = 0x80;
+    code_len = 4;
+   } else {
     if ((code >> 4) & 0x1) {
-     decoded = 0x3;
-     code_len = 5;
-    } else {
      if ((code >> 5) & 0x1) {
-      decoded = 0xd;
+      decoded = 0xe;
       code_len = 6;
      } else {
       decoded = 0xf;
       code_len = 6;
      }
-    }
-   } else {
-    if ((code >> 4) & 0x1) {
-     decoded = 0xc;
-     code_len = 5;
     } else {
-     decoded = 0x5;
+     decoded = 0xc;
      code_len = 5;
     }
    }
