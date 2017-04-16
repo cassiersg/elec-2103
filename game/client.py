@@ -5,7 +5,6 @@ import pygame
 import utils
 import net
 import threading
-#import tile_rendering as rendering
 import opengl_rendering as rendering
 
 if utils.runs_on_rpi():
@@ -16,7 +15,6 @@ else:
 from pygame.locals import *
 
 from game_global import *
-from game_frontend import *
 
 display_args_glob = [None]
 

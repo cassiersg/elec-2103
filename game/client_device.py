@@ -65,15 +65,6 @@ class HardwareInterface:
         t3 = time.time()
         print('SPI: init', t1-t0, 'write', t2-t1, 'pageflip', t3-t2, 'n writes', idx//1000)
 
-    def draw_tiles(self, tiles_idx):
-        assert len(tiles_idx) == 6000
-        write_spi(self.spi, 0x10000, tiles_idx[:3000])
-        write_spi(self.spi, 0x10000+3000//4, tiles_idx[3000:])
-
-    def display_tiles(self, tiles):
-        self.draw_tiles(tiles)
-        self.pageflip()
-
     def get_events(self, cur_acc_value):
         quit = False
         events = []
