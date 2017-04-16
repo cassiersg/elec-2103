@@ -63,7 +63,7 @@ class HardwareInterface:
         t2 = time.time()
         self.pageflip()
         t3 = time.time()
-        print('SPI: init', t1-t0, 'write', t2-t1, 'pageflip', t3-t2, 'n writes', idx//1000)
+        #print('SPI: init', t1-t0, 'write', t2-t1, 'pageflip', t3-t2, 'n writes', idx//1000)
 
     def get_events(self, cur_acc_value):
         quit = False
@@ -77,9 +77,10 @@ class HardwareInterface:
 
         if events:
             write_spi(self.spi, 0x02, 4*[0x00])
-
-        cur_acc_value = min(255, max(0, (bytes2int(read_spi(self.spi, 0x03)) + 256) // 2))
-        #print(cur_acc_value)
+        
+        raw_acc_value = bytes2int(read_spi(self.spi, 0x03))
+        cur_acc_value = min(255, max(0, (raw_acc_value + 256) // 2))
+        #print(raw_acc_value, cur_acc_value)
 
         return (False, cur_acc_value, events)
 

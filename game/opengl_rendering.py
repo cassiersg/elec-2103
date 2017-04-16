@@ -52,7 +52,7 @@ class Renderer:
             t4 = time.time()
             self.hw_interface.send_spi_buf(list(compressed_buf))
             t5 = time.time()
-            print('setup', t1-t0, 'draw', t2-t1, 'export', t3-t2, 'compress', t4-t3, 'spi', t5-t4)
+            #print('setup', t1-t0, 'draw', t2-t1, 'export', t3-t2, 'compress', t4-t3, 'spi', t5-t4)
         else:
             s = self.hw_interface.screen
             b = s.get_buffer()
