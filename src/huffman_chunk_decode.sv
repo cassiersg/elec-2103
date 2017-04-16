@@ -16,7 +16,7 @@ logic [4:0] len_code_color, len_code_length; // must hold up to 16
 logic [15:0] code_color, code_length; // max code size: 16 bits
 logic read_next_chunk, increment_address, reset_load_buffer_lsb;
 
-assign buffer_msb = RAM_readdata;
+assign buffer_msb = {RAM_readdata[7:0], RAM_readdata[15:8], RAM_readdata[23:16], RAM_readdata[31:24]};
 assign RAM_address = pixel_reset ? 0 : address_next_gated;
 
 assign wide_buffer = {buffer_msb, buffer_lsb};

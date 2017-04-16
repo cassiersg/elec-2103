@@ -118,9 +118,9 @@ huffman_chunk_decoder dut2(
     .clk(CLOCK_33),
     .pixel_read_next(next_display_active),
     .pixel_reset(End_Frame | RST),
-    .RAM_readdata(tiles_idx_display_rd),
+    .RAM_readdata(tile_idx_display_rd),
     .color(pixel_rgb),
-    .RAM_address(tiles_idx_display_addr)
+    .RAM_address(tile_idx_display_addr)
 );
 //// MTL DISPLAY CONTROLLER
 //mtl_display_controller mtl_display_controller_inst (
