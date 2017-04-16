@@ -10,7 +10,7 @@ end else begin
   end else begin
    if (code[3]) begin
     if (code[4]) begin
-     decoded = 32'hff1d1d1d;
+     decoded = 32'hff1e1e1e;
      code_len = 8'd5;
     end else begin
      decoded = 32'hff494949;
