@@ -14,6 +14,7 @@ game/opengl/compression.py
 game/opengl/chunker.py
 game/opengl/huffman_encode_*.cpp
 game/opengl/huffman_decode_*.cpp
+src/huffman_decode_*.sv
 
 
 ## Modelsim
