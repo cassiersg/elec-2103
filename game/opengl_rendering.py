@@ -35,7 +35,8 @@ class Renderer:
             compressed_buf = bytearray(12000)
             n_chunks, output_used = compression.chunk_compress_huffman(
                 pixel_buf, compressed_buf, 32)
-            self.hw_interface.send_spi_buf(compressed_buf)
+            self.hw_interface.send_spi_buf(list(compressed_buf))
+            self.hw_interface.pageflip()
         else:
             if os.environ.get('LOG_RENDER_ARGS'):
                 log_args(

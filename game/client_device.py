@@ -3,6 +3,7 @@ import spidev
 import struct
 import datetime
 import game_global as gg
+import net
 from utils import *
 
 SCALE_FACTOR = 4
@@ -53,8 +54,8 @@ class HardwareInterface:
         idx = 0
         while buf:
             sent_buf, buf = buf[:4000], buf[4000:]
-            write_spi(self.spi, 0x10000+idx, sent_buf)
-            idx += 4000
+            write_spi(self.spi, idx, sent_buf)
+            idx += 1000
 
     def draw_tiles(self, tiles_idx):
         assert len(tiles_idx) == 6000
@@ -71,9 +72,9 @@ class HardwareInterface:
 
         touch = read_spi(self.spi, 0x02)
         if touch[3] == 1:
-            events.append(LEFT)
+            events.append(net.LEFT)
         elif touch[3] == 2:
-            events.append(RIGHT)
+            events.append(net.RIGHT)
 
         if events:
             write_spi(self.spi, 0x02, 4*[0x00])
