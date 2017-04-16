@@ -4,6 +4,18 @@
 #include <assert.h>
 #include <stdio.h>
 
+void export_bmp_py(unsigned int* img, size_t img_len) {
+    unsigned char *buf = (unsigned char *) img;
+    for (int i = 0; i < 800*480; i++) {
+        unsigned char r = buf[4*i+2];
+        unsigned char g = buf[4*i+1];
+        unsigned char b = buf[4*i];
+        buf[3*i] = r;
+        buf[3*i+1] = g;
+        buf[3*i+2] = b;
+    }
+    export_bmp((char *)"img.bmp", 800, 480, (unsigned char *) img);
+}
 void export_bmp(char *fname, int width, int height, unsigned char* img)
 {
     FILE *f;

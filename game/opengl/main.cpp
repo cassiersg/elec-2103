@@ -27,6 +27,8 @@ static void test_compression_current_image(void)
     unsigned char *pixels = (unsigned char *) malloc(4*width*height);
     assert(pixels != NULL);
     cubes_image_export(pixels, 4*width*height);
+    export_bmp_py((unsigned int *)pixels, 0);
+    return;
     unsigned int *compressed = (unsigned int*) malloc(4*width*height);
     assert(compressed != NULL);
     size_t output_size = width*height;
