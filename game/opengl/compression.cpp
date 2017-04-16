@@ -52,6 +52,9 @@ int chunk_compress_huffman(
         }
         n_chunks++;
     }
+    if (fill != 0) {
+        output++; // paritally used word, counted
+    }
     *output_used = output_len - (output_end - output); // upper bound on len used
     return n_chunks;
 }
