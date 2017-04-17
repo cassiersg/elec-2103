@@ -51,10 +51,13 @@ class Renderer:
             # invalid gamestate, wait
             return
         if utils.is_rpi:
-            compressed_buf = bytearray(50000)
+            #compressed_buf = bytearray(50000)
+            compressed_buf = bytearray(20000)
             n_chunks, output_used = compression.chunk_compress_huffman(
                 pixel_buf, compressed_buf)
+            output_used = 4*output_used
             actual_qsys_size = 20000
+            #logging.info("Output used %d", output_used)
             if output_used > actual_qsys_size:
                 logging.error("Output used was %d", output_used)
                 output_used = actual_qsys_size
