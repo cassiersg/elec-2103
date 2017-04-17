@@ -152,7 +152,7 @@ class Client:
     def update_acc_value(self, new_acc_value):
         if new_acc_value != self.cur_acc_value:
             self.cur_acc_value = new_acc_value
-            logging.info("cur_acc_value: %s", self.cur_acc_value)
+            #logging.info("cur_acc_value: %s", self.cur_acc_value)
             self.acc_sender.send(
                 net.CLIENT_ANGLE,
                 self.gamestate.player_id,
