@@ -186,6 +186,14 @@
          type = "String";
       }
    }
+   element epcs_flash_controller_0
+   {
+      datum _sortIndex
+      {
+         value = "13";
+         type = "int";
+      }
+   }
    element int_gsensor
    {
       datum _sortIndex
@@ -237,7 +245,7 @@
       }
       datum sopceditor_expanded
       {
-         value = "0";
+         value = "1";
          type = "boolean";
       }
    }
@@ -386,6 +394,11 @@
  <interface name="disp_buf1_s1" internal="disp_buf1.s1" type="avalon" dir="end" />
  <interface name="disp_buf1_s2" internal="disp_buf1.s2" type="avalon" dir="end" />
  <interface
+   name="epcs_flash_controller_0_external"
+   internal="epcs_flash_controller_0.external"
+   type="conduit"
+   dir="end" />
+ <interface
    name="int_gsensor_external_connection"
    internal="int_gsensor.external_connection"
    type="conduit"
@@ -444,7 +457,7 @@
   <parameter name="dataAddrWidth" value="27" />
   <parameter name="dataMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="dataMasterHighPerformanceMapParam" value="" />
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='sdram.s1' start='0x2000000' end='0x4000000' /><slave name='cpu.debug_mem_slave' start='0x400C800' end='0x400D000' /><slave name='message_mem.s1' start='0x400D000' end='0x400D400' /><slave name='mtl_touch.s0' start='0x400D800' end='0x400D880' /><slave name='spi_gsensor.slave' start='0x400D880' end='0x400D8C0' /><slave name='timer_0.s1' start='0x400D8C0' end='0x400D8E0' /><slave name='int_gsensor.s1' start='0x400D8F0' end='0x400D900' /><slave name='sysid.control_slave' start='0x400D910' end='0x400D918' /><slave name='jtag_uart_0.avalon_jtag_slave' start='0x400D918' end='0x400D920' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='epcs_flash_controller_0.epcs_control_port' start='0x0' end='0x800' /><slave name='sdram.s1' start='0x2000000' end='0x4000000' /><slave name='cpu.debug_mem_slave' start='0x400C800' end='0x400D000' /><slave name='message_mem.s1' start='0x400D000' end='0x400D100' /><slave name='mtl_touch.s0' start='0x400D800' end='0x400D880' /><slave name='spi_gsensor.slave' start='0x400D880' end='0x400D8C0' /><slave name='timer_0.s1' start='0x400D8C0' end='0x400D8E0' /><slave name='int_gsensor.s1' start='0x400D8F0' end='0x400D900' /><slave name='sysid.control_slave' start='0x400D910' end='0x400D918' /><slave name='jtag_uart_0.avalon_jtag_slave' start='0x400D918' end='0x400D920' /></address-map>]]></parameter>
   <parameter name="data_master_high_performance_paddr_base" value="0" />
   <parameter name="data_master_high_performance_paddr_size" value="0" />
   <parameter name="data_master_paddr_base" value="0" />
@@ -483,14 +496,14 @@
   <parameter name="icache_tagramBlockType" value="Automatic" />
   <parameter name="impl" value="Tiny" />
   <parameter name="instAddrWidth" value="27" />
-  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='sdram.s1' start='0x2000000' end='0x4000000' /><slave name='cpu.debug_mem_slave' start='0x400C800' end='0x400D000' /></address-map>]]></parameter>
+  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='epcs_flash_controller_0.epcs_control_port' start='0x0' end='0x800' /><slave name='sdram.s1' start='0x2000000' end='0x4000000' /><slave name='cpu.debug_mem_slave' start='0x400C800' end='0x400D000' /></address-map>]]></parameter>
   <parameter name="instructionMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="instructionMasterHighPerformanceMapParam" value="" />
   <parameter name="instruction_master_high_performance_paddr_base" value="0" />
   <parameter name="instruction_master_high_performance_paddr_size" value="0" />
   <parameter name="instruction_master_paddr_base" value="0" />
   <parameter name="instruction_master_paddr_size" value="0" />
-  <parameter name="internalIrqMaskSystemInfo" value="7" />
+  <parameter name="internalIrqMaskSystemInfo" value="15" />
   <parameter name="io_regionbase" value="0" />
   <parameter name="io_regionsize" value="0" />
   <parameter name="master_addr_map" value="false" />
@@ -518,7 +531,7 @@
   <parameter name="ocimem_ramInit" value="false" />
   <parameter name="regfile_ramBlockType" value="Automatic" />
   <parameter name="resetOffset" value="0" />
-  <parameter name="resetSlave" value="sdram.s1" />
+  <parameter name="resetSlave">epcs_flash_controller_0.epcs_control_port</parameter>
   <parameter name="resetrequest_enabled" value="true" />
   <parameter name="setting_HBreakTest" value="false" />
   <parameter name="setting_HDLSimCachesCleared" value="true" />
@@ -617,7 +630,7 @@
   <parameter name="initMemContent" value="false" />
   <parameter name="initializationFileName" value="onchip_mem.hex" />
   <parameter name="instanceID" value="NONE" />
-  <parameter name="memorySize" value="12000" />
+  <parameter name="memorySize" value="20000" />
   <parameter name="readDuringWriteMode" value="DONT_CARE" />
   <parameter name="resetrequest_enabled" value="true" />
   <parameter name="simAllowMRAMContentsFile" value="false" />
@@ -646,7 +659,7 @@
   <parameter name="initMemContent" value="false" />
   <parameter name="initializationFileName" value="onchip_mem.hex" />
   <parameter name="instanceID" value="NONE" />
-  <parameter name="memorySize" value="12000" />
+  <parameter name="memorySize" value="20000" />
   <parameter name="readDuringWriteMode" value="DONT_CARE" />
   <parameter name="resetrequest_enabled" value="true" />
   <parameter name="simAllowMRAMContentsFile" value="false" />
@@ -657,6 +670,18 @@
   <parameter name="useNonDefaultInitFile" value="false" />
   <parameter name="useShallowMemBlocks" value="false" />
   <parameter name="writable" value="true" />
+ </module>
+ <module
+   name="epcs_flash_controller_0"
+   kind="altera_avalon_epcs_flash_controller"
+   version="15.0"
+   enabled="1">
+  <parameter name="autoInitializationFileName">$${FILENAME}_epcs_flash_controller_0</parameter>
+  <parameter name="autoSelectASMIAtom" value="true" />
+  <parameter name="clockRate" value="50000000" />
+  <parameter name="deviceFamilyString" value="Cyclone IV E" />
+  <parameter name="resetrequest_enabled" value="true" />
+  <parameter name="useASMIAtom" value="false" />
  </module>
  <module
    name="int_gsensor"
@@ -712,7 +737,7 @@
   <parameter name="initMemContent" value="false" />
   <parameter name="initializationFileName" value="onchip_mem.hex" />
   <parameter name="instanceID" value="NONE" />
-  <parameter name="memorySize" value="1024" />
+  <parameter name="memorySize" value="256" />
   <parameter name="readDuringWriteMode" value="DONT_CARE" />
   <parameter name="resetrequest_enabled" value="true" />
   <parameter name="simAllowMRAMContentsFile" value="false" />
@@ -806,6 +831,15 @@
    kind="avalon"
    version="15.0"
    start="cpu.data_master"
+   end="epcs_flash_controller_0.epcs_control_port">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="15.0"
+   start="cpu.data_master"
    end="mtl_touch.s0">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0400d800" />
@@ -861,6 +895,15 @@
    kind="avalon"
    version="15.0"
    start="cpu.instruction_master"
+   end="epcs_flash_controller_0.epcs_control_port">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="15.0"
+   start="cpu.instruction_master"
    end="sdram.s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x02000000" />
@@ -872,6 +915,11 @@
  <connection kind="clock" version="15.0" start="clk_0.clk" end="timer_0.clk" />
  <connection kind="clock" version="15.0" start="clk_0.clk" end="sdram.clk" />
  <connection kind="clock" version="15.0" start="clk_0.clk" end="int_gsensor.clk" />
+ <connection
+   kind="clock"
+   version="15.0"
+   start="clk_0.clk"
+   end="epcs_flash_controller_0.clk" />
  <connection kind="clock" version="15.0" start="clk_0.clk" end="message_mem.clk1" />
  <connection
    kind="clock"
@@ -914,6 +962,13 @@
   <parameter name="irqNumber" value="2" />
  </connection>
  <connection
+   kind="interrupt"
+   version="15.0"
+   start="cpu.irq"
+   end="epcs_flash_controller_0.irq">
+  <parameter name="irqNumber" value="3" />
+ </connection>
+ <connection
    kind="reset"
    version="15.0"
    start="clk_0.clk_reset"
@@ -941,6 +996,11 @@
    version="15.0"
    start="clk_0.clk_reset"
    end="int_gsensor.reset" />
+ <connection
+   kind="reset"
+   version="15.0"
+   start="clk_0.clk_reset"
+   end="epcs_flash_controller_0.reset" />
  <connection
    kind="reset"
    version="15.0"

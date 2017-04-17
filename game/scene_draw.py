@@ -26,9 +26,16 @@ class Filter():
         self.size = size
         self.buf = [0] * size
         self.cur = 0
+        self.last = 0
 
     def add(self, val):
-        self.buf[self.cur] = val
+        # Filter out HF small variations
+        if abs(val - self.last) < 4:
+            self.buf[self.cur] = self.last
+        else:
+            self.last = val
+            self.buf[self.cur] = val
+        
         self.cur = (self.cur + 1) % self.size
 
     def get_mean(self):
@@ -45,9 +52,16 @@ def render_gamestate(gamestate):
         pixel_buf = scene_texts(
             ["What's the goal?",
             " ", " ",
-            "You're a cube, and you want to fit in",
+            "You're a cube, and you want to fit in the holes of a",
             " ",
-            "the holes of a moving wall to survive!",
+            "a moving wall to survive! You have to pass in as much walls",
+            " ",
+            "as possible in the given time. Each passed wall is worth 1 point.",
+            " ",
+            "Failing to pass a wall will make you loose 1 point.",
+            " ",
+            "Both players have to pass the wall: you have to collaborate!",
+            " ",
             " ", " ", " ", " ", " ",
             "How to play?",
             " ", " ",
@@ -59,10 +73,17 @@ def render_gamestate(gamestate):
             " ",
             "- Tilt the screen to either change the point of",
             " ",
-            "view or change the speed of the wall"],
-            font_size = [40, 30, 30, 20, 30, 20, 30, 30, 30, 30, 30, 40, 30,
+            "view or change the speed of the wall",
+            " ",
+            "- Press the screen with 3 fingers to make the wall more",
+            " ",
+            "visible during 2s (only once per round)",
+            " ", " ", " ", " ", " ", " ", " ",
+            "                                          Tap anywhere to start"],
+            font_size = [40, 30, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 30, 30, 30, 30, 30, 40, 30,
                          30, 20, 30, 15, 30, 20,
-                         30, 20, 30, 20])
+                         30, 20, 30, 20, 30, 20, 30, 20, 30, 30, 30, 30, 30,
+                         30, 30, 20])
 
     elif gamestate.game_started:
         if (not gamestate.players_states[0].is_valid() or

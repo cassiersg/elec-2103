@@ -1,4 +1,5 @@
 #include "gsensor.h"
+#include "utils.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -17,10 +18,14 @@ void task_g_sense(void *pdata) {
 		alt_16 szXYZ[3];
 		//assert(ADXL345_SPI_IsDataReady(SPI_GSENSOR_BASE));
 		assert(ADXL345_SPI_XYZ_Read(SPI_GSENSOR_BASE, szXYZ));
+		INT8U err;
+		OSMutexPend(mutex_spi, 0, &err);
+		assert(!err);
 		msg_reg[3] = szXYZ[0];
 		msg_reg[4] = szXYZ[1];
 		msg_reg[5] = szXYZ[2];
-		//printf("acc: %i\n", msg_reg[3]);
+		debug_printf("acc: %i\n", msg_reg[3]);
+		OSMutexPost(mutex_spi);
 		OSTimeDlyHMSM(0, 0, 0, 50);
 	}
 }

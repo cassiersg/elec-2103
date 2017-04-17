@@ -3,9 +3,14 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 #include "mtltouch.h"
 #include "system.h"
 #include "includes.h"
+
+#include "utils.h"
+
+#define X_THRESHOLD 400
 
 #define MTL_TOUCH_X1 (((int *) MTL_TOUCH_BASE) + 0)
 #define MTL_TOUCH_Y1 (((int *) MTL_TOUCH_BASE) + 8)
@@ -15,9 +20,7 @@
 #define MTL_TOUCH_GESTURE (((int *) MTL_TOUCH_BASE) + 17)
 #define MTL_TOUCH_READY (((int *) MTL_TOUCH_BASE) + 18)
 
-static void emit_touch_to_rpi(int x, int y);
-static void emit_pause_resume_to_rpi(void);
-static void emit_hide_struct_to_rpi(void);
+static void emit_touch_event_rpi(int x);
 
 typedef enum {notouch, intouch} touch_state;
 
@@ -35,7 +38,7 @@ int abs(int x) {
 
 void task_touch_sense(void *pdata)
 {
-    printf("Task touch sense started\n");
+    debug_printf("Task touch sense started\n");
 
     volatile int *mtl_touch_x1 		= MTL_TOUCH_X1;
     volatile int *mtl_touch_y1 		= MTL_TOUCH_Y1;
@@ -52,7 +55,7 @@ void task_touch_sense(void *pdata)
         int t_count = *mtl_touch_count;
 
         if (t_count > 4) {
-            printf("Invalid touch count\n");
+            debug_printf("Invalid touch count\n");
             state = notouch;
         } else if (state == notouch || (t_count > state_data.intouch.t_count)) {
         	/* The second condition deals with non-ideal pause gestures (i.e. touch_count
@@ -75,19 +78,28 @@ void task_touch_sense(void *pdata)
         } else if (state == intouch) {
             if (t_count == 0) {
             	if (state_data.intouch.t_count == 1) {
-            		printf("Touch detected\n");
-            		emit_touch_to_rpi(state_data.intouch.x_init, state_data.intouch.y_init);
+            		debug_printf("Touch detected\n");
+            		int msg;
+            		if (state_data.intouch.x_init < X_THRESHOLD) {
+            				msg = 1; // LEFT
+            			} else {
+            				msg = 2; // RIGHT
+            		}
+            		emit_touch_event_rpi(msg);
+            		//emit_touch_to_rpi(state_data.intouch.x_init, state_data.intouch.y_init);
             	} else if (state_data.intouch.t_count == 2) {
             		int dx = abs(x_final - state_data.intouch.x_init);
             		int dy = abs(y_final - state_data.intouch.y_init);
 
             		if(dx < 100 && dy > 150) {
-            			printf("Pause or resume detected\n");
-            			emit_pause_resume_to_rpi();
+            			debug_printf("Pause or resume detected\n");
+            			emit_touch_event_rpi(3);
+            			//emit_pause_resume_to_rpi();
                     }
             	} else {
-                	printf("Triple touch detected!\n");
-                	emit_hide_struct_to_rpi();
+                	debug_printf("Triple touch detected!\n");
+                	emit_touch_event_rpi(4);
+                	//emit_hide_struct_to_rpi();
             	}
 
             	state = notouch;
@@ -97,26 +109,21 @@ void task_touch_sense(void *pdata)
             }
         }
 
-        OSTimeDlyHMSM(0, 0, 0, 20);
+        OSTimeDlyHMSM(0, 0, 0, 2);
     }
 }
 
-#define X_THRESHOLD 400
-static void emit_touch_to_rpi(int x, int y) {
+void task_emit_touch_event_rpi(void *pdata) {
 	volatile int *msg_reg = (int *) MESSAGE_MEM_BASE;
-	if (x < X_THRESHOLD) {
-		msg_reg[2] = 1; // LEFT
-	} else {
-		msg_reg[2] = 2; // RIGHT
+	while (1) {
+		INT8U err;
+		int x = (int) OSMboxPend(mbox_touch, 0, &err);
+		assert(!err);
+		OSMutexPend(mutex_spi, 0, &err);
+		msg_reg[2] = x;
+		OSMutexPost(mutex_spi);
 	}
 }
-
-static void emit_pause_resume_to_rpi(void) {
-	volatile int *msg_reg = (int *) MESSAGE_MEM_BASE;
-	msg_reg[2] = 3; // PAUSE or RESUME
-}
-
-static void emit_hide_struct_to_rpi(void) {
-	volatile int *msg_reg = (int *) MESSAGE_MEM_BASE;
-	msg_reg[2] = 4; // HIDE THE STRUCT
+static void emit_touch_event_rpi(int x) {
+	OSMboxPost(mbox_touch, (void *) x);
 }

@@ -239,6 +239,6 @@ class Client:
             self.handle_recv()
             if self.role != net.SPECTATOR:
                 self.handle_events()
-            time.sleep(0.02)
+            time.sleep(0.01)
             self.display_args_glob[0] = copy.deepcopy(self.gamestate)
 

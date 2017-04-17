@@ -81,6 +81,7 @@ $(function() {
       $("#loader").hide();
       $("#upload_status").html("Upload successful");
       $("#upload_result").html(response);
+      camera.show_stream();
     };
 
     var upload_fail = function(code, error, response) {
