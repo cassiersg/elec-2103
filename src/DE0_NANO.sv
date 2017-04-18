@@ -114,23 +114,31 @@ display_mmu #(11) display_mmu_inst (
 );
 
 
-// MTL DISPLAY CONTROLLER
-mtl_display_controller mtl_display_controller_inst (
-    .display_clock(CLOCK_33),
-    .reset(RST),
-    .iNew_Frame(New_Frame),
-    .iEnd_Frame(End_Frame),
-	 .i_next_active(next_display_active),
-    .o_pixel_data(pixel_rgb),
-    .i_next2_x(next_x),
-    .i_next2_y(next_y),
-	 .i_tiles_readdata(tiles_readdata),
-	 .o_tiles_addr(tiles_addr),
-	 .i_tiles_idx_readdata(tile_idx_display_rd),
-	 .o_tiles_idx_addr(tile_idx_display_addr),
-	 .i_colormap_readdata(colormap_readdata),
-	 .o_colormap_addr(colormap_addr)
+huffman_chunk_decoder dut2(
+    .clk(CLOCK_33),
+    .pixel_read_next(next_display_active),
+    .pixel_reset(End_Frame | RST),
+    .RAM_readdata(tiles_idx_display_rd),
+    .color(pixel_rgb),
+    .RAM_address(tiles_idx_display_addr)
 );
+//// MTL DISPLAY CONTROLLER
+//mtl_display_controller mtl_display_controller_inst (
+//    .display_clock(CLOCK_33),
+//    .reset(RST),
+//    .iNew_Frame(New_Frame),
+//    .iEnd_Frame(End_Frame),
+//	 .i_next_active(next_display_active),
+//    .o_pixel_data(pixel_rgb),
+//    .i_next2_x(next_x),
+//    .i_next2_y(next_y),
+//	 .i_tiles_readdata(tiles_readdata),
+//	 .o_tiles_addr(tiles_addr),
+//	 .i_tiles_idx_readdata(tile_idx_display_rd),
+//	 .o_tiles_idx_addr(tile_idx_display_addr),
+//	 .i_colormap_readdata(colormap_readdata),
+//	 .o_colormap_addr(colormap_addr)
+//);
 
 // MTL DISPLAY
 mtl_display mtl_display_inst (
