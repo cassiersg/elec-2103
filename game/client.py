@@ -79,7 +79,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
     players_xy = None
 
     event_sender = net.MaxFreqSender(s, 0.05) # should not be limiting
-    acc_sender = net.MaxFreqSender(s, 0.2)
+    acc_sender = net.MaxFreqSender(s, 1)
 
     while True:
         time.sleep(0.01)

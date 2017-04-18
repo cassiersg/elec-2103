@@ -37,6 +37,7 @@ def draw_grid(display, grid, players_xy, player_id):
                 draw_case(display, BLACK, j*CASE_SIZE, i*CASE_SIZE)
             else:
                 ValueError(grid[m-i-1][j])
+
     x1, y1, x2, y2 = players_xy
     if player_id == 1:
         c1, c2 = RED, GREEN
@@ -44,6 +45,7 @@ def draw_grid(display, grid, players_xy, player_id):
         c1, c2 = GREEN, RED
     else:
         raise ValueError(player_id)
+
     draw_case(display, c1, x1*CASE_SIZE, (m-y1-1)*CASE_SIZE)
     draw_case(display, c2, x2*CASE_SIZE, (m-y2-1)*CASE_SIZE)
 
