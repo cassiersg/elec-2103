@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include "includes.h"
 #include "system.h"
 #include "mtltouch.h"
 #include "gsensor.h"
+#include "tiling_roms.h"
 
 
 /* Definition of Task Stacks */
@@ -27,12 +29,8 @@ OS_STK    task3_stk[TASK_STACKSIZE];
 
 void init_color_map() {
 	volatile int * colormap_ram = (int *) COLORMAP_BASE;
-
-	colormap_ram[0] = WHITE;
-	colormap_ram[1] = BLACK;
-	colormap_ram[2] = RED;
-	colormap_ram[3] = GREEN;
-	colormap_ram[4] = GRAY;
+        assert(COLORMAP_ROM_LEN == 256);
+        memcpy(colormap_ram, colormap_rom, 256*sizeof(int));
 }
 
 void init_tiles_idx_ram() {
@@ -48,14 +46,8 @@ void init_tiles_idx_ram() {
 
 void init_tiles_ram() {
 	volatile char * tiles_ram = (char *) TILE_IMAGE_BASE;
-
-	int i, j;
-	for (i = 0; i < 64; i++) {
-		for (j = 0; j < 10; j++) {
-			char tidx = (i == 0) ? 3 : j;
-			tiles_ram[i+j*64] = tidx;
-		}
-	}
+        assert(TILES_IMAGE_ROM_LEN <= 256); // FIXME replace with constant from system.h
+        memcpy(tiles_ram, tiles_image_rom, TILES_IMAGE_ROM_LEN);
 }
 
 void init() {

@@ -32,9 +32,14 @@ void task_touch_sense(void *pdata)
     touch_state state = notouch;
     touch_state_data state_data;
 
+    printf("task touch sense started\n");
+
 
     while (1) {
         int t_count = *mtl_touch_count;
+        if (t_count) {
+        	printf("tcount, %i\n", t_count);
+        }
         if (t_count > 1) {
             printf("Invalid touch count\n");
             state = notouch;
@@ -47,6 +52,7 @@ void task_touch_sense(void *pdata)
         } else if (state == intouch) {
             if (t_count == 0) {
                 // FIXME emit data (in message box for example)
+            	printf("touch detected\n");
             	emit_touch_to_rpi(state_data.intouch.x_init, state_data.intouch.y_init);
                 state = notouch;
             }
