@@ -49,6 +49,13 @@ class HardwareInterface:
         set_display(self.spi, new_display)
         self.current_display = new_display
 
+    def send_spi_buf(self, buf):
+        idx = 0
+        while buf:
+            sent_buf, buf = buf[:4000], buf[4000:]
+            write_spi(self.spi, 0x10000+idx, sent_buf)
+            idx += 4000
+
     def draw_tiles(self, tiles_idx):
         assert len(tiles_idx) == 6000
         write_spi(self.spi, 0x10000, tiles_idx[:3000])

@@ -69,6 +69,7 @@ def my_pack(packet_type, payload):
 
     return packed_header + packed_payload
 
+is_rpi = 'raspberry' in socket.gethostname()
 def runs_on_rpi():
-    return 'raspberry' in socket.gethostname()
+    return is_rpi
 
