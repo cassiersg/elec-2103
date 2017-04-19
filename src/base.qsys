@@ -132,7 +132,7 @@
    {
       datum baseAddress
       {
-         value = "67146752";
+         value = "67163136";
          type = "String";
       }
    }
@@ -161,7 +161,7 @@
    {
       datum baseAddress
       {
-         value = "67143680";
+         value = "67160064";
          type = "String";
       }
    }
@@ -182,7 +182,7 @@
    {
       datum baseAddress
       {
-         value = "67148016";
+         value = "67164400";
          type = "String";
       }
    }
@@ -198,7 +198,7 @@
    {
       datum baseAddress
       {
-         value = "67148000";
+         value = "67164384";
          type = "String";
       }
    }
@@ -219,7 +219,7 @@
    {
       datum baseAddress
       {
-         value = "67148040";
+         value = "67164424";
          type = "String";
       }
    }
@@ -240,7 +240,7 @@
    {
       datum baseAddress
       {
-         value = "67145728";
+         value = "67162112";
          type = "String";
       }
    }
@@ -256,7 +256,7 @@
    {
       datum baseAddress
       {
-         value = "67147776";
+         value = "67164160";
          type = "String";
       }
    }
@@ -293,7 +293,7 @@
    {
       datum baseAddress
       {
-         value = "67147904";
+         value = "67164288";
          type = "String";
       }
    }
@@ -314,7 +314,7 @@
    {
       datum baseAddress
       {
-         value = "67148032";
+         value = "67164416";
          type = "String";
       }
    }
@@ -327,7 +327,7 @@
       }
       datum sopceditor_expanded
       {
-         value = "0";
+         value = "1";
          type = "boolean";
       }
    }
@@ -356,7 +356,7 @@
    {
       datum baseAddress
       {
-         value = "67133440";
+         value = "67141632";
          type = "String";
       }
    }
@@ -424,7 +424,7 @@
    {
       datum baseAddress
       {
-         value = "67147968";
+         value = "67164352";
          type = "String";
       }
    }
@@ -552,7 +552,7 @@
   <parameter name="dataAddrWidth" value="27" />
   <parameter name="dataMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="dataMasterHighPerformanceMapParam" value="" />
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='sdram.s1' start='0x2000000' end='0x4000000' /><slave name='tile_image.s1' start='0x4000000' end='0x4004000' /><slave name='tile_idx_0.s1' start='0x4004000' end='0x4005770' /><slave name='tile_idx_1.s1' start='0x4006000' end='0x4007770' /><slave name='cpu.debug_mem_slave' start='0x4008800' end='0x4009000' /><slave name='message_mem.s1' start='0x4009000' end='0x4009400' /><slave name='colormap.s1' start='0x4009400' end='0x4009800' /><slave name='mtl_touch.s0' start='0x4009800' end='0x4009880' /><slave name='spi_gsensor.slave' start='0x4009880' end='0x40098C0' /><slave name='timer_0.s1' start='0x40098C0' end='0x40098E0' /><slave name='int_gsensor.s1' start='0x40098E0' end='0x40098F0' /><slave name='display_control.s1' start='0x40098F0' end='0x4009900' /><slave name='sysid.control_slave' start='0x4009900' end='0x4009908' /><slave name='jtag_uart_0.avalon_jtag_slave' start='0x4009908' end='0x4009910' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='sdram.s1' start='0x2000000' end='0x4000000' /><slave name='tile_image.s1' start='0x4000000' end='0x4004000' /><slave name='tile_idx_0.s1' start='0x4004000' end='0x4006EE0' /><slave name='tile_idx_1.s1' start='0x4008000' end='0x400AEE0' /><slave name='cpu.debug_mem_slave' start='0x400C800' end='0x400D000' /><slave name='message_mem.s1' start='0x400D000' end='0x400D400' /><slave name='colormap.s1' start='0x400D400' end='0x400D800' /><slave name='mtl_touch.s0' start='0x400D800' end='0x400D880' /><slave name='spi_gsensor.slave' start='0x400D880' end='0x400D8C0' /><slave name='timer_0.s1' start='0x400D8C0' end='0x400D8E0' /><slave name='int_gsensor.s1' start='0x400D8E0' end='0x400D8F0' /><slave name='display_control.s1' start='0x400D8F0' end='0x400D900' /><slave name='sysid.control_slave' start='0x400D900' end='0x400D908' /><slave name='jtag_uart_0.avalon_jtag_slave' start='0x400D908' end='0x400D910' /></address-map>]]></parameter>
   <parameter name="data_master_high_performance_paddr_base" value="0" />
   <parameter name="data_master_high_performance_paddr_size" value="0" />
   <parameter name="data_master_paddr_base" value="0" />
@@ -591,7 +591,7 @@
   <parameter name="icache_tagramBlockType" value="Automatic" />
   <parameter name="impl" value="Tiny" />
   <parameter name="instAddrWidth" value="27" />
-  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='sdram.s1' start='0x2000000' end='0x4000000' /><slave name='cpu.debug_mem_slave' start='0x4008800' end='0x4009000' /></address-map>]]></parameter>
+  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='sdram.s1' start='0x2000000' end='0x4000000' /><slave name='cpu.debug_mem_slave' start='0x400C800' end='0x400D000' /></address-map>]]></parameter>
   <parameter name="instructionMasterHighPerformanceAddrWidth" value="1" />
   <parameter name="instructionMasterHighPerformanceMapParam" value="" />
   <parameter name="instruction_master_high_performance_paddr_base" value="0" />
@@ -848,7 +848,7 @@
   <parameter name="initMemContent" value="false" />
   <parameter name="initializationFileName" value="onchip_mem.hex" />
   <parameter name="instanceID" value="NONE" />
-  <parameter name="memorySize" value="6000" />
+  <parameter name="memorySize" value="12000" />
   <parameter name="readDuringWriteMode" value="DONT_CARE" />
   <parameter name="resetrequest_enabled" value="true" />
   <parameter name="simAllowMRAMContentsFile" value="false" />
@@ -877,7 +877,7 @@
   <parameter name="initMemContent" value="false" />
   <parameter name="initializationFileName" value="onchip_mem.hex" />
   <parameter name="instanceID" value="NONE" />
-  <parameter name="memorySize" value="6000" />
+  <parameter name="memorySize" value="12000" />
   <parameter name="readDuringWriteMode" value="DONT_CARE" />
   <parameter name="resetrequest_enabled" value="true" />
   <parameter name="simAllowMRAMContentsFile" value="false" />
@@ -936,7 +936,7 @@
    start="cpu.data_master"
    end="jtag_uart_0.avalon_jtag_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04009908" />
+  <parameter name="baseAddress" value="0x0400d908" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -945,7 +945,7 @@
    start="cpu.data_master"
    end="sysid.control_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04009900" />
+  <parameter name="baseAddress" value="0x0400d900" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -954,7 +954,7 @@
    start="cpu.data_master"
    end="cpu.debug_mem_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04008800" />
+  <parameter name="baseAddress" value="0x0400c800" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -963,12 +963,12 @@
    start="cpu.data_master"
    end="mtl_touch.s0">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04009800" />
+  <parameter name="baseAddress" value="0x0400d800" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection kind="avalon" version="15.0" start="cpu.data_master" end="timer_0.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040098c0" />
+  <parameter name="baseAddress" value="0x0400d8c0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection kind="avalon" version="15.0" start="cpu.data_master" end="sdram.s1">
@@ -982,7 +982,7 @@
    start="cpu.data_master"
    end="colormap.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04009400" />
+  <parameter name="baseAddress" value="0x0400d400" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1000,7 +1000,7 @@
    start="cpu.data_master"
    end="tile_idx_1.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04006000" />
+  <parameter name="baseAddress" value="0x04008000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1018,7 +1018,7 @@
    start="cpu.data_master"
    end="display_control.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040098f0" />
+  <parameter name="baseAddress" value="0x0400d8f0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1027,7 +1027,7 @@
    start="cpu.data_master"
    end="message_mem.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04009000" />
+  <parameter name="baseAddress" value="0x0400d000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1036,7 +1036,7 @@
    start="cpu.data_master"
    end="int_gsensor.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x040098e0" />
+  <parameter name="baseAddress" value="0x0400d8e0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1045,7 +1045,7 @@
    start="cpu.data_master"
    end="spi_gsensor.slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04009880" />
+  <parameter name="baseAddress" value="0x0400d880" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1054,7 +1054,7 @@
    start="cpu.instruction_master"
    end="cpu.debug_mem_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x04008800" />
+  <parameter name="baseAddress" value="0x0400c800" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
