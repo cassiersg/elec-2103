@@ -2,6 +2,7 @@
 import game_global as gg
 import opengl.cubes as cubes
 import opengl.compression as compression
+import utils
 import pygame
 import pickle
 import random
@@ -23,20 +24,25 @@ class Renderer:
         self.hw_interface = hw_interface
         cubes.cubes_init()
 
-    def display(self, grid, players_xy, player_id, round_gauge, global_gauge, score):
-        if os.environ.get('LOG_RENDER_ARGS'):
-            log_args(grid, players_xy, player_id, round_gauge, global_gauge, score)
-        # works only for desktop
+    def display(self, grid, players_xy, player_id,
+                round_gauge, global_gauge, score):
         grid = bytearray(x for y in grid for x in y)
         p1x, p1y, p2x, p2y = players_xy
         cubes.draw_cubes(grid, 7, 15, p1x, p1y, p2x, p2y, player_id, round_gauge)
         pixel_buf = bytearray(cubes.width*cubes.height*4)
         cubes.cubes_image_export(pixel_buf)
-        #compressed_buf = bytearray(len(pixel_buf))
-        #n_chunks, compressed_size = compression.chunk_compress_huffman(
-        #    pixel_buf, compressed_buf, 32)
-        s = self.hw_interface.screen
-        b = s.get_buffer()
-        b.write(bytes(pixel_buf))
-        pygame.display.flip()
+        if utils.is_rpi:
+            compressed_buf = bytearray(12000)
+            n_chunks, output_used = compression.chunk_compress_huffman(
+                pixel_buf, compressed_buf, 32)
+            self.hw_interface.send_spi_buf(list(compressed_buf))
+            self.hw_interface.pageflip()
+        else:
+            if os.environ.get('LOG_RENDER_ARGS'):
+                log_args(
+                    grid, players_xy, player_id, round_gauge, global_gauge, score)
+            s = self.hw_interface.screen
+            b = s.get_buffer()
+            b.write(bytes(pixel_buf))
+            pygame.display.flip()
 
