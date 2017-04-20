@@ -12,7 +12,7 @@ logic [7:0] lcd_r, lcd_g, lcd_b;
 logic [10:0] next2x;
 logic [9:0] next2y;
 logic [15:0] address;
-logic [31:0] color, readdata;
+logic [31:0] color, readdata, readdata_rev;
 logic [31:0] pix_counter;
 logic [31:0] RAM [20000:0];
 logic [31:0] expected_output [800*480-1:0];
@@ -24,7 +24,11 @@ begin
 end
 always_ff @(posedge clk)
     readdata <= RAM[address];
+logic [31:0] cur_exp_output;
+assign cur_exp_output = expected_output[pix_counter-1];
 assign ok = expected_output[pix_counter-1] == color;
+
+assign readdata_rev = {readdata[7:0], readdata[15:8], readdata[23:16], readdata[31:24]};
 
 mtl_display dut(
     .iCLK(clk),
@@ -45,7 +49,7 @@ huffman_chunk_decoder dut2(
     .clk(clk),
     .pixel_read_next(next_display_active),
     .pixel_reset(end_frame | ~rst_n),
-    .RAM_readdata(readdata),
+    .RAM_readdata(readdata_rev),
     .color(color),
     .RAM_address(address)
 );
