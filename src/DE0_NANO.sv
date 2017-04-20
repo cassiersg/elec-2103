@@ -147,10 +147,10 @@ rpi_mmu rpi_mmu_inst(
 	.message_rd(message_rd),
 	.message_re(message_re),
 	// tile idx memory
-	.tile_idx_addr(rpi_buf_addr),
-	.tile_idx_we(rpi_buf_we),
-	.tile_idx_wd(rpi_buf_wd),
-	.tile_idx_rd(rpi_buf_rd),
+	.buf_addr(rpi_buf_addr),
+	.buf_we(rpi_buf_we),
+	.buf_wd(rpi_buf_wd),
+	.buf_rd(rpi_buf_rd),
 	//.tile_idx_re()
 	
 	.display_ctrl_rd(display_status),
