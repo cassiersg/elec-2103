@@ -74,71 +74,37 @@ reset_delay	reset_delay_inst (
 	.oRST   (dly_rst)
 );
 
+parameter BUF_ADDR_WIDTH = 12;
+
 // MTL control
 logic CLOCK_33;
 logic [31:0] pixel_rgb;
 logic next_display_active;
 logic New_Frame;
 logic End_Frame;
-logic [10:0] next_x;
-logic [9:0] next_y;
-logic [31:0] tiles_addr, tiles_idx_0_addr, tiles_idx_1_addr, colormap_addr;
-logic [31:0] tiles_readdata, tiles_idx_0_readdata, tiles_idx_1_readdata, colormap_readdata;
-logic [31:0] display_control;
 
-logic [31:0] tile_idx_display_rd;
-logic [10:0] tile_idx_display_addr;
+logic [31:0] display_control, display_status, display_ctrl_wd;
+logic display_ctrl_we;
 
-logic [15:0] tile_idx_rpi_rd;
-logic [10:0] tile_idx_rpi_addr;
+logic [31:0] huff_rd;
+logic [15:0] huff_addr;
 
-logic tile_idx_rpi_we, tile_idx_0_we, tile_idx_1_we;
-logic [31:0] tile_idx_rpi_wd, tile_idx_0_wd, tile_idx_1_wd;
 
-display_mmu #(11) display_mmu_inst (
-	.tile_idx_0_rd(tiles_idx_0_readdata),
-	.tile_idx_1_rd(tiles_idx_1_readdata),
-	.tile_idx_display_rd(tile_idx_display_rd),
-	.tile_idx_rpi_rd(tile_idx_rpi_rd),
-	.tile_idx_display_addr(tile_idx_display_addr),
-	.tile_idx_rpi_addr(tile_idx_rpi_addr),
-	.tile_idx_0_addr(tiles_idx_0_addr),
-	.tile_idx_1_addr(tiles_idx_1_addr),
-	.tile_idx_0_we(tile_idx_0_we),
-	.tile_idx_1_we(tile_idx_1_we),
-	.tile_idx_0_wd(tile_idx_0_wd),
-	.tile_idx_1_wd(tile_idx_1_wd),
-	.tile_idx_rpi_we(tile_idx_rpi_we),
-	.tile_idx_rpi_wd(tile_idx_rpi_wd),
-	.tile_idx_select(display_control[0])
-);
-
+always_ff @(posedge CLOCK_33)
+begin
+	if (display_ctrl_we) display_control <= display_ctrl_wd;
+	if (End_Frame) display_status <= display_control;
+end
 
 huffman_chunk_decoder dut2(
     .clk(CLOCK_33),
     .pixel_read_next(next_display_active),
-    .pixel_reset(End_Frame | RST),
-    .RAM_readdata(tile_idx_display_rd),
+    .pixel_reset(New_Frame | RST),
+    .RAM_readdata(huff_rd),
     .color(pixel_rgb),
-    .RAM_address(tile_idx_display_addr)
+    .RAM_address(huff_addr)
 );
-//// MTL DISPLAY CONTROLLER
-//mtl_display_controller mtl_display_controller_inst (
-//    .display_clock(CLOCK_33),
-//    .reset(RST),
-//    .iNew_Frame(New_Frame),
-//    .iEnd_Frame(End_Frame),
-//	 .i_next_active(next_display_active),
-//    .o_pixel_data(pixel_rgb),
-//    .i_next2_x(next_x),
-//    .i_next2_y(next_y),
-//	 .i_tiles_readdata(tiles_readdata),
-//	 .o_tiles_addr(tiles_addr),
-//	 .i_tiles_idx_readdata(tile_idx_display_rd),
-//	 .o_tiles_idx_addr(tile_idx_display_addr),
-//	 .i_colormap_readdata(colormap_readdata),
-//	 .o_colormap_addr(colormap_addr)
-//);
+
 
 // MTL DISPLAY
 mtl_display mtl_display_inst (
@@ -155,12 +121,15 @@ mtl_display mtl_display_inst (
     .oLCD_G(MTL_G),	// Output LCD vertical sync
     .oLCD_B(MTL_B),	// Output LCD red color data 
     .oHD(MTL_HSD),	// Output LCD green color data 
-    .oVD(MTL_VSD),	// Output LCD blue color data 
-    .o_next2_x(next_x),
-    .o_next2_y(next_y)
+    .oVD(MTL_VSD)	// Output LCD blue color data 
+  //  .o_next2_x(next_x),
+  //  .o_next2_y(next_y)
 );
 
 // RPi MMU
+logic [31:0] rpi_buf_rd, rpi_buf_wd;
+logic [15:0] rpi_buf_addr;
+logic rpi_buf_we;
 logic message_we, message_re;
 logic [31:0] message_rd, message_wd;
 logic [15:0] message_addr;
@@ -178,11 +147,15 @@ rpi_mmu rpi_mmu_inst(
 	.message_rd(message_rd),
 	.message_re(message_re),
 	// tile idx memory
-	.tile_idx_addr(tile_idx_rpi_addr),
-	.tile_idx_we(tile_idx_rpi_we),
-	.tile_idx_wd(tile_idx_rpi_wd),
-	.tile_idx_rd(tile_idx_rpi_rd)
+	.tile_idx_addr(rpi_buf_addr),
+	.tile_idx_we(rpi_buf_we),
+	.tile_idx_wd(rpi_buf_wd),
+	.tile_idx_rd(rpi_buf_rd),
 	//.tile_idx_re()
+	
+	.display_ctrl_rd(display_status),
+	.display_ctrl_wd(display_ctrl_wd),
+	.display_ctrl_we(display_ctrl_we)
 );
 
 
@@ -248,40 +221,6 @@ base u0 (
 	// Display clock
 	.clk_display_clk             (CLOCK_33),
 	.reset_clk_display_reset_n   (KEY[0]),
-	// Tiles pixel memory
-	.tile_image_s2_address      (tiles_addr),
-	.tile_image_s2_chipselect   (1'b1),
-	.tile_image_s2_clken        (1'b1),
-	.tile_image_s2_write        (1'b0),
-	.tile_image_s2_readdata     (tiles_readdata),
-	.tile_image_s2_writedata    (32'b0),
-	.tile_image_s2_byteenable   (4'b1111),
-	// Tiles indices memory
-	.tile_idx_0_s2_address       (tiles_idx_0_addr),
-	.tile_idx_0_s2_chipselect    (1'b1),
-	.tile_idx_0_s2_clken         (1'b1),
-	.tile_idx_0_s2_write         (tile_idx_0_we),
-	.tile_idx_0_s2_readdata      (tiles_idx_0_readdata),
-	.tile_idx_0_s2_writedata     (tile_idx_0_wd),
-	.tile_idx_0_s2_byteenable    (4'b1111),
-	.tile_idx_1_s2_address       (tiles_idx_1_addr),
-	.tile_idx_1_s2_chipselect    (1'b1),
-	.tile_idx_1_s2_clken         (1'b1),
-	.tile_idx_1_s2_write         (tile_idx_1_we),
-	.tile_idx_1_s2_readdata      (tiles_idx_1_readdata),
-	.tile_idx_1_s2_writedata     (tile_idx_1_wd),
-	.tile_idx_1_s2_byteenable    (4'b1111),
-	// Colormap
-	.colormap_s2_address    (colormap_addr),
-	.colormap_s2_chipselect (1'b1),
-	.colormap_s2_clken      (1'b1),
-	.colormap_s2_write      (1'b0),
-	.colormap_s2_readdata   (colormap_readdata),
-	.colormap_s2_writedata  (32'b0),
-	.colormap_s2_byteenable (4'b1111),
-	// display control
-	.display_control_external_connection_export(display_control),
-	// mtl touch
 	.mtl_touch_0_conduit_end_scl(MTL_TOUCH_I2C_SCL),
 	.mtl_touch_0_conduit_end_sda(MTL_TOUCH_I2C_SDA),
 	.mtl_touch_0_conduit_end_int_n(MTL_TOUCH_INT_n),
@@ -289,7 +228,37 @@ base u0 (
 	.spi_gsensor_conduit_end_SDIO(I2C_SDAT),
 	.spi_gsensor_conduit_end_SCLK(I2C_SCLK),
 	.spi_gsensor_conduit_end_CS_n(G_SENSOR_CS_N),
-	.int_gsensor_external_connection_export(G_SENSOR_INT)
+	.int_gsensor_external_connection_export(G_SENSOR_INT),
+
+	// Display buffers
+	.disp_buf0_s1_address    (rpi_buf_addr),
+	.disp_buf0_s1_clken      (1'b1),
+	.disp_buf0_s1_chipselect (1'b1),
+	.disp_buf0_s1_write      (rpi_buf_we),
+	.disp_buf0_s1_readdata   (rpi_buf_rd),
+	.disp_buf0_s1_writedata  (rpi_buf_wd),
+	.disp_buf0_s1_byteenable (4'b1111),
+	.disp_buf0_s2_address    (huff_addr),
+	.disp_buf0_s2_chipselect (1'b1),
+	.disp_buf0_s2_clken      (1'b1),
+	.disp_buf0_s2_write      (0),
+	.disp_buf0_s2_readdata   (huff_rd),
+	.disp_buf0_s2_writedata  (0),
+	.disp_buf0_s2_byteenable (4'b1111),
+	.disp_buf1_s1_address    (0),
+	.disp_buf1_s1_clken      (1'b1),
+	.disp_buf1_s1_chipselect (1'b1),
+	.disp_buf1_s1_write      (0),
+	//.disp_buf1_s1_readdata   (),
+	.disp_buf1_s1_writedata  (0),
+	.disp_buf1_s1_byteenable (4'b1111),
+	.disp_buf1_s2_address    (0),
+	.disp_buf1_s2_chipselect (1'b1),
+	.disp_buf1_s2_clken      (1'b1),
+	.disp_buf1_s2_write      (0),
+	//.disp_buf1_s2_readdata   (),
+	.disp_buf1_s2_writedata  (0),
+	.disp_buf1_s2_byteenable (4'b1111)
 );
 
 assign DRAM_CLK = sdram_pll_clk;
