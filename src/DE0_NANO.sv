@@ -128,7 +128,7 @@ mtl_display mtl_display_inst (
 );
 
 // RPi MMU
-logic [31:0] rpi_buf_rd, rpi_buf_wd;
+logic [31:0] rpi_buf_rd, rpi_buf_wd, rpi_buf0_rd, rpi_buf1_rd;
 logic [15:0] rpi_buf_addr;
 logic rpi_buf_we;
 logic message_we, message_re;
@@ -159,6 +159,7 @@ rpi_mmu rpi_mmu_inst(
 	.display_ctrl_we(display_ctrl_we)
 );
 
+assign rpi_buf_rd = display_status[0] ? rpi_buf0_rd : rpi_buf1_rd;
 
 // SPI instantiation
 logic mem_pi_we, mem_pi_read;
@@ -235,8 +236,8 @@ base u0 (
 	.disp_buf0_s1_address    (rpi_buf_addr),
 	.disp_buf0_s1_clken      (1'b1),
 	.disp_buf0_s1_chipselect (1'b1),
-	.disp_buf0_s1_write      (rpi_buf_we),
-	.disp_buf0_s1_readdata   (rpi_buf_rd),
+	.disp_buf0_s1_write      (rpi_buf_we && (display_status[0] == 1)),
+	.disp_buf0_s1_readdata   (rpi_buf0_rd),
 	.disp_buf0_s1_writedata  (rpi_buf_wd),
 	.disp_buf0_s1_byteenable (4'b1111),
 	.disp_buf0_s2_address    (huff_addr),
@@ -246,19 +247,19 @@ base u0 (
 	.disp_buf0_s2_readdata   (buf0_rd),
 	.disp_buf0_s2_writedata  (0),
 	.disp_buf0_s2_byteenable (4'b1111),
-	.disp_buf1_s1_address    (0),
+	.disp_buf1_s1_address    (huff_addr),
 	.disp_buf1_s1_clken      (1'b1),
 	.disp_buf1_s1_chipselect (1'b1),
 	.disp_buf1_s1_write      (0),
 	.disp_buf1_s1_readdata   (buf1_rd),
 	.disp_buf1_s1_writedata  (0),
 	.disp_buf1_s1_byteenable (4'b1111),
-	.disp_buf1_s2_address    (0),
+	.disp_buf1_s2_address    (rpi_buf_addr),
 	.disp_buf1_s2_chipselect (1'b1),
 	.disp_buf1_s2_clken      (1'b1),
-	.disp_buf1_s2_write      (0),
-	//.disp_buf1_s2_readdata   (),
-	.disp_buf1_s2_writedata  (0),
+	.disp_buf1_s2_write      (rpi_buf_we && (display_status[0] == 0)),
+	.disp_buf1_s2_readdata   (rpi_buf1_rd),
+	.disp_buf1_s2_writedata  (rpi_buf_wd),
 	.disp_buf1_s2_byteenable (4'b1111)
 );
 
