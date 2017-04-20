@@ -86,9 +86,10 @@ logic End_Frame;
 logic [31:0] display_control, display_status, display_ctrl_wd;
 logic display_ctrl_we;
 
-logic [31:0] huff_rd;
+logic [31:0] huff_rd, buf0_rd, buf1_rd;
 logic [15:0] huff_addr;
 
+assign huff_rd = display_status[0] ? buf1_rd : buf0_rd;
 
 always_ff @(posedge CLOCK_33)
 begin
@@ -242,14 +243,14 @@ base u0 (
 	.disp_buf0_s2_chipselect (1'b1),
 	.disp_buf0_s2_clken      (1'b1),
 	.disp_buf0_s2_write      (0),
-	.disp_buf0_s2_readdata   (huff_rd),
+	.disp_buf0_s2_readdata   (buf0_rd),
 	.disp_buf0_s2_writedata  (0),
 	.disp_buf0_s2_byteenable (4'b1111),
 	.disp_buf1_s1_address    (0),
 	.disp_buf1_s1_clken      (1'b1),
 	.disp_buf1_s1_chipselect (1'b1),
 	.disp_buf1_s1_write      (0),
-	//.disp_buf1_s1_readdata   (),
+	.disp_buf1_s1_readdata   (buf1_rd),
 	.disp_buf1_s1_writedata  (0),
 	.disp_buf1_s1_byteenable (4'b1111),
 	.disp_buf1_s2_address    (0),
