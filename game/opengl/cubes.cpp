@@ -172,7 +172,7 @@ void draw_cubes(unsigned char *grid, int grid_size, int n, int m, int p1x, int p
             if (kind == 0) {
                 // struct, gray
                 color = glm::vec3(0.5f, 0.5f, 0.5f);
-            } else if (kind == 3) {
+            } else if (kind == 1) {
                 // wall
                 color = glm::vec3(1.0f, 1.0f, 1.0f);
                 z_offset = -50.0f * (float) round_gauge / (float) ROUND_GAUGE_INIT;

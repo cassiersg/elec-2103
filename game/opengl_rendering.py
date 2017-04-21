@@ -10,14 +10,15 @@ import os
 import time
 
 v = []
-def log_args(grid, players_xy, player_id, round_gauge, global_gauge, score):
+def log_args(fname, grid, players_xy, player_id, round_gauge, global_gauge, score):
     global v
     if v is not None and random.random() < 0.05:
         v.append((grid, players_xy, player_id, round_gauge, global_gauge, score))
         if len(v) >= 30:
-            with open("display_args.pkl", "wb") as f:
+            with open(fname, "wb") as f:
                 pickle.dump(v, f)
                 v = None
+            print('finished collecting images')
 
 
 class Renderer:
@@ -27,6 +28,11 @@ class Renderer:
 
     def display(self, grid, players_xy, player_id,
                 round_gauge, global_gauge, score, round_gauge_speed=0, round_gauge_state_update_time=0):
+        fname = os.environ.get('LOG_RENDER_ARGS')
+        if fname is not None:
+            log_args(fname,
+                grid, players_xy, player_id, round_gauge, global_gauge, score)
+            return
         t0 = time.time()
         round_gauge -= int((time.time() - round_gauge_state_update_time)*round_gauge_speed*1000)
         round_gauge = max(round_gauge, 1)
@@ -48,9 +54,6 @@ class Renderer:
             t5 = time.time()
             print('setup', t1-t0, 'draw', t2-t1, 'export', t3-t2, 'compress', t4-t3, 'spi', t5-t4)
         else:
-            if os.environ.get('LOG_RENDER_ARGS'):
-                log_args(
-                    grid, players_xy, player_id, round_gauge, global_gauge, score)
             s = self.hw_interface.screen
             b = s.get_buffer()
             b.write(bytes(pixel_buf))
