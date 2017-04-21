@@ -8,6 +8,7 @@ import net
 class HardwareInterface:
     def __init__(self):
         self.screen = pygame_init()
+        self.paused = False
 
     def update_display(self, grid, players_xy, player_id, round_gauge, global_gauge, score):
         myfont = pygame.font.SysFont("Comic Sans MS", 28)
@@ -39,6 +40,13 @@ class HardwareInterface:
                 elif event.key == pygame.K_l:
                     print("[CLIENT] Client decreases accelerometer angle")
                     cur_acc_value = max(0, cur_acc_value-10)
+                elif event.key == pygame.K_p:
+                    if self.paused:
+                        print("[CLIENT] Client wants to resume the game")
+                        events.append(net.RESUME)
+                    else:
+                        print("[CLIENT] Client wants to pause the game")
+                        events.append(net.PAUSE)
 
         return (quit, cur_acc_value, events)
 

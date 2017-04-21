@@ -1,7 +1,6 @@
 import socket
 import sys
 import time
-import pygame
 import utils
 import net
 
@@ -9,8 +8,6 @@ if utils.runs_on_rpi():
     import client_device as cd
 else:
     import client_desktop as cd
-
-from pygame.locals import *
 
 from game_global import *
 from game_frontend import *
@@ -31,7 +28,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
     base_socket.connect(server_address)
     base_socket.setblocking(False)
     s = net.PacketSocket(base_socket)
-    s.send(net.CLIENT_CONNECT, net.PLAYER)
+    s.send(net.CLIENT_CONNECT, role)
 
     # Waiting for the SERVER_CONNECT answer
     print("[CLIENT] Waiting for server's response.")
@@ -64,7 +61,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
         (player_id, grid_size_x, grid_size_y) = payload
         print("[CLIENT] Starting the game with player id " + str(player_id) + ".")
     else:
-        s.close()
+        print("[CLIENT] Didn't receive the SERVER START GAME message!",
+              packet_type)
         sys.exit()
 
     grid = None
@@ -86,7 +84,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
         (quit, new_acc_value, events) = hw_interface.get_events(cur_acc_value)
 
         if quit:
-            pygame.quit()
             s.close()
             sys.exit()
 
@@ -97,6 +94,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
             elif event == net.RIGHT:
                 print("sending right")
                 event_sender.send(net.CLIENT_ACTION, player_id, action_id, grid_id, net.RIGHT)
+            elif event == net.PAUSE:
+                print("sending pause")
+                event_sender.send(net.CLIENT_GAME_PAUSE)
+            elif event == net.RESUME:
+                print("sending resume")
+                event_sender.send(net.CLIENT_GAME_RESUME)
 
             action_id += 1
 
@@ -125,6 +128,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
             elif packet_type == net.SERVER_GAME_FINISHED:
                 s.close()
                 exit()
+            elif packet_type == net.SERVER_GAME_PAUSE:
+                hw_interface.paused = True
+            elif packet_type == net.SERVER_GAME_RESUME:
+                hw_interface.paused = False
             else:
                 ValueError("unknown packet type {}".format(packet_type))
 

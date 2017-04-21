@@ -15,6 +15,8 @@ WHITE = (255, 255, 255)
 RED   = (255,   0,   0)
 GREEN = (  0, 255,   0)
 BLUE  = (  0,   0, 255)
+ORANGE = (255, 140, 0)
+
 
 def pygame_init():
     pygame.init()
@@ -43,7 +45,7 @@ def draw_grid(display, grid, players_xy, player_id):
     elif player_id == 2:
         c1, c2 = GREEN, RED
     else:
-        raise ValueError(player_id)
+        c1, c2 = ORANGE, ORANGE
     draw_case(display, c1, x1*CASE_SIZE, (m-y1-1)*CASE_SIZE)
     draw_case(display, c2, x2*CASE_SIZE, (m-y2-1)*CASE_SIZE)
 
