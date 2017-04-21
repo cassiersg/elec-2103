@@ -1,9 +1,9 @@
 # Grid elements
 STRUCT  = 0
-WALL    = 1
-HOLE    = 2
-P1      = 3
-P2      = 4
+P1      = 1
+P2      = 2
+WALL    = 3
+HOLE    = 4
 
 # Timeout (in ms)
 ROUND_TIMEOUT = 6000.0
