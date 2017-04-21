@@ -1,21 +1,21 @@
 module mtl_display(
 	// Host Side
-	input			iCLK, 				// Input LCD control clock
-	input			iRST_n, 			// Input system reset
+	input logic iCLK, 	// Input LCD control clock
+	input logic iRST_n, // Input system reset
 	// MMU
-	input   [31:0]	iREAD_DATA,			// Input data from SDRAM (RGB)
-	output			next_display_active,		// SDRAM read control signal
-	output 			oNew_Frame,			// Output signal being a pulse when a new frame of the LCD begins
-	output 			oEnd_Frame,			// Output signal being a pulse when a frame of the LCD ends
+	input logic [31:0] iREAD_DATA,	// Input data from SDRAM (RGB)
+	output logic next_display_active, // SDRAM read control signal
+	output logic oNew_Frame, // Output signal being a pulse when a new frame of the LCD begins
+	output logic oEnd_Frame, // Output signal being a pulse when a frame of the LCD ends
 	// LCD Side
-	output 		 	oHD,				// Output LCD horizontal sync 
-	output 		 	oVD,				// Output LCD vertical sync 
-	output  [7:0] 	oLCD_R,				// Output LCD red color data 
-	output  [7:0] 	oLCD_G,           	// Output LCD green color data  
-	output  [7:0] 	oLCD_B,            	// Output LCD blue color data
+	output logic oHD, // Output LCD horizontal sync 
+	output logic oVD, // Output LCD vertical sync 
+	output logic [7:0] oLCD_R, // Output LCD red color data 
+	output logic [7:0] oLCD_G, // Output LCD green color data  
+	output logic [7:0] oLCD_B, // Output LCD blue color data
 
-    output [10:0] o_next2_x,
-    output [9:0] o_next2_y
+        output logic [10:0] o_next2_x,
+        output logic [9:0] o_next2_y
 );
 	
 	//============================================================================
@@ -57,6 +57,7 @@ module mtl_display(
 	
 	// approximative, but doesn't matter (for now)
 	assign oNew_Frame = ((x_next == 11'd0)   && (y_next == 10'd0)  );	
+
 	assign oEnd_Frame = ((x_next == 11'd846) && (y_next == 10'd503));
 							
 							

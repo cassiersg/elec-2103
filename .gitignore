@@ -5,6 +5,22 @@ src/software/LELEC2103-SW/.settings/*
 src/software/LELEC2103-SW/obj/*
 src/software/LELEC2103-SW/.force_relink
 eclipse/*
+game/opengl/*.bmp
+game/opengl/main
+game/opengl/shaders.cpp
+game/opengl/*_wrap.cpp
+game/opengl/cubes.py
+game/opengl/compression.py
+game/opengl/chunker.py
+
+
+## Modelsim
+*.mti
+*.mpf
+modelsim/transcript
+*.wlf
+modelsim/work
+
 
 ### AlteraQuartusII ###
 ##list taken from http://www.alterawiki.com/wiki/Version_Control (01.10.2015)

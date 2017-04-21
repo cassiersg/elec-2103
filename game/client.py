@@ -4,7 +4,8 @@ import time
 import pygame
 import utils
 import net
-import rendering
+import threading
+import opengl_rendering as rendering
 
 if utils.runs_on_rpi():
     import client_device as cd
@@ -14,7 +15,26 @@ else:
 from pygame.locals import *
 
 from game_global import *
-from game_frontend import *
+
+display_args_glob = [None]
+
+def update_display(renderer, display_args):
+    if display_args[0] is None:
+        return
+    renderer.display(*display_args[0])
+
+def display_updater(hw_interface, display_args):
+    renderer = rendering.Renderer(hw_interface)
+    period = 0.02
+    min_sleep_time = 0.0001
+    while True:
+        t0 = time.time()
+        update_display(renderer, display_args)
+        t = time.time()
+        sl = period - (t-t0)
+        print('sleep period', sl, 'dur', t-t0)
+        time.sleep(max(min_sleep_time, sl))
+
 
 if len(sys.argv) != 3:
     raise ValueError('Missing argument')
@@ -25,6 +45,7 @@ server_address = (address, 10000)
 
 role = net.PLAYER if role == 'player' else net.SPECTATOR
 
+last_render_time = time.time()
 # Create a TCP/IP socket
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
     # Connect to the server and send a CLIENT_CONNECT
@@ -53,7 +74,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
         sys.exit()
 
     hw_interface = cd.HardwareInterface()
-    renderer = rendering.TileRenderer(hw_interface)
+
+    render_thread = threading.Thread(target=display_updater, args=(hw_interface, display_args_glob),daemon=True)
+    render_thread.start()
 
     print("[CLIENT] Advertising the server that we are ready.")
     s.send(net.CLIENT_READY)
@@ -107,22 +130,23 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
             acc_sender.send(net.CLIENT_ANGLE, player_id, cur_acc_value)
 
         for packet_type, payload in s.recv_all():
-            print("packet_type: {}, payload: {}".format(packet_type, payload))
+            #print("packet_type: {}, payload: {}".format(packet_type, payload))
             if packet_type == net.SERVER_GRID_STATE:
-                print("received server grid state")
+                #print("received server grid state")
                 flat_grid = payload
                 grid = utils.unflatten_grid(flat_grid, grid_size_x, grid_size_y)
             elif packet_type == net.SERVER_PLAYER_POSITIONS:
-                print("received server player positions")
+                #print("received server player positions")
                 (positions_id, *players_xy) = payload
             elif packet_type == net.SERVER_ROUND_GAUGE_STATE:
-                print("received server round gauge state")
-                (round_gauge_state, gauge_speed) = payload
+                #print("received server round gauge state")
+                (round_gauge_state, round_gauge_speed) = payload
+                round_gauge_state_update_time = time.time()
             elif packet_type == net.SERVER_SCORE:
-                print("received server score")
+                #print("received server score")
                 (score,) = payload
             elif packet_type == net.SERVER_GLOBAL_GAUGE_STATE:
-                print("received server global gauge state")
+                #print("received server global gauge state")
                 (global_gauge_state,) = payload
             elif packet_type == net.SERVER_GAME_FINISHED:
                 s.close()
@@ -131,5 +155,12 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
                 ValueError("unknown packet type {}".format(packet_type))
 
         if grid is not None and players_xy is not None:
-            renderer.display(grid, players_xy, player_id, round_gauge_state,
-                   global_gauge_state, score)
+            display_args_glob[0] = (
+                    grid, players_xy,
+                    player_id,
+                    round_gauge_state,
+                    global_gauge_state,
+                    score,
+                    round_gauge_speed,
+                    round_gauge_state_update_time)
+
