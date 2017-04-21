@@ -18,4 +18,4 @@ GLOBAL_GAUGE_SPEED = GAUGE_STATE_INIT/GLOBAL_TIMEOUT
 
 # Grid dimensions
 M = 15
-N = 7
+N = 6

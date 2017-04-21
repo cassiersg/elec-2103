@@ -10,16 +10,6 @@
 #include "cubes.hpp"
 #include "compression.hpp"
 
-static const unsigned char example_grid[n][m] = {
-    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-    {3, 3, 0, 0, 0, 3, 3, 0, 3, 3, 0, 0, 0, 3, 3},
-    {3, 3, 0, 0, 0, 3, 3, 3, 3, 4, 0, 0, 0, 3, 3},
-    {3, 3, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
-    {3, 3, 4, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
-    {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3},
-    {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3}
-};
-
 static void test_compression_current_image(void)
 {
     unsigned char *pixels = (unsigned char *) malloc(4*width*height);
@@ -47,15 +37,7 @@ static const int round_gauge = 20000;
 int main() {
     test_huffman_color();
     printf("huffman color ok\n");
-    cubes_init();
-    draw_cubes((unsigned char *) example_grid, m*n, n, m, 0, 1, 14, 1, 1, round_gauge);
 
-    unsigned char *buf = (unsigned char *) malloc(3*width*height);
-    glbuf2rgb(buf, width, height);
-    export_bmp((char *)"img.bmp", width, height, buf);
-    test_compression_current_image();
-    printf("compression image test succeded\n");
-    free(buf);
 
     return 0;
 }
