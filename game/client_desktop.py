@@ -11,7 +11,6 @@ class HardwareInterface:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode(form_factor)
-        self.screen.fill(BLACK)
         pygame.display.set_caption("Shape Yourself, Wall is Coming!")
 
     def get_events(self, cur_acc_value):
