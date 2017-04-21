@@ -5,6 +5,7 @@
 %{
 #define SWIG_FILE_WITH_INIT
 #include "compression.hpp"
+#include "utils.hpp"
 %}
 
 %pybuffer_mutable_binary(unsigned int *in_buf, size_t in_len);
@@ -16,7 +17,12 @@ int chunk_compress_huffman(
         unsigned int max_chunk_size,
         unsigned int *OUTPUT);
 
+%pybuffer_mutable_binary(unsigned int *in_buf, size_t in_len);
+%pybuffer_mutable_binary(unsigned int *out_buf, size_t out_len);
 size_t chunk_decompress_huffman(
         unsigned int *in_buf, size_t in_len,
         unsigned int *out_buf, size_t out_len,
         int n_chunks);
+%pybuffer_mutable_binary(unsigned int *in_buf, size_t in_len);
+%pybuffer_mutable_binary(unsigned int *out_buf, size_t out_len);
+void export_bmp_py(unsigned int* in_buf, size_t in_len);

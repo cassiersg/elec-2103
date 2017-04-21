@@ -23,7 +23,7 @@ else
 endif
 
 LIBS+=`pkg-config --libs python3`
-CFLAGS+=-fPIC `pkg-config --cflags python3`
+CFLAGS+=-fPIC `pkg-config --cflags python3` -O2
 CPPFLAGS+=$(CFLAGS) $(INCLUDES)
 
 default: all
