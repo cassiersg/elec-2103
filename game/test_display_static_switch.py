@@ -57,7 +57,7 @@ def args2compressedbuf(v):
     (grid, players_xy, player_id, round_gauge, global_gauge, score) = v
     grid = bytearray(x for y in grid for x in y)
     p1x, p1y, p2x, p2y = players_xy
-    cubes.draw_cubes(grid, 7, 15, p1x, p1y, p2x, p2y, player_id, round_gauge)
+    cubes.draw_cubes(grid, gg.N, gg.M, p1x, p1y, p2x, p2y, player_id, round_gauge)
     pixel_buf = bytearray(cubes.width*cubes.height*4)
     cubes.cubes_image_export(pixel_buf)
     compressed_buf = bytearray(len(pixel_buf))
@@ -72,7 +72,7 @@ grid = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [3, 3, 0, 0, 0, 3, 3, 0, 
 grid = bytearray(x for y in grid for x in y)
 
 cubes.cubes_init()
-#cubes.draw_cubes(grid, 7, 15, 0, 1, 14, 1, 2, 20000)
+#cubes.draw_cubes(grid, gg.N, gg.M, 0, 1, 14, 1, 2, 20000)
 #pixel_buf = bytearray(cubes.width*cubes.height*4)
 #cubes.cubes_image_export(pixel_buf)
 #compressed_buf = bytearray(len(pixel_buf))

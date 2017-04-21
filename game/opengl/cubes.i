@@ -18,3 +18,6 @@ void cubes_image_export(unsigned char *str, int str_size);
 
 const int width;
 const int height;
+
+const int m;
+const int n;

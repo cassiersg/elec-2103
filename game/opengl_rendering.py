@@ -9,6 +9,9 @@ import random
 import os
 import time
 
+assert gg.M == cubes.m
+assert gg.N == cubes.n
+
 v = []
 def log_args(fname, grid, players_xy, player_id, round_gauge, global_gauge, score):
     global v
@@ -40,7 +43,7 @@ class Renderer:
         grid = bytearray(x for y in grid for x in y)
         p1x, p1y, p2x, p2y = players_xy
         t1 = time.time()
-        cubes.draw_cubes(grid, 7, 15, p1x, p1y, p2x, p2y, player_id, round_gauge)
+        cubes.draw_cubes(grid, gg.N, gg.M, p1x, p1y, p2x, p2y, player_id, round_gauge)
         t2 = time.time()
         pixel_buf = bytearray(cubes.width*cubes.height*4)
         cubes.cubes_image_export(pixel_buf)

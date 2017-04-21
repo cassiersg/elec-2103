@@ -10,8 +10,6 @@
 #include "cubes.hpp"
 #include "compression.hpp"
 
-static const int m = 15;
-static const int n = 7;
 static const unsigned char example_grid[n][m] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {3, 3, 0, 0, 0, 3, 3, 0, 3, 3, 0, 0, 0, 3, 3},
