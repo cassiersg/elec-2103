@@ -184,21 +184,10 @@ void draw_cubes(unsigned char *grid, int grid_size, int n, int m, int p1x, int p
         }
     }
     glm::vec3 color;
-    int prx, pry, pgx, pgy;
-    if (player_id == 1) {
-        prx = p1x;
-        pry = p1y;
-        pgx = p2x;
-        pgy = p2y;
-    } else {
-        assert(player_id == 2);
-        prx = p2x;
-        pry = p2y;
-        pgx = p1x;
-        pgy = p1y;
-    }
-    draw_cube_grid(&params, glm::vec3(1.0f, 0.0f, 0.0f), pry, prx, 0.0f);
-    draw_cube_grid(&params, glm::vec3(1.0f, 1.0f, 0.0f), pgy, pgx, 0.0f);
+    glm::vec3 color_p1 = glm::vec3(1.0f, 0.0f, 0.0f);
+    glm::vec3 color_p2 = glm::vec3(1.0f, 1.0f, 0.0f);
+    draw_cube_grid(&params, color_p1, p1y, p1x, 0.0f);
+    draw_cube_grid(&params, color_p2, p2y, p2x, 0.0f);
 }
 
 
