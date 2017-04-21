@@ -10,21 +10,16 @@ end else begin
   end else begin
    if (code[3]) begin
     if (code[4]) begin
-     decoded = 32'hff1e1e1e;
-     code_len = 8'd5;
-    end else begin
      if (code[5]) begin
       decoded = 32'hff3b3b3b;
       code_len = 8'd6;
      end else begin
-      if (code[6]) begin
-       decoded = 32'hffeaea00;
-       code_len = 8'd7;
-      end else begin
-       decoded = 32'hff3b3b00;
-       code_len = 8'd7;
-      end
+      decoded = 32'hffea0000;
+      code_len = 8'd6;
      end
+    end else begin
+     decoded = 32'hff1e1e1e;
+     code_len = 8'd5;
     end
    end else begin
     if (code[4]) begin
@@ -32,6 +27,9 @@ end else begin
      code_len = 8'd5;
     end else begin
      if (code[5]) begin
+      decoded = 32'hffeaea00;
+      code_len = 8'd6;
+     end else begin
       if (code[6]) begin
        decoded = 32'hff3b0000;
        code_len = 8'd7;
@@ -41,17 +39,19 @@ end else begin
          decoded = 32'hff930000;
          code_len = 8'd9;
         end else begin
-         decoded = 32'hff939393;
-         code_len = 8'd9;
+         if (code[9]) begin
+          decoded = 32'hff3b3b00;
+          code_len = 8'd10;
+         end else begin
+          decoded = 32'hff939393;
+          code_len = 8'd10;
+         end
         end
        end else begin
         decoded = 32'hff939300;
         code_len = 8'd8;
        end
       end
-     end else begin
-      decoded = 32'hffea0000;
-      code_len = 8'd6;
      end
     end
    end
