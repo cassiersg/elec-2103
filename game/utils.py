@@ -1,73 +1,38 @@
 import socket
 
-from enum import Enum
-from struct import *
+from datetime import datetime
+from datetime import timedelta
 
-from game_global import *
+class Timer:
+    def __init__(self):
+        self.start_time = datetime.now()
 
+        self.start_pause_time = 0
+        self.total_paused_time = self.start_time - self.start_time
+        self.paused = False
 
-# SOON DEPRECATED
-def myrecv(s):
-    try:
-        header = s.recv(3)
-    except (socket.timeout, ) as e:
-        return None
-    else:
-        if len(header) == 3:
-            (packet_type, packet_length) = unpack(HEADER_FMT, header)
-            return (packet_type, packet_length)
-        else:
-            return None
+    def get_time_ms(self):
+        assert not self.paused
+        dt = datetime.now() - self.start_time - self.total_paused_time
+        ms = (dt.days * 24 * 60 * 60 + dt.seconds) * 1000 + dt.microseconds / 1000.0
+        return ms
 
-def get_next_header(s):
-    expected_len = 3
+    def reset(self):
+        self.start_time = datetime.now()
 
-    try:
-        header = s.recv(expected_len)
-    except socket.timeout as e:
-        return None
-    else:
-        received_len = len(header)
-        while received_len < expected_len:
-            header += s.recv(expected_len-received_len)
-            received_len = len(header)
+    def pause(self):
+        self.paused = True
+        self.start_pause_time = datetime.now()
 
-        (packet_type, packet_length) = unpack(HEADER_FMT, header)
-        return (packet_type, packet_length)
-
-def get_next_payload(s, packet_len):
-    expected_len = packet_len
-
-    try:
-        payload = s.recv(expected_len)
-    except socket.timeout as e:
-        return None
-    else:
-        received_len = len(payload)
-        while received_len < expected_len:
-            payload += s.recv(expected_len-received_len)
-            received_len = len(payload)
-
-        return payload
+    def resume(self):
+        self.paused = False
+        self.total_paused_time += datetime.now() - self.start_pause_time
 
 def flatten_grid(grid):
     return [item for sublist in grid for item in sublist]
 
 def unflatten_grid(flat_grid, n, m):
     return [[flat_grid[i+j*n] for i in range(n)] for j in range(m)]
-
-def my_unpack(packet_type, raw_payload):
-    return unpack(PACKET_FMT[packet_type], raw_payload)
-
-def my_pack(packet_type, payload):
-    if len(payload) > 0:
-        packed_payload = pack(PACKET_FMT[packet_type], *payload)
-    else:
-        packed_payload = b''
-
-    packed_header = pack(HEADER_FMT, packet_type, len(packed_payload))
-
-    return packed_header + packed_payload
 
 is_rpi = 'raspberry' in socket.gethostname()
 def runs_on_rpi():

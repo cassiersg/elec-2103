@@ -17,6 +17,11 @@ SERVER_PLAYER_POSITIONS = 9
 SERVER_ROUND_GAUGE_STATE = 10
 SERVER_SCORE = 11
 SERVER_GLOBAL_GAUGE_STATE = 12
+SERVER_END_ROUND = 13
+CLIENT_GAME_PAUSE = 14
+CLIENT_GAME_RESUME = 15
+SERVER_GAME_PAUSE = 16
+SERVER_GAME_RESUME = 17
 
 # Payload packing format
 PACKET_FMT = {
@@ -28,11 +33,16 @@ PACKET_FMT = {
     CLIENT_ANGLE: '!BB',
     SERVER_GAME_FINISHED: '!',
     SERVER_ACTION_RESPONSE: '!IB',
-    SERVER_GRID_STATE:          '!' + str(game_global.M*game_global.N) + 'B',
-    SERVER_PLAYER_POSITIONS:     '!IBBBB',
+    SERVER_GRID_STATE: '!' + str(game_global.M*game_global.N) + 'B',
+    SERVER_PLAYER_POSITIONS: '!IBBBB',
     SERVER_ROUND_GAUGE_STATE: '!HH',
     SERVER_SCORE: '!I',
     SERVER_GLOBAL_GAUGE_STATE: '!H',
+    SERVER_END_ROUND: '!',
+    CLIENT_GAME_PAUSE: '!',
+    CLIENT_GAME_RESUME: '!',
+    SERVER_GAME_PAUSE: '!',
+    SERVER_GAME_RESUME: '!'
 }
 
 HEADER_FMT = '!BH'
@@ -53,6 +63,8 @@ REFUSED = 1
 # Move types
 LEFT = 0
 RIGHT = 1
+PAUSE = 2
+RESUME = 3
 
 class ConnectionLost(Exception):
     pass

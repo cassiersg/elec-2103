@@ -1,85 +1,76 @@
-import pygame
-from pygame.locals import *
-import time
-import sys
+from game_backend import GridState
 
-import game_global as gg
-import game_frontend as gf
-import game_backend as gb
+from game_global import GAUGE_STATE_INIT
+from game_global import ROUND_GAUGE_SPEED_INIT
+from game_global import GLOBAL_GAUGE_SPEED
+from game_global import M, N
 
-def main():
-    screen = gf.pygame_init()
+from utils import Timer
 
-    (grid, positions, holes) = gb.init_round(gg.M,gg.N)
-    p1_pos = 0
-    p2_pos = len(positions)-1
-    score = 0
+class GameState:
+    def __init__(self):
+        self.grid_state = GridState(M, N)
 
-    myfont = pygame.font.SysFont("Comic Sans MS", 28)
-    gf.draw_grid(screen, grid)
+        self.score = 0
 
-    game_start_time = pygame.time.get_ticks()
-    start_time = pygame.time.get_ticks()
-    start_loop_time = start_time
-    total_time = 0
+        self.round_gauge_level = GAUGE_STATE_INIT
+        self.round_gauge_speed = ROUND_GAUGE_SPEED_INIT
+        self.round_gauge_speed_factor = 1.0
 
-    speed_factor = 1.0
+        self.global_gauge_level = GAUGE_STATE_INIT
+        self.global_gauge_speed = GLOBAL_GAUGE_SPEED
 
-    while True:
-        time.sleep(0.01)
+        self.timer = Timer()
+        self.last_gauge_update_time = self.timer.get_time_ms()
 
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == KEYDOWN:
-                if event.key == pygame.K_q:
-                    p1_pos = gb.move_left(grid, gg.P1, p1_pos, positions, holes)
-                elif event.key == pygame.K_d:
-                    p1_pos = gb.move_right(grid, gg.P1, p1_pos, positions, holes)
-                elif event.key == pygame.K_k:
-                    p2_pos = gb.move_left(grid, gg.P2, p2_pos, positions, holes)
-                elif event.key == pygame.K_m:
-                    p2_pos = gb.move_right(grid, gg.P2, p2_pos, positions, holes)
-                elif event.key == pygame.K_z:
-                    speed_factor = speed_factor + 0.2
-                elif event.key == pygame.K_o:
-                    speed_factor = max(0.4, speed_factor-0.2)
+    def update_gauges_level(self):
+        current_time = self.timer.get_time_ms()
+        elapsed_time = current_time - self.last_gauge_update_time
+        self.last_gauge_update_time = current_time
 
-        gf.draw_grid(screen, grid)
-        loop_time = pygame.time.get_ticks() - start_loop_time
-        start_loop_time = pygame.time.get_ticks()
+        eff_speed = self.round_gauge_speed_factor * self.round_gauge_speed
+        self.round_gauge_level -= eff_speed * elapsed_time
 
-        total_time = speed_factor*loop_time/1000 + total_time
+        self.global_gauge_level -= self.global_gauge_speed * elapsed_time
 
-        if total_time > gg.ROUND_TIMEOUT:
-            if set([positions[p1_pos], positions[p2_pos]]) == set(holes):
-                score = score + 1
-            else:
-                game_start_time = pygame.time.get_ticks()
-                score = 0
+    def update_speed_factor(self, angles):
+        self.round_gauge_speed_factor += sum(angles)/255.0
 
-            start_time = pygame.time.get_ticks()
-            start_loop_time = start_time
-            total_time = 0
+    def is_game_finished(self):
+        self.update_gauges_level()
+        return self.global_gauge_level <= 0
 
-            speed_factor = 1.0
+    def is_round_finished(self):
+        self.update_gauges_level()
+        return self.round_gauge_level <= 0
 
-            (grid, positions, holes) = gb.init_round(gg.M, gg.N)
-            p1_pos = 0
-            p2_pos = len(positions)-1
+    # Returns True or False so that the server can properly send an eventual
+    # END ROUND message.
+    def start_next_round(self):
+        assert self.is_round_finished()
 
-        game_total_time = (pygame.time.get_ticks() - game_start_time)/1000
+        self.round_gauge_level = GAUGE_STATE_INIT
+        self.round_gauge_speed = ROUND_GAUGE_SPEED_INIT
+        self.round_gauge_speed_factor = 1.0
 
-        if game_total_time > gg.GAME_TIMEOUT:
-            print("Game over! Score: " + str(score))
-            pygame.quit()
-            sys.exit()
+        self.timer = Timer()
+        self.last_gauge_update_time = self.timer.get_time_ms()
 
-        gf.draw_round_timer(screen, total_time)
-        gf.draw_game_timer(screen, game_total_time)
-        gf.write_score(screen, myfont, score)
-        pygame.display.update()
+        if self.grid_state.is_winning():
+            self.score += 1
+            self.grid_state = GridState(M, N)
+            return True
+        else:
+            self.score = 0
+            self.grid_state = GridState(M, N)
 
-if __name__ == "__main__":
-    main()
+            self.global_gauge_level = GAUGE_STATE_INIT
+            self.global_gauge_speed = GLOBAL_GAUGE_SPEED
+
+            return False
+
+    def pause(self):
+        self.timer.pause()
+
+    def resume(self):
+        self.timer.resume()
