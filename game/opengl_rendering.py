@@ -10,21 +10,22 @@ import pickle
 import random
 import os
 import time
+import scene_draw
 
 assert gg.M == cubes.m
 assert gg.N == cubes.n
 
 v = []
-def log_args(fname, grid, players_xy, player_id, round_gauge, global_gauge, score):
+def log_args(fname, draw_scene_args):
     global v
     if v is not None and random.random() < 0.05:
-        v.append((grid, players_xy, player_id, round_gauge, global_gauge, score))
+        v.append(draw_scene_args)
         if len(v) >= 30:
             with open(fname, "wb") as f:
                 pickle.dump(v, f)
                 v = None
             print('finished collecting images')
-
+            raise ValueError('finished')
 
 class Renderer:
     def __init__(self, hw_interface):
@@ -34,37 +35,22 @@ class Renderer:
     def display(self, grid, players_xy, player_id,
                 round_gauge, global_gauge, score, round_gauge_speed=0,
                 round_gauge_state_update_time=0, paused=False):
-        fname = os.environ.get('LOG_RENDER_ARGS')
-        if fname is not None:
-            log_args(fname,
-                grid, players_xy, player_id, round_gauge, global_gauge, score)
-            return
         t0 = time.time()
 
         if not paused:
             round_gauge -= int((time.time() - round_gauge_state_update_time)*round_gauge_speed*1000)
 
         round_gauge = max(round_gauge, 1)
+        draw_scene_args = (grid, players_xy, player_id, round_gauge, global_gauge, score)
+        fname = os.environ.get('LOG_RENDER_ARGS')
+        if fname is not None:
+            log_args(fname, draw_scene_args) 
+            return
         #print('speed', round_gauge_speed, 'dt', time.time() - round_gauge_state_update_time)
-        grid = bytearray(x for y in grid for x in y)
-        p1x, p1y, p2x, p2y = players_xy
         t1 = time.time()
-        cubes.draw_cubes(grid, gg.N, gg.M, p1x, p1y, p2x, p2y, player_id, round_gauge)
+        pixel_buf = scene_draw.draw_scene(*draw_scene_args)
         t2 = time.time()
-        pixel_buf = bytearray(cubes.width*cubes.height*4)
-        cubes.cubes_image_export(pixel_buf)
-        t3 = time.time()
-        mask = font.render_text(str(score))
-        t31 = time.time()
-        font.blit_mask(pixel_buf, cubes.width, cubes.height, mask, 0, 0, 0xffffff)
-        t4 = time.time()
-        font.image_manip.draw_rect(
-            pixel_buf, cubes.width, cubes.height,
-            0, 470,
-            int(math.floor(global_gauge/gg.GAUGE_STATE_INIT*cubes.width)), 10,
-            0xffffff)
-        t5 = time.time()
-        #print('setup', t1-t0, 'draw', t2-t1, 'export', t3-t2, 'gen mask', t31-t3, 'blit mask', t4-t3, 'glob gauge', t5-t4)
+        #print('setup', t1-t0, 'draw, export, font', t2-t1)
         if utils.is_rpi:
             compressed_buf = bytearray(12000)
             n_chunks, output_used = compression.chunk_compress_huffman(

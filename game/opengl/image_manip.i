@@ -5,6 +5,7 @@
 %{
 #define SWIG_FILE_WITH_INIT
 #include "image_manip.hpp"
+#include "utils.hpp"
 %}
 
 %pybuffer_mutable_binary(unsigned char *img, size_t img_size);
@@ -25,3 +26,7 @@ void draw_rect(
         unsigned int x_off, unsigned int y_off,
         unsigned int x_size, unsigned int y_size,
         unsigned int color);
+
+%pybuffer_mutable_binary(unsigned int *in_buf, size_t in_len);
+%pybuffer_string(char *fname)
+void export_bmp_py(unsigned int* in_buf, size_t in_len, char *fname);

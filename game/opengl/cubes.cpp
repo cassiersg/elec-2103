@@ -175,9 +175,12 @@ void draw_cubes(unsigned char *grid, int grid_size, int n, int m, int p1x, int p
                 // wall
                 color = glm::vec3(1.0f, 1.0f, 1.0f);
                 z_offset = -50.0f * (float) round_gauge / (float) ROUND_GAUGE_INIT;
-            } else {
-                // Hole (or unknown ?), skip
+            } else if (kind == 4) {
+                // HOLE, do nothing
                 continue;
+            } else {
+                printf("invalid cube kind: %i (at (%i, %i))\n", kind, i, j);
+                assert(0);
             }
             draw_cube_grid(&params, color, i, j, z_offset);
         }

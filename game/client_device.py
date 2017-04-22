@@ -65,7 +65,7 @@ class HardwareInterface:
         t3 = time.time()
         #print('SPI: init', t1-t0, 'write', t2-t1, 'pageflip', t3-t2, 'n writes', idx//1000)
 
-    def get_events(self, cur_acc_value):
+    def get_events(self):
         quit = False
         events = []
 

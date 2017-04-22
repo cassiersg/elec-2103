@@ -188,7 +188,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
 
     while True:
         time.sleep(0.01)
-        (quit, new_acc_value, events) = hw_interface.get_events(client.cur_acc_value)
+        (quit, new_acc_value, events) = hw_interface.get_events()
 
         if quit:
             s.close()

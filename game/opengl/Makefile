@@ -64,6 +64,6 @@ _compression.so: chunker.o
 
 compression.o: $(HUFFMAN_SRC)
 
-$(HUFFMAN_SRC): _cubes.so _chunker.so ../gen_ogl_huffman_file.py ../display_args.pkl
+$(HUFFMAN_SRC): _cubes.so _chunker.so ../gen_ogl_huffman_file.py ../display_args.pkl _image_manip.so
 	cd .. && python3 gen_ogl_huffman_file.py
 
