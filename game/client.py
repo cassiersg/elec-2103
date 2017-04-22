@@ -158,6 +158,14 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
                 hw_interface.paused = True
             elif packet_type == net.SERVER_GAME_RESUME:
                 hw_interface.paused = False
+            elif packet_type == net.SERVER_END_ROUND:
+                (round_outcome,) = payload
+                if round_outcome == net.WIN:
+                    print("You won this round!")
+                elif round_outcome == net.LOOSE:
+                    print("You lost this round!")
+                else:
+                    print("WTF")
             else:
                 ValueError("unknown packet type {}".format(packet_type))
 
@@ -169,5 +177,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
                     global_gauge_state,
                     score,
                     round_gauge_speed,
-                    round_gauge_state_update_time)
+                    round_gauge_state_update_time,
+                    hw_interface.paused)
 
