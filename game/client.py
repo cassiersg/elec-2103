@@ -24,6 +24,7 @@ class ClientGameState:
         self.round_gauge_state_update_time = time.time()
         self.players_xy = None
         self.player_id = player_id
+        self.paused = False
 
 class Client:
     def __init__(self, packet_socket, player_id):
