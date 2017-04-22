@@ -36,7 +36,13 @@ def read_spi(spi, address, nb_words=1):
 
 def set_display(spi, display_id):
     write_spi(spi, 0x30000, [0x00, 0x00, 0x00, display_id])
-    while bytes2int(read_spi(spi, 0x30000)) != display_id:
+
+def wait_display_ok(spi, display_id):
+    """Wait for the pageflip"""
+    # don't wait more than 100 ms, that means the given expected display_id is wrong
+    for i in range(10):
+        if bytes2int(read_spi(spi, 0x30000)) == display_id:
+            return
         sleep(0.01)
 
 class HardwareInterface:
@@ -44,10 +50,10 @@ class HardwareInterface:
         self.spi = setup_spi()
         set_display(self.spi, 0)
         self.current_display = 0
-        self.paused = False
         print("initialized devHWinterface")
 
     def pageflip(self):
+        wait_display_ok(spi, self.current_display)
         new_display = self.current_display ^ 0x1
         set_display(self.spi, new_display)
         self.current_display = new_display
@@ -72,14 +78,12 @@ class HardwareInterface:
 
         touch = read_spi(self.spi, 0x02)
         if touch[3] == 1:
-            events.append(net.LEFT)
+            events.append(gg.TAP_LEFT)
         elif touch[3] == 2:
+            events.append(gg.TAP_RIGHT)
             events.append(net.RIGHT)
         elif touch[3] == 3:
-            if self.paused:
-                events.append(net.RESUME)
-            else:
-                events.append(net.PAUSE)
+            events.append(gg.TWO_FINGER_SWIPE)
 
         if events:
             write_spi(self.spi, 0x02, 4*[0x00])

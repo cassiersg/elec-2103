@@ -66,7 +66,7 @@ RIGHT = 1
 PAUSE = 2
 RESUME = 3
 
-# Server END ROUND
+# Server END ROUND payload
 WIN = 1
 LOOSE = 0
 
@@ -130,6 +130,9 @@ class PacketSocket:
             if m is not None:
                 return m
             time.sleep(delay)
+
+    def close(self):
+        self.socket.close()
 
 class MaxFreqSender:
     def __init__(self, packet_socket, period):

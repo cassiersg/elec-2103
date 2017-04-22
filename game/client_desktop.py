@@ -22,11 +22,9 @@ class HardwareInterface:
                 quit = True
             elif event.type == KEYDOWN:
                 if event.key == pygame.K_k:
-                    print("[CLIENT] Client sends left movement.")
-                    events.append(net.LEFT)
+                    events.append(gg.TAP_LEFT)
                 elif event.key == pygame.K_m:
-                    print("[CLIENT] Client sends right movement.")
-                    events.append(net.RIGHT)
+                    events.append(gg.TAP_RIGHT)
                 elif event.key == pygame.K_o:
                     print("[CLIENT] Client increases accelerometer angle")
                     self.cur_acc_value = min(255, self.cur_acc_value+10)
@@ -35,7 +33,7 @@ class HardwareInterface:
                     self.cur_acc_value = max(0, self.cur_acc_value-10)
                 elif event.key == pygame.K_p:
                     print("[CLIENT] Client wants to pause/resume the game")
-                    events.append(net.PAUSE)
+                    events.append(gg.TWO_FINGER_SWIPE)
 
         return (quit, self.cur_acc_value, events)
 
