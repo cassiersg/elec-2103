@@ -12,7 +12,6 @@ class HardwareInterface:
         pygame.init()
         self.screen = pygame.display.set_mode(form_factor)
         pygame.display.set_caption("Shape Yourself, Wall is Coming!")
-        self.paused = False
 
     def get_events(self, cur_acc_value):
         quit = False
@@ -34,12 +33,8 @@ class HardwareInterface:
                     print("[CLIENT] Client decreases accelerometer angle")
                     cur_acc_value = max(0, cur_acc_value-10)
                 elif event.key == pygame.K_p:
-                    if self.paused:
-                        print("[CLIENT] Client wants to resume the game")
-                        events.append(net.RESUME)
-                    else:
-                        print("[CLIENT] Client wants to pause the game")
-                        events.append(net.PAUSE)
+                    print("[CLIENT] Client wants to pause/resume the game")
+                    events.append(net.PAUSE)
 
         return (quit, cur_acc_value, events)
 
