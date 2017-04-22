@@ -5,20 +5,111 @@ import utils
 import net
 import threading
 import opengl_rendering as rendering
+import copy
 
 if utils.runs_on_rpi():
     import client_device as cd
 else:
     import client_desktop as cd
 
-from game_global import *
+import game_global as gg
+
+class ClientGameState:
+    def __init__(self, player_id):
+        self.grid = None
+        self.score = 0
+        self.round_gauge_state = gg.GAUGE_STATE_INIT
+        self.global_gauge_state = gg.GAUGE_STATE_INIT
+        self.round_gauge_speed = 0
+        self.round_gauge_state_update_time = time.time()
+        self.players_xy = None
+        self.player_id = player_id
+
+class Client:
+    def __init__(self, packet_socket, player_id):
+        self.action_id = 0
+        self.grid_id = 0
+        self.event_sender = net.MaxFreqSender(s, 0.05) # should not be limiting
+        self.acc_sender = net.MaxFreqSender(s, 1)
+        self.cur_acc_value = 0
+        self.gamestate = ClientGameState(player_id)
+        self.packet_socket = packet_socket
+
+    def handle_event(self, event):
+        if event == net.LEFT:
+            print("sending left")
+            self.event_sender.send(
+                net.CLIENT_ACTION,
+                self.gamestate.player_id,
+                self.action_id,
+                self.grid_id,
+                net.LEFT)
+        elif event == net.RIGHT:
+            print("sending right")
+            self.event_sender.send(
+                net.CLIENT_ACTION,
+                self.gamestate.player_id,
+                self.action_id,
+                self.grid_id,
+                net.RIGHT)
+        elif event == net.PAUSE:
+            if self.gamestate.paused:
+                print("sending resume")
+                self.event_sender.send(net.CLIENT_GAME_RESUME)
+            else:
+                print("sending pause")
+                self.event_sender.send(net.CLIENT_GAME_PAUSE)
+        else:
+            raise ValueError(event)
+        self.action_id += 1
+
+    def update_acc_value(self, new_acc_value):
+        if new_acc_value != self.cur_acc_value:
+            self.cur_acc_value = new_acc_value
+            self.acc_sender.send(
+                net.CLIENT_ANGLE,
+                self.gamestate.player_id,
+                self.cur_acc_value)
+    def handle_packet(self, packet_type, payload):
+        if packet_type == net.SERVER_GRID_STATE:
+            flat_grid = payload
+            self.gamestate.grid = utils.unflatten_grid(flat_grid, gg.M, gg.N)
+        elif packet_type == net.SERVER_PLAYER_POSITIONS:
+            (self.grid_id, *self.gamestate.players_xy) = payload
+        elif packet_type == net.SERVER_ROUND_GAUGE_STATE:
+            (self.gamestate.round_gauge_state,
+             self.gamestate.round_gauge_speed) = payload
+            self.gamestate.round_gauge_state_update_time = time.time()
+        elif packet_type == net.SERVER_SCORE:
+            self.gamestate.score, = payload
+        elif packet_type == net.SERVER_GLOBAL_GAUGE_STATE:
+            self.gamestate.global_gauge_state, = payload
+        elif packet_type == net.SERVER_GAME_FINISHED:
+            self.packet_socket.s.close()
+            raise GameFinished() # TODO: class not yet defined
+        elif packet_type == net.SERVER_GAME_PAUSE:
+            self.gamestate.paused = True
+        elif packet_type == net.SERVER_GAME_RESUME:
+            self.gamestate.paused = False 
+        elif packet_type == net.SERVER_END_ROUND:
+            round_outcome, = payload
+            if round_outcome == net.WIN:
+                print("You won this round!")
+            elif round_outcome == net.LOOSE:
+                print("You lost this round!")
+            else:
+                raise ValueError("Invalid round outcome")
+        else:
+            raise ValueError("unknown packet type {}".format(packet_type))
 
 display_args_glob = [None]
 
 def update_display(renderer, display_args):
     if display_args[0] is None:
         return
-    renderer.display(*display_args[0])
+    gs = display_args[0]
+    if gs.grid is not None:
+        renderer.display(gs.grid, gs.players_xy, gs.player_id, gs.round_gauge_state, gs.global_gauge_state, gs.score)
 
 def display_updater(hw_interface, display_args):
     renderer = rendering.Renderer(hw_interface)
@@ -43,6 +134,11 @@ server_address = (address, 10000)
 role = net.PLAYER if role == 'player' else net.SPECTATOR
 
 last_render_time = time.time()
+
+hw_interface = cd.HardwareInterface()
+
+render_thread = threading.Thread(target=display_updater, args=(hw_interface, display_args_glob),daemon=True)
+render_thread.start()
 # Create a TCP/IP socket
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
     # Connect to the server and send a CLIENT_CONNECT
@@ -70,10 +166,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
         s.close()
         sys.exit()
 
-    hw_interface = cd.HardwareInterface()
-
-    render_thread = threading.Thread(target=display_updater, args=(hw_interface, display_args_glob),daemon=True)
-    render_thread.start()
 
     print("[CLIENT] Advertising the server that we are ready.")
     s.send(net.CLIENT_READY)
@@ -84,99 +176,31 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as base_socket:
 
     if packet_type == net.SERVER_START_GAME:
         (player_id, grid_size_x, grid_size_y) = payload
+        assert grid_size_x == gg.M
+        assert grid_size_y == gg.N
         print("[CLIENT] Starting the game with player id " + str(player_id) + ".")
     else:
         print("[CLIENT] Didn't receive the SERVER START GAME message!",
               packet_type)
         sys.exit()
 
-    grid = None
-    score = 0
-    round_gauge_state = GAUGE_STATE_INIT
-    global_gauge_state = GAUGE_STATE_INIT
-    grid_id = 0
-    action_id = 0
-
-    cur_acc_value = 0
-
-    players_xy = None
-
-    event_sender = net.MaxFreqSender(s, 0.05) # should not be limiting
-    acc_sender = net.MaxFreqSender(s, 1)
+    client = Client(s, player_id)
 
     while True:
         time.sleep(0.01)
-        (quit, new_acc_value, events) = hw_interface.get_events(cur_acc_value)
+        (quit, new_acc_value, events) = hw_interface.get_events()
 
         if quit:
             s.close()
             sys.exit()
 
         for event in events:
-            if event == net.LEFT:
-                print("sending left")
-                event_sender.send(net.CLIENT_ACTION, player_id, action_id, grid_id, net.LEFT)
-            elif event == net.RIGHT:
-                print("sending right")
-                event_sender.send(net.CLIENT_ACTION, player_id, action_id, grid_id, net.RIGHT)
-            elif event == net.PAUSE:
-                print("sending pause")
-                event_sender.send(net.CLIENT_GAME_PAUSE)
-            elif event == net.RESUME:
-                print("sending resume")
-                event_sender.send(net.CLIENT_GAME_RESUME)
+            client.handle_event(event)
 
-            action_id += 1
-
-        if new_acc_value != cur_acc_value:
-            cur_acc_value = new_acc_value
-            acc_sender.send(net.CLIENT_ANGLE, player_id, cur_acc_value)
+        client.update_acc_value(new_acc_value)
 
         for packet_type, payload in s.recv_all():
-            #print("packet_type: {}, payload: {}".format(packet_type, payload))
-            if packet_type == net.SERVER_GRID_STATE:
-                #print("received server grid state")
-                flat_grid = payload
-                grid = utils.unflatten_grid(flat_grid, grid_size_x, grid_size_y)
-            elif packet_type == net.SERVER_PLAYER_POSITIONS:
-                #print("received server player positions")
-                (positions_id, *players_xy) = payload
-            elif packet_type == net.SERVER_ROUND_GAUGE_STATE:
-                #print("received server round gauge state")
-                (round_gauge_state, round_gauge_speed) = payload
-                round_gauge_state_update_time = time.time()
-            elif packet_type == net.SERVER_SCORE:
-                #print("received server score")
-                (score,) = payload
-            elif packet_type == net.SERVER_GLOBAL_GAUGE_STATE:
-                #print("received server global gauge state")
-                (global_gauge_state,) = payload
-            elif packet_type == net.SERVER_GAME_FINISHED:
-                s.close()
-                exit()
-            elif packet_type == net.SERVER_GAME_PAUSE:
-                hw_interface.paused = True
-            elif packet_type == net.SERVER_GAME_RESUME:
-                hw_interface.paused = False
-            elif packet_type == net.SERVER_END_ROUND:
-                (round_outcome,) = payload
-                if round_outcome == net.WIN:
-                    print("You won this round!")
-                elif round_outcome == net.LOOSE:
-                    print("You lost this round!")
-                else:
-                    print("WTF")
-            else:
-                ValueError("unknown packet type {}".format(packet_type))
+            client.handle_packet(packet_type, payload)
 
-        if grid is not None and players_xy is not None:
-            display_args_glob[0] = (
-                    grid, players_xy,
-                    player_id,
-                    round_gauge_state,
-                    global_gauge_state,
-                    score,
-                    round_gauge_speed,
-                    round_gauge_state_update_time,
-                    hw_interface.paused)
+        display_args_glob[0] = copy.copy(client.gamestate)
 
