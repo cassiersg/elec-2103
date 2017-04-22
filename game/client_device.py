@@ -44,6 +44,7 @@ class HardwareInterface:
         self.spi = setup_spi()
         set_display(self.spi, 0)
         self.current_display = 0
+        self.paused = False
         print("initialized devHWinterface")
 
     def pageflip(self):
@@ -74,10 +75,15 @@ class HardwareInterface:
             events.append(net.LEFT)
         elif touch[3] == 2:
             events.append(net.RIGHT)
+        elif touch[3] == 3:
+            if self.paused:
+                events.append(net.RESUME)
+            else:
+                events.append(net.PAUSE)
 
         if events:
             write_spi(self.spi, 0x02, 4*[0x00])
-        
+
         raw_acc_value = bytes2int(read_spi(self.spi, 0x03))
         cur_acc_value = min(255, abs(raw_acc_value))
         #print(raw_acc_value, cur_acc_value)
