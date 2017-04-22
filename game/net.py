@@ -38,7 +38,7 @@ PACKET_FMT = {
     SERVER_ROUND_GAUGE_STATE: '!HH',
     SERVER_SCORE: '!I',
     SERVER_GLOBAL_GAUGE_STATE: '!H',
-    SERVER_END_ROUND: '!',
+    SERVER_END_ROUND: '!B',
     CLIENT_GAME_PAUSE: '!',
     CLIENT_GAME_RESUME: '!',
     SERVER_GAME_PAUSE: '!',
@@ -65,6 +65,10 @@ LEFT = 0
 RIGHT = 1
 PAUSE = 2
 RESUME = 3
+
+# Server END ROUND
+WIN = 1
+LOOSE = 0
 
 class ConnectionLost(Exception):
     pass

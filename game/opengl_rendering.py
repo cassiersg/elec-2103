@@ -32,14 +32,18 @@ class Renderer:
         cubes.cubes_init()
 
     def display(self, grid, players_xy, player_id,
-                round_gauge, global_gauge, score, round_gauge_speed=0, round_gauge_state_update_time=0):
+                round_gauge, global_gauge, score, round_gauge_speed=0,
+                round_gauge_state_update_time=0, paused=False):
         fname = os.environ.get('LOG_RENDER_ARGS')
         if fname is not None:
             log_args(fname,
                 grid, players_xy, player_id, round_gauge, global_gauge, score)
             return
         t0 = time.time()
-        round_gauge -= int((time.time() - round_gauge_state_update_time)*round_gauge_speed*1000)
+
+        if not paused:
+            round_gauge -= int((time.time() - round_gauge_state_update_time)*round_gauge_speed*1000)
+
         round_gauge = max(round_gauge, 1)
         #print('speed', round_gauge_speed, 'dt', time.time() - round_gauge_state_update_time)
         grid = bytearray(x for y in grid for x in y)
