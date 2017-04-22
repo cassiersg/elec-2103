@@ -8,7 +8,6 @@
 
 #include "EGL/egl.h"
 #include "EGL/eglext.h"
-#include "GLES/gl.h"
 #include "GLES2/gl2.h"
 
 #include "gl_utils.hpp"
