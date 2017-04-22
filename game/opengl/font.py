@@ -1,5 +1,6 @@
 
 import functools
+import os
 
 from PIL import ImageFont
 
@@ -9,7 +10,8 @@ except ImportError:
     import opengl.image_manip as image_manip
 
 #gen fonts, cache fonts ?
-default_font = ImageFont.truetype('DejaVuSansMono-Bold.ttf', size=80)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+default_font = ImageFont.truetype(os.path.join(current_dir, 'DejaVuSansMono-Bold.ttf'), size=80)
 
 @functools.lru_cache()
 def render_text(text, font=default_font):
