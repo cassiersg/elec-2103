@@ -34,7 +34,7 @@ run: $(BIN)
 open: run
 	xdg-open img.bmp
 
-all: $(BIN) _cubes.so _compression.so _chunker.so
+all: $(BIN) _cubes.so _compression.so _chunker.so _image_manip.so
 
 %.o: %.cpp $(HEADERS)
 	g++ -c $< $(CPPFLAGS) -g -o $@
@@ -45,7 +45,7 @@ $(BIN): $(OBJS)
 clean:
 	rm -f $(BIN) *.o
 	rm -f img.bmp
-	rm -f shaders.cpp *_wrap.cpp _*.so cubes.py compression.py chunker.py
+	rm -f shaders.cpp *_wrap.cpp _*.so cubes.py compression.py chunker.py image_manip.py
 	rm -f $(HUFFMAN_SRC)
 	rm -rf __pycache__
 
@@ -61,14 +61,6 @@ _%.so: $(COMMON_OBJS) %_wrap.o %.o
 
 _cubes.so: $(CUBE_OBJS)
 _compression.so: chunker.o
-#_cubes.so: $(CUBE_OBJS) $(COMMON_OBJS) cubes_wrap.o
-#	g++ -o $@ $^ $(LDFLAGS) $(LIBS) -shared
-#
-#_compression.so: $(COMPRESSION_OBJS) $(COMMON_OBJS)  compression_wrap.o
-#	g++ -o $@ $^ $(LDFLAGS) $(LIBS) -shared
-#
-#_chunker.so: $(COMMON_OBJS) chunker.o chunker_wrap.o
-#	g++ -o $@ $^ $(LDFLAGS) $(LIBS) -shared
 
 compression.o: $(HUFFMAN_SRC)
 

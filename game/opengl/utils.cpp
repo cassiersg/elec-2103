@@ -72,6 +72,11 @@ unsigned int uint_min(unsigned int a, unsigned int b)
     return a < b ? a: b;
 }
 
+unsigned int uint_max(unsigned int a, unsigned int b)
+{
+    return a > b ? a: b;
+}
+
 void cat_bits(unsigned int **buf, int *fill, unsigned int val, int n_bits)
 {
     **buf |= val << *fill;

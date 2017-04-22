@@ -12,6 +12,7 @@ game/opengl/*_wrap.cpp
 game/opengl/cubes.py
 game/opengl/compression.py
 game/opengl/chunker.py
+game/opengl/image_manip.py
 
 
 ## Modelsim
