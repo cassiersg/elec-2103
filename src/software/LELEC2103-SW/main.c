@@ -9,7 +9,7 @@
 #include "mtltouch.h"
 #include "gsensor.h"
 //#include "tiling_roms.h"
-#include "compressed.h"
+//#include "compressed.h"
 
 /* Definition of Task Stacks */
 #define   TASK_STACKSIZE       2048
