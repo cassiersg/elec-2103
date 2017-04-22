@@ -14,7 +14,6 @@ if utils.runs_on_rpi():
 else:
     import client_desktop as cd
 
-
 def update_display(renderer, display_args):
     if display_args[0] is None:
         return
