@@ -16,10 +16,26 @@ void blit_image(
     for (int i=0; i < eff_height; i++) {
         for (int j=0; j < eff_width; j++) {
             if (mask[i*mask_width+j]) {
-                image[(i+y_off)*img_width + j + y_off] = color;
+                image[(i+y_off)*img_width + j + x_off] = color;
             }
         }
     }
 }
 
 
+void draw_rect(
+        unsigned char *img, size_t img_size,
+        unsigned int img_width, unsigned int img_height,
+        unsigned int x_off, unsigned int y_off,
+        unsigned int x_size, unsigned int y_size,
+        unsigned int color)
+{
+    unsigned int *image = (unsigned int *) img;
+    unsigned int eff_width = uint_min(x_size, img_width - x_off);
+    unsigned int eff_height = uint_min(y_size, img_height - y_off);
+    for (int i=0; i < eff_height; i++) {
+        for (int j=0; j < eff_width; j++) {
+            image[(i+y_off)*img_width + j + x_off] = color;
+        }
+    }
+}

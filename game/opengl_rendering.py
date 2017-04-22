@@ -4,6 +4,7 @@ import opengl.cubes as cubes
 import opengl.compression as compression
 import opengl.font as font
 import utils
+import math
 import pygame
 import pickle
 import random
@@ -53,7 +54,13 @@ class Renderer:
         t31 = time.time()
         font.blit_mask(pixel_buf, cubes.width, cubes.height, mask, 0, 0, 0xffffff)
         t4 = time.time()
-        #print('setup', t1-t0, 'draw', t2-t1, 'export', t3-t2, 'gen mask', t31-t3, 'blit mask', t4-t3)
+        font.image_manip.draw_rect(
+            pixel_buf, cubes.width, cubes.height,
+            0, 470,
+            int(math.floor(global_gauge/gg.GAUGE_STATE_INIT*cubes.width)), 10,
+            0xffffff)
+        t5 = time.time()
+        #print('setup', t1-t0, 'draw', t2-t1, 'export', t3-t2, 'gen mask', t31-t3, 'blit mask', t4-t3, 'glob gauge', t5-t4)
         if utils.is_rpi:
             compressed_buf = bytearray(12000)
             n_chunks, output_used = compression.chunk_compress_huffman(
