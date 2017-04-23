@@ -123,11 +123,6 @@ def draw_texts(pixel_buf, texts, fg, font_size, x_c, y_c):
     v_offs = [round((i-(n-1)/2)*sum_height/n) for i in range(n)]
     for mask, v_sup_off in zip(masks, v_offs):
         off_x, off_y = offset_center_mask(mask, x_c, y_c)
-        print("draw_texts",
-            cubes.width, cubes.height,
-            mask[0],
-            off_x, v_sup_off + off_y,
-            fg)
         font.blit_mask(
             pixel_buf, cubes.width, cubes.height,
             mask,
