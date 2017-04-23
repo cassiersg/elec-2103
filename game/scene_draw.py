@@ -32,10 +32,11 @@ def render_gamestate(gamestate):
             gamestate.score)
         if gamestate.paused:
             mask = font.render_text("Pause")
+            off_x, off_y = offset_center_mask(mask, y_c = 420)
             font.blit_mask(
                 pixel_buf, cubes.width, cubes.height,
                 mask,
-                *offset_center_mask(mask, y_c = 420),
+                off_x, off_y,
                 0xffffffff)
     elif gamestate.client_ready and not gamestate.game_started:
         pixel_buf = scene_text("Waiting for other player")
@@ -66,13 +67,11 @@ def scene_text(text, fg = 0xffffffff, bg = 0xff000000, font_size=60):
         0, 0, cubes.width, cubes.height,
         bg)
     mask = font.render_text(text, font_size=font_size)
-    (mw, mh), _ = mask
-    off_x = max(0, (cubes.width - mw)//2)
-    off_y = max(0, (cubes.height - mh)//2)
+    off_x, off_y = offset_center_mask(mask)
     font.blit_mask(
         pixel_buf, cubes.width, cubes.height,
         mask,
-        *offset_center_mask(mask),
+        off_x, off_y,
         fg)
     return pixel_buf
 
