@@ -17,9 +17,8 @@ else:
 def update_display(renderer, display_args):
     if display_args[0] is None:
         return
-    gs = display_args[0]
-    if gs.grid is not None:
-        renderer.display(gs.grid, gs.players_xy, gs.player_id, gs.round_gauge_state, gs.global_gauge_state, gs.score)
+    gamestate = display_args[0]
+    renderer.display(gamestate)
 
 def display_updater(hw_interface, display_args):
     renderer = rendering.Renderer(hw_interface)

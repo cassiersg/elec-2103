@@ -22,6 +22,9 @@ class ClientGameState:
         self.client_ready = False
         self.paused = False
         self.connected = False
+        self.round_running = False
+        self.round_outcome = None
+        self.game_finished = False
 
 class Client:
     def __init__(self, packet_socket, hw_interface, display_args_glob, role):
@@ -77,6 +80,7 @@ class Client:
         if packet_type == net.SERVER_GRID_STATE:
             flat_grid = payload
             self.gamestate.grid = utils.unflatten_grid(flat_grid, gg.M, gg.N)
+            self.gamestate.round_running = True
         elif packet_type == net.SERVER_PLAYER_POSITIONS:
             (self.grid_id, *self.gamestate.players_xy) = payload
         elif packet_type == net.SERVER_ROUND_GAUGE_STATE:
@@ -88,8 +92,8 @@ class Client:
         elif packet_type == net.SERVER_GLOBAL_GAUGE_STATE:
             self.gamestate.global_gauge_state, = payload
         elif packet_type == net.SERVER_GAME_FINISHED:
-            self.packet_socket.s.close()
-            raise GameFinished() # TODO: class not yet defined
+            self.gamestate.game_finished = True
+            # NB we will be killed by server closing connection
         elif packet_type == net.SERVER_GAME_PAUSE:
             self.gamestate.paused = True
         elif packet_type == net.SERVER_GAME_RESUME:
@@ -106,13 +110,8 @@ class Client:
                 raise GameFinished()
             self.gamestate.connected = True
         elif packet_type == net.SERVER_END_ROUND:
-            round_outcome, = payload
-            if round_outcome == net.WIN:
-                print("You won this round!")
-            elif round_outcome == net.LOOSE:
-                print("You lost this round!")
-            else:
-                raise ValueError("Invalid round outcome")
+            self.gamestate.round_running = False
+            self.gamestate.round_outcome, = payload
         else:
             raise ValueError("Invalid packet type {}".format(packet_type))
 
@@ -129,7 +128,7 @@ class Client:
                 self.send_event(event)
             self.update_acc_value(new_acc_value)
         elif not self.gamestate.client_ready:
-            if gg.TWO_FINGER_SWIPE in events:
+            if gg.TAP_RIGHT in events or gg.TAP_LEFT in events:
                 self.gamestate.client_ready = True
                 self.packet_socket.send(net.CLIENT_READY)
         else:

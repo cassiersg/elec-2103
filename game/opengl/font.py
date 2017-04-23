@@ -13,9 +13,15 @@ except ImportError:
 current_dir = os.path.dirname(os.path.abspath(__file__))
 default_font = ImageFont.truetype(os.path.join(current_dir, 'DejaVuSansMono-Bold.ttf'), size=80)
 
+
 @functools.lru_cache()
-def render_text(text, font=default_font):
+def load_font(font_name, font_size):
+    return ImageFont.truetype(os.path.join(current_dir, font_name), size=font_size)
+
+@functools.lru_cache()
+def render_text(text, font_name='DejaVuSansMono-Bold.ttf', font_size=60):
     "Renders a text with a given font. Returns a mask object."
+    font = load_font(font_name, font_size)
     mask = font.getmask(text, mode='1')
     return (mask.size, bytes(mask))
 
