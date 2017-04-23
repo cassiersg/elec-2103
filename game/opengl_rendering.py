@@ -4,6 +4,7 @@ import random
 import os
 import time
 import math
+import logging
 
 import pygame
 
@@ -27,7 +28,7 @@ def log_args(fname, gamestate):
             with open(fname, "wb") as f:
                 pickle.dump(v, f)
                 v = None
-            print('finished collecting images')
+            logging.info('finished collecting images')
             raise ValueError('finished')
 
 class Renderer:

@@ -3,6 +3,9 @@ import socket
 from datetime import datetime
 from datetime import timedelta
 
+import logging
+from logging.handlers import RotatingFileHandler
+
 class Timer:
     def __init__(self):
         self.start_time = datetime.now()
@@ -37,4 +40,22 @@ def unflatten_grid(flat_grid, n, m):
 is_rpi = 'raspberry' in socket.gethostname()
 def runs_on_rpi():
     return is_rpi
+
+def setup_log(logfile=None, print_stderr=True):
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+    if logfile is not None:
+        file_handler = RotatingFileHandler(logfile, 'a', 100000, 1)
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    if print_stderr:
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(logging.DEBUG)
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+
+    logging.info('Starting loggging')
 

@@ -1,8 +1,11 @@
 import os
 import pickle
+import logging
+
 import pygame
-import game_global as gg
 from pygame.locals import *
+
+import game_global as gg
 import net
 
 form_factor = (800, 480)
@@ -26,13 +29,13 @@ class HardwareInterface:
                 elif event.key == pygame.K_m:
                     events.append(gg.TAP_RIGHT)
                 elif event.key == pygame.K_o:
-                    print("[CLIENT] Client increases accelerometer angle")
+                    logging.info("[CLIENT] Client increases accelerometer angle")
                     self.cur_acc_value = min(255, self.cur_acc_value+10)
                 elif event.key == pygame.K_l:
-                    print("[CLIENT] Client decreases accelerometer angle")
+                    logging.info("[CLIENT] Client decreases accelerometer angle")
                     self.cur_acc_value = max(0, self.cur_acc_value-10)
                 elif event.key == pygame.K_p:
-                    print("[CLIENT] Client wants to pause/resume the game")
+                    logging.info("[CLIENT] Client wants to pause/resume the game")
                     events.append(gg.TWO_FINGER_SWIPE)
 
         return (quit, self.cur_acc_value, events)

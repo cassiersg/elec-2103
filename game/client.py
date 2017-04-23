@@ -29,7 +29,6 @@ def display_updater(hw_interface, display_args):
         update_display(renderer, display_args)
         t = time.time()
         sl = period - (t-t0)
-        #print('sleep period', sl, 'dur', t-t0)
         time.sleep(max(min_sleep_time, sl))
 
 
@@ -54,4 +53,5 @@ def main():
         client.run()
 
 if __name__ == '__main__':
+    utils.setup_log(logfile='client.log')
     main()
