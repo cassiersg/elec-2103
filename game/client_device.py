@@ -53,7 +53,6 @@ class HardwareInterface:
         print("initialized devHWinterface")
 
     def pageflip(self):
-        wait_display_ok(self.spi, self.current_display)
         new_display = self.current_display ^ 0x1
         set_display(self.spi, new_display)
         self.current_display = new_display
@@ -62,6 +61,7 @@ class HardwareInterface:
         t0 = time.time()
         assert(len(buf) <= 12000)
         idx = 0
+        wait_display_ok(self.spi, self.current_display)
         t1 = time.time()
         while buf:
             sent_buf, buf = buf[:4000], buf[4000:]
