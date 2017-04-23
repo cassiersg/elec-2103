@@ -99,7 +99,7 @@ class Client:
         elif packet_type == net.SERVER_GAME_PAUSE:
             self.gamestate.paused = True
         elif packet_type == net.SERVER_GAME_RESUME:
-            self.gamestate.paused = False 
+            self.gamestate.paused = False
         elif packet_type == net.SERVER_START_GAME:
             (self.gamestate.player_id, grid_size_m, grid_size_n) = payload
             self.gamestate.game_start_time = time.time()
@@ -131,7 +131,9 @@ class Client:
                 self.send_event(event)
             self.update_acc_value(new_acc_value)
         elif not self.gamestate.client_ready:
-            if gg.TAP_RIGHT in events or gg.TAP_LEFT in events:
+            if self.role == net.SPECTATOR:
+                self.gamestate.client_ready = True
+            elif gg.TAP_RIGHT in events or gg.TAP_LEFT in events:
                 self.gamestate.client_ready = True
                 self.packet_socket.send(net.CLIENT_READY)
         else:
