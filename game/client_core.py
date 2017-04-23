@@ -40,6 +40,9 @@ class Client:
         self.event_sender = net.MaxFreqSender(self.packet_socket, 0.05) # should not be limiting
         self.acc_sender = net.MaxFreqSender(self.packet_socket, 1)
         self.gamestate = ClientGameState()
+        if self.role == net.SPECTATOR:
+            self.gamestate.client_ready = True
+            self.gamestate.player_id = 42
 
     def send_event(self, event):
         if event == gg.TAP_LEFT:
@@ -83,6 +86,9 @@ class Client:
             flat_grid = payload
             self.gamestate.grid = utils.unflatten_grid(flat_grid, gg.M, gg.N)
             self.gamestate.round_running = True
+            if self.role == net.SPECTATOR and not self.gamestate.game_started:
+                self.gamestate.game_started = True
+                self.gamestate.game_start_time = time.time()
         elif packet_type == net.SERVER_PLAYER_POSITIONS:
             (self.grid_id, *self.gamestate.players_xy) = payload
         elif packet_type == net.SERVER_ROUND_GAUGE_STATE:
@@ -131,9 +137,7 @@ class Client:
                 self.send_event(event)
             self.update_acc_value(new_acc_value)
         elif not self.gamestate.client_ready:
-            if self.role == net.SPECTATOR:
-                self.gamestate.client_ready = True
-            elif gg.TAP_RIGHT in events or gg.TAP_LEFT in events:
+            if gg.TAP_RIGHT in events or gg.TAP_LEFT in events:
                 self.gamestate.client_ready = True
                 self.packet_socket.send(net.CLIENT_READY)
         else:
@@ -148,7 +152,8 @@ class Client:
         self.packet_socket.send(net.CLIENT_CONNECT, self.role)
         while True:
             self.handle_recv()
-            self.handle_events()
+            if self.role != net.SPECTATOR:
+                self.handle_events()
             time.sleep(0.02)
             self.display_args_glob[0] = copy.copy(self.gamestate)
 

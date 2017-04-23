@@ -59,7 +59,7 @@ def render_gamestate(gamestate):
                 pixel_buf = pixel_buf,
                 font_size = [70, 20],
                 y_c = 0.7)
-        if gamestate.current_time - gamestate.game_start_time < 3:
+        if gamestate.current_time - gamestate.game_start_time < 3 and gamestate.player_id != 42: # not spectator
             scene_texts(
                 ["Your color is {}".format(player_color_names[gamestate.player_id-1])],
                 fg = player_colors[gamestate.player_id-1],
@@ -78,7 +78,7 @@ def scene_cubes(grid, players_xy, player_id,
             actual_round_gauge, global_gauge, score, wall_color):
     grid = bytearray(x for y in grid for x in y)
     p1x, p1y, p2x, p2y = players_xy
-    cubes.draw_cubes(grid, gg.N, gg.M, p1x, p1y, p2x, p2y, player_id, actual_round_gauge, wall_color)
+    cubes.draw_cubes(grid, gg.N, gg.M, p1x, p1y, p2x, p2y, actual_round_gauge, wall_color)
     pixel_buf = bytearray(cubes.width*cubes.height*4)
     cubes.cubes_image_export(pixel_buf)
     scene_texts(
