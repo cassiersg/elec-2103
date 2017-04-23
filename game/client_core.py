@@ -88,7 +88,7 @@ class Client:
         elif packet_type == net.SERVER_GLOBAL_GAUGE_STATE:
             self.gamestate.global_gauge_state, = payload
         elif packet_type == net.SERVER_GAME_FINISHED:
-            self.packet_socket.s.close()
+            self.packet_socket.close()
             raise GameFinished() # TODO: class not yet defined
         elif packet_type == net.SERVER_GAME_PAUSE:
             self.gamestate.paused = True
