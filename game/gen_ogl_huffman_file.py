@@ -1,19 +1,24 @@
 
+import os
 import collections
 import pickle
+import struct
+import copy
+
 import opengl.cubes as cubes
 import opengl.chunker as chunker
 import game_global as gg
-import struct
 import huffman
 import scene_draw
 import opengl.image_manip as image_manip
 from huffman_generator import generate_huffman_decoder, generate_huffman_encoder
+import client_core
+import net
 
 assert gg.M == cubes.m
 assert gg.N == cubes.n
 
-save_imgs = False # to save images generated for training as bmp
+save_imgs = True # to save images generated for training as bmp
 
 cubes.cubes_init()
 
@@ -29,11 +34,36 @@ except IOError:
     print("$ LOG_RENDER_ARGS=display_args.pkl python3 client.py localhost player")
     raise
 
+## Add more variety in states
+gs = client_core.ClientGameState()
+v.append(gs)
+gs = copy.copy(gs)
+gs.connected = True
+v.append(gs)
+gs = copy.copy(gs)
+gs.client_ready = True
+v.append(gs)
+gs = copy.copy(v[-1])
+gs.paused = True
+v.append(gs)
+gs = copy.copy(v[-1])
+gs.round_running = False
+gs.round_outcome = net.WIN
+gs.round_gauge_state = 0
+v.append(gs)
+gs = copy.copy(gs)
+gs.round_outcome = net.LOOSE
+v.append(gs)
+gs = copy.copy(gs)
+gs.game_finished = True
+v.append(gs)
+
+
 print('collecting images')
 sequences = []
 sequences_int = []
-for i, draw_scene_args in enumerate(v):
-    pixels = scene_draw.draw_scene(*draw_scene_args)
+for i, gamestate in enumerate(v):
+    pixels = scene_draw.render_gamestate(gamestate)
     chunks = bytearray(len(pixels))
     n_ints = chunker.make_chunks(pixels, chunks, 32)
     sequences.extend(
@@ -41,7 +71,8 @@ for i, draw_scene_args in enumerate(v):
          struct.iter_unpack('=BBBBI', chunks[:4*n_ints]))
     sequences_int.extend(struct.iter_unpack('=II', chunks[:4*n_ints]))
     if save_imgs:
-        image_manip.export_bmp_py(pixels, "img_gen_huffman_{:03d}.bmp".format(i).encode('ascii'))
+        os.makedirs('training_images', exist_ok=True)
+        image_manip.export_bmp_py(pixels, "training_images/img_gen_huffman_{:03d}.bmp".format(i).encode('ascii'))
 
 # colors
 print('generating color encoder/decoder')

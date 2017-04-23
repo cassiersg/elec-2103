@@ -47,12 +47,7 @@ def scene_cubes(grid, players_xy, player_id,
             actual_round_gauge, global_gauge, score):
     grid = bytearray(x for y in grid for x in y)
     p1x, p1y, p2x, p2y = players_xy
-    try:
-        cubes.draw_cubes(grid, gg.N, gg.M, p1x, p1y, p2x, p2y, player_id, actual_round_gauge)
-    except TypeError:
-        print('error in cubes.draw_cubes args (sporadic error, please report): ',
-              (grid, gg.N, gg.M, p1x, p1y, p2x, p2y, player_id, actual_round_gauge))
-        raise
+    cubes.draw_cubes(grid, gg.N, gg.M, p1x, p1y, p2x, p2y, player_id, actual_round_gauge)
     pixel_buf = bytearray(cubes.width*cubes.height*4)
     cubes.cubes_image_export(pixel_buf)
     mask = font.render_text(str(score), font_size=80)

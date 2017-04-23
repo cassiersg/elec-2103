@@ -1,25 +1,28 @@
 
-import game_global as gg
-import opengl.cubes as cubes
-import opengl.compression as compression
-import opengl.font as font
-import utils
-import math
-import pygame
 import pickle
 import random
 import os
 import time
+import math
+
+import pygame
+
+import game_global as gg
+import utils
 import scene_draw
+import opengl.cubes as cubes
+import opengl.font as font
+if utils.is_rpi:
+    import opengl.compression as compression
 
 assert gg.M == cubes.m
 assert gg.N == cubes.n
 
 v = []
-def log_args(fname, draw_scene_args):
+def log_args(fname, gamestate):
     global v
-    if v is not None and random.random() < 0.05:
-        v.append(draw_scene_args)
+    if gamestate.game_started and random.random() < 0.05:
+        v.append(gamestate)
         if len(v) >= 30:
             with open(fname, "wb") as f:
                 pickle.dump(v, f)

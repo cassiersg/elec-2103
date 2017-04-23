@@ -47,6 +47,7 @@ void export_bmp(char *fname, int width, int height, unsigned char* img)
     }
 
     f = fopen(fname,"wb");
+    assert(f != NULL);
     fwrite(bmpfileheader,1,14,f);
     fwrite(bmpinfoheader,1,40,f);
     for(i=0; i<height; i++)
