@@ -57,5 +57,5 @@ def setup_log(logfile=None, print_stderr=True):
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
 
-    logging.info('Starting loggging')
+    logging.info('Starting logging')
 
