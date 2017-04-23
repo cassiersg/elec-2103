@@ -53,7 +53,7 @@ class HardwareInterface:
         print("initialized devHWinterface")
 
     def pageflip(self):
-        wait_display_ok(spi, self.current_display)
+        wait_display_ok(self.spi, self.current_display)
         new_display = self.current_display ^ 0x1
         set_display(self.spi, new_display)
         self.current_display = new_display
@@ -81,7 +81,6 @@ class HardwareInterface:
             events.append(gg.TAP_LEFT)
         elif touch[3] == 2:
             events.append(gg.TAP_RIGHT)
-            events.append(net.RIGHT)
         elif touch[3] == 3:
             events.append(gg.TWO_FINGER_SWIPE)
 
