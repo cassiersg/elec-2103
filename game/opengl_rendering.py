@@ -4,6 +4,7 @@ import random
 import os
 import time
 import math
+import logging
 
 import pygame
 
@@ -27,7 +28,7 @@ def log_args(fname, gamestate):
             with open(fname, "wb") as f:
                 pickle.dump(v, f)
                 v = None
-            print('finished collecting images')
+            logging.info('finished collecting images')
             raise ValueError('finished')
 
 class Renderer:
@@ -42,6 +43,9 @@ class Renderer:
             log_args(fname, gamestate) 
             return
         pixel_buf = scene_draw.render_gamestate(gamestate)
+        if pixel_buf is None:
+            # invalid gamestate, wait
+            return
         if utils.is_rpi:
             compressed_buf = bytearray(12000)
             n_chunks, output_used = compression.chunk_compress_huffman(

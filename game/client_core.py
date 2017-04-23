@@ -1,5 +1,6 @@
 import time
 import copy
+import logging
 
 import utils
 import net
@@ -18,6 +19,7 @@ class ClientGameState:
         self.round_gauge_state_update_time = time.time()
         self.players_xy = None
         self.player_id = None
+        self.game_start_time = None
         self.game_started = False
         self.client_ready = False
         self.paused = False
@@ -41,7 +43,7 @@ class Client:
 
     def send_event(self, event):
         if event == gg.TAP_LEFT:
-            print("sending left")
+            logging.info("sending left")
             self.event_sender.send(
                 net.CLIENT_ACTION,
                 self.gamestate.player_id,
@@ -49,7 +51,7 @@ class Client:
                 self.grid_id,
                 net.LEFT)
         elif event == gg.TAP_RIGHT:
-            print("sending right")
+            logging.info("sending right")
             self.event_sender.send(
                 net.CLIENT_ACTION,
                 self.gamestate.player_id,
@@ -58,10 +60,10 @@ class Client:
                 net.RIGHT)
         elif event == gg.TWO_FINGER_SWIPE:
             if self.gamestate.paused:
-                print("sending resume")
+                logging.info("sending resume")
                 self.event_sender.send(net.CLIENT_GAME_RESUME)
             else:
-                print("sending pause")
+                logging.info("sending pause")
                 self.event_sender.send(net.CLIENT_GAME_PAUSE)
         else:
             raise ValueError(event)
@@ -70,7 +72,7 @@ class Client:
     def update_acc_value(self, new_acc_value):
         if new_acc_value != self.cur_acc_value:
             self.cur_acc_value = new_acc_value
-            print("cur_acc_value", self.cur_acc_value)
+            logging.info("cur_acc_value: %s", self.cur_acc_value)
             self.acc_sender.send(
                 net.CLIENT_ANGLE,
                 self.gamestate.player_id,
@@ -100,6 +102,7 @@ class Client:
             self.gamestate.paused = False
         elif packet_type == net.SERVER_START_GAME:
             (self.gamestate.player_id, grid_size_m, grid_size_n) = payload
+            self.gamestate.game_start_time = time.time()
             self.gamestate.game_started = True
             assert grid_size_m == gg.M
             assert grid_size_n == gg.N

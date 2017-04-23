@@ -50,7 +50,7 @@ class HardwareInterface:
         self.spi = setup_spi()
         set_display(self.spi, 0)
         self.current_display = 0
-        print("initialized devHWinterface")
+        logging.info("initialized devHWinterface")
 
     def pageflip(self):
         new_display = self.current_display ^ 0x1
@@ -70,7 +70,6 @@ class HardwareInterface:
         t2 = time.time()
         self.pageflip()
         t3 = time.time()
-        #print('SPI: init', t1-t0, 'write', t2-t1, 'pageflip', t3-t2, 'n writes', idx//1000)
 
     def get_events(self):
         quit = False
@@ -89,7 +88,6 @@ class HardwareInterface:
 
         raw_acc_value = bytes2int(read_spi(self.spi, 0x03))
         cur_acc_value = min(255, abs(raw_acc_value))
-        #print(raw_acc_value, cur_acc_value)
 
         return (False, cur_acc_value, events)
 

@@ -224,11 +224,13 @@ void cubes_image_export(unsigned char *buf, int buf_size)
     assert(buf_size >= 4*width*height);
     glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buf);
     assertOpenGLError("glReadPixels");
+    unsigned int *pixel_buf = (unsigned int *) buf;
     for (int i=0; i<width*height; i++) {
-        unsigned char r = buf[4*i];
-        unsigned char b = buf[4*i+2];
-        buf[4*i] = b;
-        buf[4*i+2] = r;
+        unsigned int pixel = pixel_buf[i];
+        unsigned char r = pixel;
+        unsigned char g = pixel >> 8;
+        unsigned char b = pixel >> 16;
+        pixel_buf[i] = 0xff000000 | (r << 16) | (g << 8) | (b);
     }
 }
 
