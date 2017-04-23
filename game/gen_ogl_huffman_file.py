@@ -58,6 +58,7 @@ gs = copy.copy(gs)
 gs.game_finished = True
 v.append(gs)
 
+v = [x for x in v if x is not None] # purge invalid gamestates
 
 print('collecting images')
 sequences = []

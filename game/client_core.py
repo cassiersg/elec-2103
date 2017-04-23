@@ -18,6 +18,7 @@ class ClientGameState:
         self.round_gauge_state_update_time = time.time()
         self.players_xy = None
         self.player_id = None
+        self.game_start_time = None
         self.game_started = False
         self.client_ready = False
         self.paused = False
@@ -100,6 +101,7 @@ class Client:
             self.gamestate.paused = False 
         elif packet_type == net.SERVER_START_GAME:
             (self.gamestate.player_id, grid_size_m, grid_size_n) = payload
+            self.gamestate.game_start_time = time.time()
             self.gamestate.game_started = True
             assert grid_size_m == gg.M
             assert grid_size_n == gg.N
