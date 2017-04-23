@@ -1,8 +1,10 @@
 
+import math
+
+import net
 import game_global as gg
 import opengl.cubes as cubes
 import opengl.font as font
-import math
 image_manip = font.image_manip
 
 assert gg.M == cubes.m
@@ -16,8 +18,17 @@ def render_gamestate(gamestate):
     elif not gamestate.client_ready:
         pixel_buf = scene_text("Tap to start game")
     elif gamestate.game_started:
-        # todo handle case round_running == False (and round_outcome is None => before any game,
-        # and round_outcome is not None => end of round => color wall)
+        if gamestate.round_running:
+            wall_color = 0xffffff
+        elif gamestate.round_outcome is None:
+            # game started, no grid received...
+            return
+        elif gamestate.round_outcome == net.WIN:
+            wall_color = 0x00a000
+        elif gamestate.round_outcome == net.LOOSE:
+            wall_color = 0xf4a742
+        else:
+            raise ValueError(gamestate.round_outcome)
         round_gauge = gamestate.round_gauge_state
         if not gamestate.paused:
             dt = gamestate.current_time - gamestate.round_gauge_state_update_time
@@ -29,7 +40,8 @@ def render_gamestate(gamestate):
             gamestate.player_id,
             round_gauge,
             gamestate.global_gauge_state,
-            gamestate.score)
+            gamestate.score,
+            wall_color)
         if gamestate.paused:
             mask = font.render_text("Pause")
             off_x, off_y = offset_center_mask(mask, y_c = 420)
@@ -45,14 +57,14 @@ def render_gamestate(gamestate):
     return pixel_buf
 
 def scene_cubes(grid, players_xy, player_id,
-            actual_round_gauge, global_gauge, score):
+            actual_round_gauge, global_gauge, score, wall_color):
     grid = bytearray(x for y in grid for x in y)
     p1x, p1y, p2x, p2y = players_xy
-    cubes.draw_cubes(grid, gg.N, gg.M, p1x, p1y, p2x, p2y, player_id, actual_round_gauge)
+    cubes.draw_cubes(grid, gg.N, gg.M, p1x, p1y, p2x, p2y, player_id, actual_round_gauge, wall_color)
     pixel_buf = bytearray(cubes.width*cubes.height*4)
     cubes.cubes_image_export(pixel_buf)
     mask = font.render_text(str(score), font_size=80)
-    font.blit_mask(pixel_buf, cubes.width, cubes.height, mask, 5, 5, 0xffffffff)
+    font.blit_mask(pixel_buf, cubes.width, cubes.height, mask, 5, 5, wall_color)
     image_manip.draw_rect(
         pixel_buf, cubes.width, cubes.height,
         0, 470,

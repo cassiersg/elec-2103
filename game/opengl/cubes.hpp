@@ -7,7 +7,13 @@ const int height = 480;
 const int m = 15;
 const int n = 6;
 
-void draw_cubes(unsigned char *grid, int grid_size, int n, int m, int p1x, int p1y, int p2x, int p2y, int player_id, int round_gauge);
+void draw_cubes(
+        unsigned char *grid, int grid_size,
+        int n, int m,
+        int p1x, int p1y, int p2x, int p2y,
+        int player_id,
+        int round_gauge,
+        unsigned int wall_color);
 
 void cubes_init();
 void cubes_exit();
