@@ -15,7 +15,7 @@ void task_g_sense(void *pdata) {
 	OSTimeDlyHMSM(0, 0, 1, 0);
 	while (1) {
 		alt_16 szXYZ[3];
-		assert(ADXL345_SPI_IsDataReady(SPI_GSENSOR_BASE));
+		//assert(ADXL345_SPI_IsDataReady(SPI_GSENSOR_BASE));
 		assert(ADXL345_SPI_XYZ_Read(SPI_GSENSOR_BASE, szXYZ));
 		msg_reg[3] = szXYZ[1];
 		//printf("acc: %i\n", msg_reg[3]);
