@@ -144,8 +144,18 @@ static void draw_cube_grid(cubes_draw_settings *params, glm::vec3 color, int i, 
     draw_cube(params, color, model);
 }
 
-void draw_cubes(unsigned char *grid, int grid_size, int n, int m, int p1x, int p1y, int p2x, int p2y, int player_id, int round_gauge)
+void draw_cubes(
+        unsigned char *grid, int grid_size,
+        int n, int m,
+        int p1x, int p1y, int p2x, int p2y,
+        int player_id,
+        int round_gauge,
+        unsigned int wall_color)
 {
+    float wfr = (float) (0xFF & (wall_color >> 16)) / 255.0;
+    float wfg = (float) (0xFF & (wall_color >> 8)) / 255.0;
+    float wfb = (float) (0xFF & wall_color) / 255.0;
+    glm::vec3 wall_color_float = glm::vec3(wfr, wfg, wfb);
     cubes_draw_settings params;
     params.lightdir = glm::vec3(0, 0.5, -1);
     // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
@@ -173,7 +183,7 @@ void draw_cubes(unsigned char *grid, int grid_size, int n, int m, int p1x, int p
                 color = glm::vec3(0.5f, 0.5f, 0.5f);
             } else if (kind == 3) {
                 // wall
-                color = glm::vec3(1.0f, 1.0f, 1.0f);
+                color = wall_color_float;
                 z_offset = -50.0f * (float) round_gauge / (float) ROUND_GAUGE_INIT;
             } else if (kind == 4) {
                 // HOLE, do nothing
