@@ -43,10 +43,10 @@ v.append(gs)
 gs = copy.copy(gs)
 gs.client_ready = True
 v.append(gs)
-gs = copy.copy(v[-1])
+gs = copy.copy(v[0])
 gs.paused = True
 v.append(gs)
-gs = copy.copy(v[-1])
+gs = copy.copy(v[0])
 gs.round_running = False
 gs.round_outcome = net.WIN
 gs.round_gauge_state = 0
