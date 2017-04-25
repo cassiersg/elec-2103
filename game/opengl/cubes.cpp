@@ -234,3 +234,25 @@ void cubes_image_export(unsigned char *buf, int buf_size)
 }
 
 
+// Normalizes alpha channel to 0xff, and discretizes
+// other color channels to 4 bits precision
+void cubes_image_normalize(unsigned int *buf, int buf_size)
+{
+    assert(buf_size == width*height);
+    for (int i=0; i<width*height; i++) {
+        // We perform rounding.
+        // Given a byte 0bXYZWPQRS, we mask it with 0xf0 to have
+        // 0bXYZW0000, and mask it with 0x10 and shit it one left to get 0b000P0000.
+        // Then we add the two masked values. If P == 0, we get 0bXYZW0000, that is truncation (rounding to smaller value)
+        // if P == 1, we get 0bXYZ00000 + 0b00010000, that is rounding to larger value.
+        // For X == Y == Z == W == P == 1, this doesn't work, since we get 0 at the output
+        // mask1 detects this case: mask1 has its P bit set to 1 if X == Y == Z == W == 1,
+        // and if this bit is set, the addition that depends on P is disabled
+        unsigned int pixel = buf[i];
+        unsigned int mask1 = pixel & (pixel >> 2);
+        mask1 = mask1 & (mask1 >> 1);
+        buf[i] = 0xff000000 | ((pixel & 0xf0f0f0) + ((pixel << 1) & 0x101010 & ~mask1));
+    }
+}
+
+

@@ -21,6 +21,9 @@ void cubes_exit();
 %pybuffer_mutable_binary(unsigned char *str, int str_size);
 void cubes_image_export(unsigned char *str, int str_size);
 
+%pybuffer_mutable_binary(unsigned int *str, int buf_size);
+void cubes_image_normalize(unsigned int *str, int buf_size);
+
 const int width;
 const int height;
 

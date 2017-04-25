@@ -67,11 +67,11 @@ def render_gamestate(gamestate):
                 y_c = 0.9,
                 font_size=40
             )
-
     elif gamestate.client_ready and not gamestate.game_started:
         pixel_buf = scene_texts(["Waiting for other player"])
     else:
         pixel_buf = scene_texts(["Unknown state"])
+    cubes.cubes_image_normalize(pixel_buf)
     return pixel_buf
 
 def scene_cubes(grid, players_xy, player_id,

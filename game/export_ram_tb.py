@@ -16,6 +16,13 @@ v = [x for x in v if x is not None] # purge invalid gamestates
 
 gamestate = v[0]
 pixel_buf = scene_draw.render_gamestate(gamestate)
+pixel_buf[0] = 0x30
+pixel_buf[1] = 0x50
+pixel_buf[2] = 0x00
+for i in range(10000):
+    pixel_buf[4*i+1000+0] = 0x30
+    pixel_buf[4*i+1000+1] = 0x50
+    pixel_buf[4*i+1000+2] = 0x00
 compressed_buf = bytearray(len(pixel_buf))
 n_chunks, compressed_size = compression.chunk_compress_huffman(
     pixel_buf, compressed_buf)

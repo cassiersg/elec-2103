@@ -4,6 +4,7 @@ import collections
 import pickle
 import struct
 import copy
+import itertools
 
 import opengl.cubes as cubes
 import opengl.chunker as chunker
@@ -75,9 +76,13 @@ for i, gamestate in enumerate(v):
         os.makedirs('training_images', exist_ok=True)
         image_manip.export_bmp_py(pixels, "training_images/img_gen_huffman_{:03d}.bmp".format(i).encode('ascii'))
 
+colors = [c for c, _ in sequences_int]
+# This makes all color appear at least onece, such
+# that they are in the Huffman tree
+colors.extend(0xff000000 | (r << 20) | (g << 12) | (b << 4) for r, g, b in itertools.product(range(0x10), range(0x10), range(0x10)))
+lengths = [l for _, l in sequences_int]
 # colors
 print('generating color encoder/decoder')
-colors = [c for c, _ in sequences_int]
 _, (codes, tree) = huffman.encode(colors)
 max_len_code_color = max(n_bits for sym, (code_str, code_int, n_bits) in codes)
 print('max color code length:', max(l for s, (s_c, i_c, l) in codes))
@@ -88,7 +93,6 @@ avg_color = huffman.huffman_avg_len(colors)
 
 # lengths
 print('generating length encoder/decoder')
-lengths = [l for _, l in sequences_int]
 _, (codes, tree) = huffman.encode(lengths)
 max_len_code_length = max(n_bits for sym, (code_str, code_int, n_bits) in codes)
 assert max_len_code_length + max_len_code_color < 32

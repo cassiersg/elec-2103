@@ -17,6 +17,7 @@ void draw_cubes(
 void cubes_init();
 void cubes_exit();
 void cubes_image_export(unsigned char *buf, int buf_size);
+void cubes_image_normalize(unsigned int *buf, int buf_size);
 
 #endif
 
