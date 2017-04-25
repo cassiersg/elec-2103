@@ -66,7 +66,7 @@ sequences_int = []
 for i, gamestate in enumerate(v):
     pixels = scene_draw.render_gamestate(gamestate)
     chunks = bytearray(len(pixels))
-    n_ints = chunker.make_chunks(pixels, chunks, 32)
+    n_ints = chunker.make_chunks(pixels, chunks)
     sequences.extend(
         ((b, g, r, a), c) for b, g, r, a, c in
          struct.iter_unpack('=BBBBI', chunks[:4*n_ints]))
@@ -79,6 +79,7 @@ for i, gamestate in enumerate(v):
 print('generating color encoder/decoder')
 colors = [c for c, _ in sequences_int]
 _, (codes, tree) = huffman.encode(colors)
+max_len_code_color = max(n_bits for sym, (code_str, code_int, n_bits) in codes)
 print('max color code length:', max(l for s, (s_c, i_c, l) in codes))
 generate_huffman_encoder(codes, 'opengl/huffman_encode_colors.cpp')
 generate_huffman_decoder(tree, 'opengl/huffman_decode_colors.cpp')
@@ -89,6 +90,8 @@ avg_color = huffman.huffman_avg_len(colors)
 print('generating length encoder/decoder')
 lengths = [l for _, l in sequences_int]
 _, (codes, tree) = huffman.encode(lengths)
+max_len_code_length = max(n_bits for sym, (code_str, code_int, n_bits) in codes)
+assert max_len_code_length + max_len_code_color < 32
 print('max length code length:', max(l for s, (s_c, i_c, l) in codes))
 generate_huffman_encoder(codes, 'opengl/huffman_encode_lengths.cpp')
 generate_huffman_decoder(tree, 'opengl/huffman_decode_lengths.cpp')

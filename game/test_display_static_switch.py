@@ -62,7 +62,7 @@ def args2compressedbuf(v):
     cubes.cubes_image_export(pixel_buf)
     compressed_buf = bytearray(len(pixel_buf))
     n_chunks, compressed_size = compression.chunk_compress_huffman(
-        pixel_buf, compressed_buf, 32)
+        pixel_buf, compressed_buf)
     return compressed_buf, compressed_size, n_chunks
 
 with open('display_args.pkl', 'rb') as f:
@@ -77,7 +77,7 @@ cubes.cubes_init()
 #cubes.cubes_image_export(pixel_buf)
 #compressed_buf = bytearray(len(pixel_buf))
 #n_chunks, compressed_size = compression.chunk_compress_huffman(
-#    pixel_buf, compressed_buf, 32)
+#    pixel_buf, compressed_buf)
 #c1, _ = args2compressedbuf(v[0])
 #c2, _ = args2compressedbuf(v[1])
 

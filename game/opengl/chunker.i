@@ -12,6 +12,5 @@
 
 unsigned int make_chunks(
         unsigned int *in_buf, size_t in_len,
-        unsigned int *out_buf, size_t out_len,
-        unsigned int max_chunk_size);
+        unsigned int *out_buf, size_t out_len);
 

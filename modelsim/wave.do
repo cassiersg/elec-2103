@@ -14,17 +14,11 @@ add wave -noupdate -radix unsigned /display_tb/dut/x_next
 add wave -noupdate -radix unsigned /display_tb/dut/y_next
 add wave -noupdate /display_tb/color
 add wave -noupdate /display_tb/ok
-add wave -noupdate -radix unsigned /display_tb/dut2/counter
-add wave -noupdate -radix unsigned /display_tb/dut2/RAM_address
-add wave -noupdate /display_tb/dut2/wide_buffer
-add wave -noupdate -radix unsigned /display_tb/dut2/address
-add wave -noupdate -radix unsigned /display_tb/dut2/address_next_gated
-add wave -noupdate -radix unsigned /display_tb/dut2/offset
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1061323000 ps} 0}
-quietly wave cursor active 1
-configure wave -namecolwidth 123
-configure wave -valuecolwidth 146
+WaveRestoreCursors {{Cursor 1} {0 ps} 0}
+quietly wave cursor active 0
+configure wave -namecolwidth 150
+configure wave -valuecolwidth 100
 configure wave -justifyvalue left
 configure wave -signalnamewidth 1
 configure wave -snapdistance 10
@@ -37,4 +31,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {1499988500 ps} {1500000700 ps}
+WaveRestoreZoom {0 ps} {1 ns}

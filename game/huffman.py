@@ -14,11 +14,9 @@ def encode_inner(symb2freq):
         for pair in lo_codes:
             (s_code, int_code, l) = pair[1]
             pair[1] = (s_code + '0', int_code << 1, l+1)
-            assert l+1 <= 16
         for pair in hi_codes:
             (s_code, int_code, l) = pair[1]
             pair[1] = (s_code + '1', (int_code << 1)+1, l+1)
-            assert l+1 <= 16
         heappush(heap, (lo_w+hi_w, lo_i, (lo_tree, hi_tree), lo_codes + hi_codes))
     _, _, tree, codes = heap[0]
     return sorted(codes, key=lambda p: (p[1][2], p[1][0])), tree

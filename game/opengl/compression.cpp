@@ -32,10 +32,9 @@ static void huffman_decode_color_buf(
 int chunk_compress_huffman(
         unsigned int *input, size_t input_len,
         unsigned int *output, size_t output_len,
-        unsigned int max_chunk_size,
         unsigned int *output_used)
 {
-    chunker_iter iter = new_chunk_iter(input, input_len, max_chunk_size);
+    chunker_iter iter = new_chunk_iter(input, input_len);
     unsigned int *output_end = output + output_len;
     int fill = 0;
     unsigned int color, chunk_len;

@@ -22,7 +22,6 @@ static void test_compression_current_image(void)
     size_t output_size = width*height;
     int n_chunks = chunk_compress_huffman((unsigned int *) pixels, width*height,
             compressed, output_size,
-            32,
             (unsigned int *) &output_size);
     printf("compressed size: %u bytes\n", 4*output_size);
     unsigned int *pixels2 = (unsigned int*) malloc(4*width*height);

@@ -10,7 +10,7 @@ logic [31:0] buffer_lsb, buffer_msb, buffer_lsb_next;
 logic [63:0] wide_buffer;
 logic [ADDR_WIDTH-1:0] address, address_next_gated;
 logic [31:0] color_next;
-logic [7:0] length, length_next, length_counter; // enough for max run length of 256
+logic [15:0] length, length_next, length_counter; // enough for max run length of 65535
 logic [5:0] offset, offset_next, offset_tot; // must hold up to 32 (63 for offset_tot)
 logic [4:0] len_code_color, len_code_length; // must hold up to 16
 logic [15:0] code_color, code_length; // max code size: 16 bits
@@ -66,7 +66,7 @@ begin
             buffer_lsb <= buffer_lsb_next;
             offset <= offset_next;
         end else begin
-            length_counter <= length_counter - 8'b1;
+            length_counter <= length_counter - 16'b1;
         end
     end
 end
@@ -88,11 +88,11 @@ endmodule
 
 module huffman_length_decoder(
     input logic [15:0] code,
-    output logic [7:0] out,
+    output logic [15:0] out,
     output logic [7:0] code_len
 );
 logic [31:0] decoded;
-assign out = decoded[7:0];
+assign out = decoded[15:0];
 
 always_comb
 `include "huffman_decode_lengths.sv"

@@ -13,7 +13,6 @@
 int chunk_compress_huffman(
         unsigned int *in_buf, size_t in_len,
         unsigned int *out_buf, size_t out_len,
-        unsigned int max_chunk_size,
         unsigned int *OUTPUT);
 
 %pybuffer_mutable_binary(unsigned int *in_buf, size_t in_len);
