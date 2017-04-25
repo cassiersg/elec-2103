@@ -2,6 +2,8 @@ import socket
 import sys
 import time
 import threading
+import _thread
+import traceback
 
 import utils
 import net
@@ -21,15 +23,19 @@ def update_display(renderer, display_args):
     renderer.display(gamestate)
 
 def display_updater(hw_interface, display_args):
-    renderer = rendering.Renderer(hw_interface)
-    period = 0.02
-    min_sleep_time = 0.0001
-    while True:
-        t0 = time.time()
-        update_display(renderer, display_args)
-        t = time.time()
-        sl = period - (t-t0)
-        time.sleep(max(min_sleep_time, sl))
+    try:
+        renderer = rendering.Renderer(hw_interface)
+        period = 0.02
+        min_sleep_time = 0.0001
+        while True:
+            t0 = time.time()
+            update_display(renderer, display_args)
+            t = time.time()
+            sl = period - (t-t0)
+            time.sleep(max(min_sleep_time, sl))
+    except:
+        print(traceback.format_exc(), file=sys.stderr)
+        _thread.interrupt_main()
 
 
 def main():
