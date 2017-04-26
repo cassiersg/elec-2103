@@ -9,6 +9,67 @@ import game_global as gg
 class GameFinished(Exception):
     pass
 
+def get_rot_angle(player, grid):
+    xc, yc = player.curr_pos
+    xp, yp = player.prev_pos
+    dx = xc-xp
+    dy = yc-yp
+    if dx == 0: 
+        # vertical move
+        try:
+            corner_right = grid[yc][xc+1] == gg.STRUCT and grid[yp][xp+1] == gg.STRUCT
+        except IndexError:
+            corner_right = False
+        if corner_right:
+            offset_x = 1
+        else:
+            offset_x = -1
+        offset_y = -dy
+        angle = -90 * offset_x * offset_y
+    elif dy == 0:
+        # horizontal move
+        try:
+            corner_up = grid[yc-1][xc] == gg.STRUCT and grid[yp-1][xp] == gg.STRUCT
+        except IndexError:
+            corner_up = False
+        assert corner_up == False
+        offset_y = -1
+        offset_x = dx
+        angle = 90 * (-1) * offset_x
+    else:
+        # diagonal move
+        offset_x = dx
+        offset_y = -dy
+        if (offset_x == 1 and offset_y == 1) or (offset_x == 1 and offset_y  == -1):
+            angle = -180
+        else:
+            angle = 180
+    return offset_x, offset_y, angle
+
+class PlayerState:
+    move_duration = 0.5
+    def __init__(self):
+        self.curr_pos = None
+        self.prev_pos = None
+        self.move_time = None
+
+    def update_pos(self, new_pos):
+        if new_pos != self.curr_pos:
+            self.prev_pos = self.curr_pos
+            self.curr_pos = new_pos
+            self.move_time = time.time()
+
+    def is_moving(self, current_time):
+        return (self.prev_pos is not None and
+                current_time - self.move_time < self.move_duration)
+
+    def rotation_fraction(self, current_time):
+        return (current_time - self.move_time)/self.move_duration
+
+    def is_valid(self):
+        return self.curr_pos is not None
+
+
 class ClientGameState:
     def __init__(self):
         self.grid = None
@@ -17,7 +78,7 @@ class ClientGameState:
         self.global_gauge_state = gg.GAUGE_STATE_INIT
         self.round_gauge_speed = 0
         self.round_gauge_state_update_time = time.time()
-        self.players_xy = None
+        self.players_states = [PlayerState(), PlayerState()]
         self.player_id = None
         self.raw_acc_value_y = 0
         self.game_start_time = None
@@ -87,11 +148,14 @@ class Client:
             flat_grid = payload
             self.gamestate.grid = utils.unflatten_grid(flat_grid, gg.M, gg.N)
             self.gamestate.round_running = True
+            self.gamestate.players_states = None
             if self.role == net.SPECTATOR and not self.gamestate.game_started:
                 self.gamestate.game_started = True
                 self.gamestate.game_start_time = time.time()
         elif packet_type == net.SERVER_PLAYER_POSITIONS:
-            (self.grid_id, *self.gamestate.players_xy) = payload
+            (self.grid_id, pp1, pp2) = payload
+            self.gamestate.players_states[0].update_pos(pp1)
+            self.gamestate.players_states[1].update_pos(pp2)
         elif packet_type == net.SERVER_ROUND_GAUGE_STATE:
             (self.gamestate.round_gauge_state,
              self.gamestate.round_gauge_speed) = payload
@@ -157,5 +221,5 @@ class Client:
             if self.role != net.SPECTATOR:
                 self.handle_events()
             time.sleep(0.02)
-            self.display_args_glob[0] = copy.copy(self.gamestate)
+            self.display_args_glob[0] = copy.deepcopy(self.gamestate)
 

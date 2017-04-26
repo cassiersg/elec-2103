@@ -25,11 +25,10 @@ def render_gamestate(gamestate):
     elif not gamestate.client_ready:
         pixel_buf = scene_texts(["Tap to start game"])
     elif gamestate.game_started:
-        if gamestate.players_xy is None:
+        if (not gamestate.players_states[0].is_valid() or
+            (not gamestate.round_running and gamestate.round_outcome) is None):
             # not yet received first position, don't update display
-            return None
-        if not gamestate.round_running and gamestate.round_outcome is None:
-            # game started, no grid received...
+            # or game started, no grid received...
             return None
         pixel_buf = scene_cubes(gamestate)
         if gamestate.paused:
@@ -54,6 +53,16 @@ def render_gamestate(gamestate):
     cubes.cubes_image_normalize(pixel_buf)
     return pixel_buf
 
+def get_player_pos_st(player_idx, gamestate):
+    p = gamestate.players_states[player_idx]
+    if p.is_moving(gamestate.current_time):
+        offset_x, offset_y, angle = client_core.get_rot_angle(p, gamestate.grid)
+        angle *= p.rotation_fraction(gamestate.current_time)
+    else:
+        offset_x = offset_y = 0
+        angle = 0.0
+    return offset_x, offset_y, angle
+
 def scene_cubes(gamestate):
     # round gauge
     round_gauge = gamestate.round_gauge_state
@@ -73,7 +82,9 @@ def scene_cubes(gamestate):
     # grid
     grid = bytearray(x for y in gamestate.grid for x in y)
     # players
-    p1x, p1y, p2x, p2y = gamestate.players_xy
+    off_x1, off_y1, angle1 = get_player_pos_st(0, gamestate)
+    off_x2, off_y2, angle2 = get_player_pos_st(1, gamestate)
+    #### TODO: give this to C code
     # x_offset
     if gamestate.raw_acc_value_y > 50:
         x_offset = 10
