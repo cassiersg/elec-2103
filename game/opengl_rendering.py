@@ -50,7 +50,7 @@ class Renderer:
             compressed_buf = bytearray(12000)
             n_chunks, output_used = compression.chunk_compress_huffman(
                 pixel_buf, compressed_buf)
-            self.hw_interface.send_spi_buf(list(compressed_buf[:ouput_used]))
+            self.hw_interface.send_spi_buf(list(compressed_buf[:4*output_used+4]))
         else:
             s = self.hw_interface.screen
             b = s.get_buffer()
