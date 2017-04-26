@@ -16,6 +16,7 @@ class HardwareInterface:
         self.screen = pygame.display.set_mode(form_factor)
         pygame.display.set_caption("Shape Yourself, Wall is Coming!")
         self.cur_acc_value = 100
+        self.cur_raw_acc_value_y = 0
 
     def get_events(self):
         quit = False
@@ -34,9 +35,15 @@ class HardwareInterface:
                 elif event.key == pygame.K_l:
                     logging.info("[CLIENT] Client decreases accelerometer angle")
                     self.cur_acc_value = max(0, self.cur_acc_value-10)
+                elif event.key == pygame.K_q:
+                    logging.info("[CLIENT] changes y inclination towards left")
+                    self.cur_raw_acc_value_y += 10
+                elif event.key == pygame.K_d:
+                    logging.info("[CLIENT] changes y inclination towards right")
+                    self.cur_raw_acc_value_y -= 10
                 elif event.key == pygame.K_p:
                     logging.info("[CLIENT] Client wants to pause/resume the game")
                     events.append(gg.TWO_FINGER_SWIPE)
 
-        return (quit, self.cur_acc_value, events)
+        return (quit, self.cur_acc_value, self.cur_raw_acc_value_y, events)
 

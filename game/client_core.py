@@ -19,6 +19,7 @@ class ClientGameState:
         self.round_gauge_state_update_time = time.time()
         self.players_xy = None
         self.player_id = None
+        self.raw_acc_value_y = 0
         self.game_start_time = None
         self.game_started = False
         self.client_ready = False
@@ -125,7 +126,8 @@ class Client:
             raise ValueError("Invalid packet type {}".format(packet_type))
 
     def handle_events(self):
-        (quit, new_acc_value, events) = self.hw_interface.get_events()
+        (quit, new_acc_value, self.gamestate.raw_acc_value_y,
+         events) = self.hw_interface.get_events()
         if quit:
             self.packet_socket.close()
             raise GameFinished()

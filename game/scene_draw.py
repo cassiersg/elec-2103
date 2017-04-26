@@ -28,30 +28,10 @@ def render_gamestate(gamestate):
         if gamestate.players_xy is None:
             # not yet received first position, don't update display
             return None
-        if gamestate.round_running:
-            wall_color = 0xffffff
-        elif gamestate.round_outcome is None:
+        if not gamestate.round_running and gamestate.round_outcome is None:
             # game started, no grid received...
             return None
-        elif gamestate.round_outcome == net.WIN:
-            wall_color = color_win
-        elif gamestate.round_outcome == net.LOOSE:
-            wall_color = color_loose
-        else:
-            raise ValueError(gamestate.round_outcome)
-        round_gauge = gamestate.round_gauge_state
-        if not gamestate.paused:
-            dt = gamestate.current_time - gamestate.round_gauge_state_update_time
-            round_gauge -= int(dt * gamestate.round_gauge_speed * 1000)
-        round_gauge = max(round_gauge, 1)
-        pixel_buf = scene_cubes(
-            gamestate.grid,
-            gamestate.players_xy,
-            gamestate.player_id,
-            round_gauge,
-            gamestate.global_gauge_state,
-            gamestate.score,
-            wall_color)
+        pixel_buf = scene_cubes(gamestate)
         if gamestate.paused:
             scene_texts(
                 ["Paused", "Please do a two-finger swipe to resume"],
@@ -74,23 +54,57 @@ def render_gamestate(gamestate):
     cubes.cubes_image_normalize(pixel_buf)
     return pixel_buf
 
-def scene_cubes(grid, players_xy, player_id,
-            actual_round_gauge, global_gauge, score, wall_color):
-    grid = bytearray(x for y in grid for x in y)
-    p1x, p1y, p2x, p2y = players_xy
-    cubes.draw_cubes(grid, gg.N, gg.M, p1x, p1y, p2x, p2y, actual_round_gauge, wall_color)
+def scene_cubes(gamestate):
+    # round gauge
+    round_gauge = gamestate.round_gauge_state
+    if not gamestate.paused:
+        dt = gamestate.current_time - gamestate.round_gauge_state_update_time
+        round_gauge -= int(dt * gamestate.round_gauge_speed * 1000)
+        round_gauge = max(round_gauge, 1)
+    # wall wolor
+    if gamestate.round_running:
+        wall_color = 0xffffff
+    elif gamestate.round_outcome == net.WIN:
+        wall_color = color_win
+    elif gamestate.round_outcome == net.LOOSE:
+        wall_color = color_loose
+    else:
+        raise ValueError(gamestate.round_outcome)
+    # grid
+    grid = bytearray(x for y in gamestate.grid for x in y)
+    # players
+    p1x, p1y, p2x, p2y = gamestate.players_xy
+    # x_offset
+    if gamestate.raw_acc_value_y > 50:
+        x_offset = 10
+    elif gamestate.raw_acc_value_y < -50:
+        x_offset = -10
+    else:
+        x_offset = 0
+    # draw cubes
+    cubes.draw_cubes(
+        grid, gg.N, gg.M,
+        p1x, p1y, p2x, p2y,
+        round_gauge,
+        wall_color,
+        x_offset)
     pixel_buf = bytearray(cubes.width*cubes.height*4)
     cubes.cubes_image_export(pixel_buf)
+    # display score
     scene_texts(
-        ["{:d}".format(score)],
+        ["{:d}".format(gamestate.score)],
         font_size=60,
         pixel_buf=pixel_buf,
         x_c = 0.08, # enough to hold 4 digits...
         y_c = 0.06)
+    # global gauge
     image_manip.draw_rect(
         pixel_buf, cubes.width, cubes.height,
         0, 470,
-        int(math.floor(global_gauge/gg.GAUGE_STATE_INIT*cubes.width)), 10,
+        int(math.floor(
+            gamestate.global_gauge_state/gg.GAUGE_STATE_INIT*cubes.width)
+        ),
+        10,
         0xffffff)
     return pixel_buf
 

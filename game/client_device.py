@@ -86,8 +86,8 @@ class HardwareInterface:
         if events:
             write_spi(self.spi, 0x02, 4*[0x00])
 
-        raw_acc_value = bytes2int(read_spi(self.spi, 0x03))
+        raw_acc_value_x, raw_acc_value_y = bytes2int(read_spi(self.spi, 0x03), 2)
         cur_acc_value = min(255, abs(raw_acc_value))
 
-        return (False, cur_acc_value, events)
+        return (False, cur_acc_value, raw_acc_value_y, events)
 

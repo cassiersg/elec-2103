@@ -149,7 +149,8 @@ void draw_cubes(
         int n, int m,
         int p1x, int p1y, int p2x, int p2y,
         int round_gauge,
-        unsigned int wall_color)
+        unsigned int wall_color,
+        int x_offset)
 {
     float wfr = (float) (0xFF & (wall_color >> 16)) / 255.0;
     float wfg = (float) (0xFF & (wall_color >> 8)) / 255.0;
@@ -161,7 +162,7 @@ void draw_cubes(
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 1.0f, 100.0f);
     // Camera matrix
     glm::mat4 view = glm::lookAt(
-            glm::vec3(m-1, -1.5*n, 30), // position of camera in world space
+            glm::vec3(m-1+2*x_offset, -1.5*n, 30), // position of camera in world space
             glm::vec3(m-1,-1*n,0), // and looks at ...
             glm::vec3(0,1,0)  // Head is up (set to 0,-1,0 to look upside-down)
             );
