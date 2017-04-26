@@ -13,7 +13,18 @@ void draw_cubes(
         int p1x, int p1y, int p2x, int p2y,
         int round_gauge,
         unsigned int wall_color,
-        int x_offset);
+        int x_offset,
+        unsigned int p1_tex_intensity,
+        unsigned int p2_tex_intensity
+        );
+
+void set_textures(
+        unsigned int *texels1,
+        size_t texels_len1,
+        unsigned int *texels2,
+        size_t texels_len2,
+        unsigned int width,
+        unsigned int height);
 
 void cubes_init();
 void cubes_exit();

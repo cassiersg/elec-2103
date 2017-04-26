@@ -2,10 +2,13 @@
 attribute vec3 vPosition;
 attribute vec3 color;
 attribute vec3 normal;
+attribute float front;
 varying vec3 colorout;
+varying vec2 texcoord;
 uniform mat4 VP;
 uniform mat4 model;
 uniform vec3 lightdir;
+varying float isfront;
 void main()
 {
     gl_Position = VP*model*vec4(vPosition.xyz, 1.0);
@@ -13,5 +16,7 @@ void main()
     float diff = max(0.0, dot(normalize(normal.xyz), normalize(-lightdir)));
     float c_light_coeff = 0.3;
     colorout = 1.0/(1.0+c_light_coeff) * (c_light_coeff+diff) * color;
+    texcoord = front*(vPosition.xy + 1.0)/2.0;
+    isfront = front;
 }
 
