@@ -32,7 +32,7 @@ def get_rot_angle(player, grid):
             corner_up = grid[yc-1][xc] == gg.STRUCT and grid[yp-1][xp] == gg.STRUCT
         except IndexError:
             corner_up = False
-        assert corner_up == False
+        #assert corner_up == False
         offset_y = -1
         offset_x = dx
         angle = 90 * (-1) * offset_x
@@ -44,6 +44,7 @@ def get_rot_angle(player, grid):
             angle = -180
         else:
             angle = 180
+    print("off_x: %d, off_y: %d, angle: %d", offset_x, offset_y, angle)
     return offset_x, offset_y, angle
 
 class PlayerState:
@@ -148,14 +149,13 @@ class Client:
             flat_grid = payload
             self.gamestate.grid = utils.unflatten_grid(flat_grid, gg.M, gg.N)
             self.gamestate.round_running = True
-            self.gamestate.players_states = None
             if self.role == net.SPECTATOR and not self.gamestate.game_started:
                 self.gamestate.game_started = True
                 self.gamestate.game_start_time = time.time()
         elif packet_type == net.SERVER_PLAYER_POSITIONS:
-            (self.grid_id, pp1, pp2) = payload
-            self.gamestate.players_states[0].update_pos(pp1)
-            self.gamestate.players_states[1].update_pos(pp2)
+            (self.grid_id, p1x, p1y, p2x, p2y) = payload
+            self.gamestate.players_states[0].update_pos((p1x, p1y))
+            self.gamestate.players_states[1].update_pos((p2x, p2y))
         elif packet_type == net.SERVER_ROUND_GAUGE_STATE:
             (self.gamestate.round_gauge_state,
              self.gamestate.round_gauge_speed) = payload

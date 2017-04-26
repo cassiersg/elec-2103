@@ -1,6 +1,7 @@
 
 import math
 import itertools
+import client_core
 
 import net
 import game_global as gg
@@ -105,17 +106,19 @@ def scene_cubes(gamestate):
         raise ValueError(gamestate.round_outcome)
     # grid
     grid = bytearray(x for y in gamestate.grid for x in y)
+
+    p1x, p1y = gamestate.players_states[0].curr_pos
+    p2x, p2y = gamestate.players_states[1].curr_pos
+
     # players
     off_x1, off_y1, angle1 = get_player_pos_st(0, gamestate)
     off_x2, off_y2, angle2 = get_player_pos_st(1, gamestate)
     #### TODO: give this to C code
-    # x_offset
-    if gamestate.raw_acc_value_y > 50:
-        x_offset = 10
-    elif gamestate.raw_acc_value_y < -50:
-        x_offset = -10
-    else:
-        x_offset = 0
+
+    # x_offset, I put a round to keep very small deadzone (to be tested on
+    # device)
+    x_offset = round(max(-10, min(gamestate.raw_acc_value_y/5, 10)))
+
     # draw cubes
     cubes.draw_cubes(
         grid, gg.N, gg.M,
