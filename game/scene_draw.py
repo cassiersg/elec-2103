@@ -16,6 +16,8 @@ player_color_names = ["red", "yellow"]
 
 color_win = 0x00a000
 color_loose = 0xf4a742
+dark_gray = 0x808080
+white = 0x000000
 
 def render_gamestate(gamestate):
     if gamestate.game_finished:
@@ -23,7 +25,28 @@ def render_gamestate(gamestate):
     elif not gamestate.connected:
         pixel_buf = scene_texts(["Connecting to server"])
     elif not gamestate.client_ready:
-        pixel_buf = scene_texts(["Tap to start game"])
+        pixel_buf = scene_texts(
+            ["What's the goal?",
+            " ", " ",
+            "You're a cube, and you want to fit in",
+            " ",
+            "the holes of a moving wall to survive!",
+            " ", " ", " ", " ", " ",
+            "How to play?",
+            " ", " ",
+            "- Touch the right side of the screen to go right",
+            " ",
+            "(I suppose you guessed how to go left)",
+            " ",
+            "- Do a two-finger vertical swipe to pause",
+            " ",
+            "- Tilt the screen to either change the point of",
+            " ",
+            "view or change the speed of the wall"],
+            font_size = [40, 30, 30, 20, 30, 20, 30, 30, 30, 30, 30, 40, 30,
+                         30, 20, 30, 15, 30, 20,
+                         30, 20, 30, 20])
+
     elif gamestate.game_started:
         if (not gamestate.players_states[0].is_valid() or
             (not gamestate.round_running and gamestate.round_outcome) is None):
@@ -33,7 +56,7 @@ def render_gamestate(gamestate):
         pixel_buf = scene_cubes(gamestate)
         if gamestate.paused:
             scene_texts(
-                ["Paused", "Please do a two-finger swipe to resume"],
+                ["Paused", "Please do a two-finger vertical swipe to resume"],
                 fg = color_loose,
                 pixel_buf = pixel_buf,
                 font_size = [70, 20],
@@ -47,7 +70,8 @@ def render_gamestate(gamestate):
                 font_size=40
             )
     elif gamestate.client_ready and not gamestate.game_started:
-        pixel_buf = scene_texts(["Waiting for other player"])
+        pixel_buf = scene_texts(["Waiting for other player", "Be ready!"],
+                                font_size =  [40, 30])
     else:
         pixel_buf = scene_texts(["Unknown state"])
     cubes.cubes_image_normalize(pixel_buf)
