@@ -69,6 +69,9 @@ class PlayerState:
     def is_valid(self):
         return self.curr_pos is not None
 
+    def reset(self):
+        self.__init__()
+
 
 class ClientGameState:
     def __init__(self):
@@ -148,14 +151,16 @@ class Client:
             flat_grid = payload
             self.gamestate.grid = utils.unflatten_grid(flat_grid, gg.M, gg.N)
             self.gamestate.round_running = True
-            self.gamestate.players_states = None
+            self.gamestate.players_states[0].reset()
+            self.gamestate.players_states[1].reset()
             if self.role == net.SPECTATOR and not self.gamestate.game_started:
                 self.gamestate.game_started = True
                 self.gamestate.game_start_time = time.time()
         elif packet_type == net.SERVER_PLAYER_POSITIONS:
-            (self.grid_id, pp1, pp2) = payload
-            self.gamestate.players_states[0].update_pos(pp1)
-            self.gamestate.players_states[1].update_pos(pp2)
+            (self.grid_id, pp1x, pp1y, pp2x, pp2y) = payload
+            print(self.gamestate.players_states)
+            self.gamestate.players_states[0].update_pos((pp1x, pp1y))
+            self.gamestate.players_states[1].update_pos((pp2x, pp2y))
         elif packet_type == net.SERVER_ROUND_GAUGE_STATE:
             (self.gamestate.round_gauge_state,
              self.gamestate.round_gauge_speed) = payload

@@ -6,6 +6,7 @@ import net
 import game_global as gg
 import opengl.cubes as cubes
 import opengl.font as font
+import client_core
 image_manip = font.image_manip
 
 assert gg.M == cubes.m
@@ -56,12 +57,14 @@ def render_gamestate(gamestate):
 def get_player_pos_st(player_idx, gamestate):
     p = gamestate.players_states[player_idx]
     if p.is_moving(gamestate.current_time):
-        offset_x, offset_y, angle = client_core.get_rot_angle(p, gamestate.grid)
+        offset_x, offset_y, angle = 0, 0, 0 #client_core.get_rot_angle(p, gamestate.grid)
         angle *= p.rotation_fraction(gamestate.current_time)
+        px, py = gamestate.players_states[player_idx].prev_pos
     else:
         offset_x = offset_y = 0
         angle = 0.0
-    return offset_x, offset_y, angle
+        px, py = gamestate.players_states[player_idx].curr_pos
+    return px, py, offset_x, offset_y, angle
 
 def scene_cubes(gamestate):
     # round gauge
@@ -82,8 +85,8 @@ def scene_cubes(gamestate):
     # grid
     grid = bytearray(x for y in gamestate.grid for x in y)
     # players
-    off_x1, off_y1, angle1 = get_player_pos_st(0, gamestate)
-    off_x2, off_y2, angle2 = get_player_pos_st(1, gamestate)
+    p1x, p1y, off_x1, off_y1, angle1 = get_player_pos_st(0, gamestate)
+    p2x, p2y, off_x2, off_y2, angle2 = get_player_pos_st(1, gamestate)
     #### TODO: give this to C code
     # x_offset
     if gamestate.raw_acc_value_y > 50:
@@ -98,7 +101,8 @@ def scene_cubes(gamestate):
         p1x, p1y, p2x, p2y,
         round_gauge,
         wall_color,
-        x_offset)
+        x_offset,
+        255, 255)
     pixel_buf = bytearray(cubes.width*cubes.height*4)
     cubes.cubes_image_export(pixel_buf)
     # display score
