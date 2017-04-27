@@ -33,7 +33,7 @@ class Filter():
     def get_mean(self):
         return sum(self.buf)/self.size
 
-f = Filter(100)
+f = Filter(10)
 
 def render_gamestate(gamestate):
     if gamestate.game_finished:
@@ -128,10 +128,8 @@ def scene_cubes(gamestate):
     p1x, p1y, off_x1, off_y1, angle1 = get_player_pos_st(0, gamestate)
     p2x, p2y, off_x2, off_y2, angle2 = get_player_pos_st(1, gamestate)
 
-    # x_offset, I put a round to keep very small deadzone (to be tested on
-    # device)
-    f.add(gamestate.raw_acc_value_y)
-    x_offset = round(max(-10, min(f.get_mean()/5, 10)))
+    f.add(gamestate.raw_acc_value_y/10)
+    x_offset = round(max(-10.0, min(f.get_mean(), 10.0)))
 
     # draw cubes
     cubes.draw_cubes(
