@@ -20,6 +20,21 @@ color_loose = 0xf4a742
 dark_gray = 0x808080
 white = 0x000000
 
+class Filter():
+    def __init__(self, size):
+        self.size = size
+        self.buf = [0] * size
+        self.cur = 0
+
+    def add(self, val):
+        self.buf[self.cur] = val
+        self.cur = (self.cur + 1) % self.size
+
+    def get_mean(self):
+        return sum(self.buf)/self.size
+
+f = Filter(100)
+
 def render_gamestate(gamestate):
     if gamestate.game_finished:
         pixel_buf = scene_texts(["Game finished !", "Your score: {}".format(gamestate.score)])
@@ -115,7 +130,8 @@ def scene_cubes(gamestate):
 
     # x_offset, I put a round to keep very small deadzone (to be tested on
     # device)
-    x_offset = round(max(-10, min(gamestate.raw_acc_value_y/5, 10)))
+    f.add(gamestate.raw_acc_value_y)
+    x_offset = round(max(-10, min(f.get_mean()/5, 10)))
 
     # draw cubes
     cubes.draw_cubes(

@@ -37,10 +37,10 @@ class HardwareInterface:
                     self.cur_acc_value = max(0, self.cur_acc_value-10)
                 elif event.key == pygame.K_q:
                     logging.info("[CLIENT] changes y inclination towards left")
-                    self.cur_raw_acc_value_y += 5
+                    self.cur_raw_acc_value_y += 1
                 elif event.key == pygame.K_d:
                     logging.info("[CLIENT] changes y inclination towards right")
-                    self.cur_raw_acc_value_y -= 5
+                    self.cur_raw_acc_value_y -= 1
                 elif event.key == pygame.K_p:
                     logging.info("[CLIENT] Client wants to pause/resume the game")
                     events.append(gg.TWO_FINGER_SWIPE)
