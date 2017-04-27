@@ -14,7 +14,7 @@ def get_rot_angle(player, grid):
     xp, yp = player.prev_pos
     dx = xc-xp
     dy = yc-yp
-    if dx == 0: 
+    if dx == 0:
         # vertical move
         try:
             corner_right = grid[yc][xc+1] == gg.STRUCT and grid[yp][xp+1] == gg.STRUCT
@@ -24,8 +24,8 @@ def get_rot_angle(player, grid):
             offset_x = 1
         else:
             offset_x = -1
-        offset_y = -dy
-        angle = -90 * offset_x * offset_y
+        offset_y = dy
+        angle = 90 * offset_x * offset_y
     elif dy == 0:
         # horizontal move
         try:
@@ -35,20 +35,20 @@ def get_rot_angle(player, grid):
         #assert corner_up == False
         offset_y = -1
         offset_x = dx
-        angle = 90 * (-1) * offset_x
+        angle = 90 * offset_x
     else:
         # diagonal move
         offset_x = dx
-        offset_y = -dy
+        offset_y = dy
         if (offset_x == 1 and offset_y == 1) or (offset_x == 1 and offset_y  == -1):
-            angle = -180
-        else:
             angle = 180
+        else:
+            angle = -180
     print("off_x: %d, off_y: %d, angle: %d", offset_x, offset_y, angle)
     return offset_x, offset_y, angle
 
 class PlayerState:
-    move_duration = 0.5
+    move_duration = 0.2
     def __init__(self):
         self.curr_pos = None
         self.prev_pos = None
@@ -69,6 +69,9 @@ class PlayerState:
 
     def is_valid(self):
         return self.curr_pos is not None
+
+    def reset(self):
+        self.__init__()
 
 
 class ClientGameState:
@@ -148,6 +151,8 @@ class Client:
         if packet_type == net.SERVER_GRID_STATE:
             flat_grid = payload
             self.gamestate.grid = utils.unflatten_grid(flat_grid, gg.M, gg.N)
+            self.gamestate.players_states[0].reset()
+            self.gamestate.players_states[1].reset()
             self.gamestate.round_running = True
             if self.role == net.SPECTATOR and not self.gamestate.game_started:
                 self.gamestate.game_started = True

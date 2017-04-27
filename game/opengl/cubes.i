@@ -14,7 +14,9 @@ void draw_cubes(
         int p1x, int p1y, int p2x, int p2y,
         int round_gauge,
         unsigned int wall_color,
-        int x_offset);
+        int x_offset,
+        int off_x1, int off_y1, float angle1,
+        int off_x2, int off_y2, float angle2);
 
 void cubes_init();
 void cubes_exit();

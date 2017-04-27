@@ -137,11 +137,24 @@ static void draw_cube(cubes_draw_settings *params, glm::vec3 color, glm::mat4 mo
     glDrawArrays(GL_TRIANGLES, 0, 6*6);
 }
 
-static void draw_cube_grid(cubes_draw_settings *params, glm::vec3 color, int i, int j, float z)
+static void draw_cube_grid(cubes_draw_settings *params, glm::vec3 color, int i, int j, float z, glm::mat4 rot)
 {
-    glm::mat4 model = glm::mat4(1.0f); // identity matrix
+    glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(j*2.0f, i*-2.0f, z));
-    draw_cube(params, color, model);
+    
+    draw_cube(params, color, model * rot);
+}
+
+glm::mat4 get_rotation_matrix(int off_x, int off_y, float angle)
+{
+    glm::mat4 rot = glm::mat4(1.0f); 
+    glm::mat4 trans1 = glm::mat4(1.0f);
+    glm::mat4 trans2 = glm::mat4(1.0f);
+    
+    trans1 = glm::translate(trans1, glm::vec3(-off_x, off_y, 0));
+    rot = glm::rotate(rot, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f));
+    trans2 = glm::translate(trans2, glm::vec3(off_x, -off_y, 0));
+    return trans2 * rot * trans1;
 }
 
 void draw_cubes(
@@ -150,7 +163,9 @@ void draw_cubes(
         int p1x, int p1y, int p2x, int p2y,
         int round_gauge,
         unsigned int wall_color,
-        int x_offset)
+        int x_offset,
+        int off_x1, int off_y1, float angle1,
+        int off_x2, int off_y2, float angle2)
 {
     float wfr = (float) (0xFF & (wall_color >> 16)) / 255.0;
     float wfg = (float) (0xFF & (wall_color >> 8)) / 255.0;
@@ -192,16 +207,18 @@ void draw_cubes(
                 printf("invalid cube kind: %i (at (%i, %i))\n", kind, i, j);
                 assert(0);
             }
-            draw_cube_grid(&params, color, i, j, z_offset);
+            draw_cube_grid(&params, color, i, j, z_offset, glm::mat4(1.0f));
         }
     }
     glm::vec3 color;
     glm::vec3 color_p1 = glm::vec3(1.0f, 0.0f, 0.0f);
     glm::vec3 color_p2 = glm::vec3(1.0f, 1.0f, 0.0f);
-    draw_cube_grid(&params, color_p1, p1y, p1x, 0.0f);
-    draw_cube_grid(&params, color_p2, p2y, p2x, 0.0f);
+   
+    glm::mat4 rot1 = get_rotation_matrix(off_x1, off_y1, angle1);
+    glm::mat4 rot2 = get_rotation_matrix(off_x2, off_y2, angle2);
+    draw_cube_grid(&params, color_p1, p1y, p1x, 0.0f, rot1);
+    draw_cube_grid(&params, color_p2, p2y, p2x, 0.0f, rot2);
 }
-
 
 void cubes_init()
 {
