@@ -24,51 +24,54 @@
 
 #define ROUND_GAUGE_INIT 65535
 
+static void config_textures(void);
+
+static void gen_default_textures(void);
 // Our vertices. Tree consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
 // A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
 static const GLfloat g_vertex_buffer_data[] = { 
     // front
-    -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    -1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-    1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+    -1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+     1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+     1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+    -1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+     1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
     // back
-    1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
-    1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
-    1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
-    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
-    -1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f,
+     1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f, 0.0f,
+     1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f, 0.0f,
+     1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f, 0.0f,-1.0f, 0.0f,
+    -1.0f, 1.0f,-1.0f, 0.0f, 0.0f,-1.0f, 0.0f,
     // right
-    1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-    1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
-    1.0f, 1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
-    1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f,
-    1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-    1.0f,-1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+     1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+     1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+     1.0f, 1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+     1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+     1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+     1.0f,-1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
     // left
-    -1.0f,-1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f,-1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f, 1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f,-1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f, 1.0f, 1.0f,-1.0f, 0.0f, 0.0f,
-    -1.0f, 1.0f,-1.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f,-1.0f, 0.0f, 0.0f, 0.0f,
+    -1.0f,-1.0f, 1.0f,-1.0f, 0.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f,-1.0f, 0.0f, 0.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f,-1.0f, 0.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f,-1.0f, 0.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f,-1.0f,-1.0f, 0.0f, 0.0f, 0.0f,
     // bottom
-    1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
-    -1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
-    1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
-    1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
-    -1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f,
-    -1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f,
+     1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f, 0.0f,
+     1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f, 0.0f,
+     1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f,-1.0f, 1.0f, 0.0f,-1.0f, 0.0f, 0.0f,
+    -1.0f,-1.0f,-1.0f, 0.0f,-1.0f, 0.0f, 0.0f,
     // up
-    1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-    1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
-    -1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
-    1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-    -1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f,
-    -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+     1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+     1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+     1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f,-1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+    -1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 };
 
 typedef struct {
@@ -79,6 +82,10 @@ typedef struct {
     GLint VP_loc;
     GLint model_loc;
     GLint lightdir_loc;
+    GLint front_loc;
+    GLint usetexture_loc;
+    GLint sampler_loc;
+    GLuint texid[2];
 } cubes_gl_data;
 cubes_gl_data env;
 
@@ -91,13 +98,16 @@ static void program_gl_config(void)
 {
    env.program = gen_program(vertex_shader_glsl, fragment_shader_glsl);
    assert(env.program);
-    // Position attributes
-    env.vertex_loc = glGetAttribLocation(env.program, "vPosition");
-    env.color_loc = glGetAttribLocation(env.program, "color");
-    env.normal_loc = glGetAttribLocation(env.program, "normal");
-    env.VP_loc = glGetUniformLocation(env.program, "VP");
-    env.model_loc = glGetUniformLocation(env.program, "model");
-    env.lightdir_loc = glGetUniformLocation(env.program, "lightdir");
+   // Position attributes
+   env.vertex_loc = glGetAttribLocation(env.program, "vPosition");
+   env.color_loc = glGetAttribLocation(env.program, "color");
+   env.normal_loc = glGetAttribLocation(env.program, "normal");
+   env.front_loc = glGetAttribLocation(env.program, "front");
+   env.VP_loc = glGetUniformLocation(env.program, "VP");
+   env.model_loc = glGetUniformLocation(env.program, "model");
+   env.lightdir_loc = glGetUniformLocation(env.program, "lightdir");
+   env.usetexture_loc = glGetUniformLocation(env.program, "usetexture");
+   env.sampler_loc = glGetUniformLocation(env.program, "outTexture");
 
    // Set the viewport
    glViewport ( 0, 0, width, height );
@@ -115,15 +125,22 @@ static void program_gl_config(void)
    assertOpenGLError("gldepth");
 
    // Load the vertex data
-    glVertexAttribPointer(env.vertex_loc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
+    glVertexAttribPointer(env.vertex_loc, 3, GL_FLOAT, GL_FALSE, 7*sizeof(GLfloat),
            g_vertex_buffer_data);
     // Load normals
-    glVertexAttribPointer(env.normal_loc, 3, GL_FLOAT, GL_FALSE, 6*sizeof(GLfloat),
+    glVertexAttribPointer(env.normal_loc, 3, GL_FLOAT, GL_FALSE, 7*sizeof(GLfloat),
            g_vertex_buffer_data+3);
+    // Load front
+    glVertexAttribPointer(env.front_loc, 1, GL_FLOAT, GL_FALSE, 7*sizeof(GLfloat),
+           g_vertex_buffer_data+6);
     // Enable/Disable attributes
     glEnableVertexAttribArray(env.vertex_loc);
     glEnableVertexAttribArray(env.normal_loc);
+    glEnableVertexAttribArray(env.front_loc);
     glDisableVertexAttribArray(env.color_loc);
+
+    config_textures();
+    gen_default_textures();
 }
 
 static void draw_cube(cubes_draw_settings *params, glm::vec3 color, glm::mat4 model)
@@ -165,7 +182,10 @@ void draw_cubes(
         unsigned int wall_color,
         int x_offset,
         int off_x1, int off_y1, float angle1,
-        int off_x2, int off_y2, float angle2)
+        int off_x2, int off_y2, float angle2,
+        unsigned int p1_tex_intensity,
+        unsigned int p2_tex_intensity
+        )
 {
     float wfr = (float) (0xFF & (wall_color >> 16)) / 255.0;
     float wfg = (float) (0xFF & (wall_color >> 8)) / 255.0;
@@ -188,6 +208,8 @@ void draw_cubes(
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Do not use the texture for front face
+    glUniform1f(env.usetexture_loc, 0.0f);
     for (int i=0; i < n; i++) {
         for (int j=0; j < m; j++) {
             char kind = grid[i*m+j];
@@ -216,8 +238,78 @@ void draw_cubes(
    
     glm::mat4 rot1 = get_rotation_matrix(off_x1, off_y1, angle1);
     glm::mat4 rot2 = get_rotation_matrix(off_x2, off_y2, angle2);
+
+    // Use the texture for front face
+    glUniform1f(env.usetexture_loc, ((float) p1_tex_intensity) / 255.0f);
+    // Set the sampler texture unit to 0 -> use texture 0
+    glUniform1i(env.sampler_loc, 0 );
     draw_cube_grid(&params, color_p1, p1y, p1x, 0.0f, rot1);
+
+    // Use the texture for front face
+    glUniform1f(env.usetexture_loc, ((float) p2_tex_intensity) / 255.0f);
+    // Set the sampler texture unit to 1 -> use texture 1
+    glUniform1i(env.sampler_loc, 1);
     draw_cube_grid(&params, color_p2, p2y, p2x, 0.0f, rot2);
+}
+
+static void gen_default_textures(void)
+{
+    // 2x2 Image, 3 bytes per pixel (R, G, B)
+    GLubyte pixels1[] =
+    {
+        255,   0,   0, 0, // Red
+        0, 255,   0, 0, // Green
+        0,   0, 255, 0, // Blue
+        255, 255,   0, 0  // Yellow
+    };
+    GLubyte pixels2[] =
+    {
+        255, 255,   0, 0,
+        255,   0,   255, 0,
+        255, 255,   255, 0,
+        0,   255, 255, 0,
+    };
+    set_textures((unsigned int *) pixels1, 0, (unsigned int *) pixels2,0, 2, 2);
+}
+
+void set_textures(
+        unsigned int *texels1,
+        size_t texels_len1,
+        unsigned int *texels2,
+        size_t texels_len2,
+        unsigned int width,
+        unsigned int height)
+{
+    cubes_image_normalize(texels1, texels_len1);
+    cubes_image_normalize(texels2, texels_len2);
+    // Use tightly packed data
+    glPixelStorei ( GL_UNPACK_ALIGNMENT, 1 );
+    glBindTexture(GL_TEXTURE_2D, env.texid[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+            width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texels1);
+    glBindTexture(GL_TEXTURE_2D, env.texid[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+            width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texels2);
+}
+
+static void config_textures(void)
+{
+   // Generate texture objects
+   glGenTextures ( 1, &env.texid[0]);
+   glGenTextures ( 1, &env.texid[1]);
+   // Set the filtering mode
+   glBindTexture ( GL_TEXTURE_2D, env.texid[0]);
+   glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+   glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+   glBindTexture ( GL_TEXTURE_2D, env.texid[1]);
+   glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+   glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+
+   // Bind the textures
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, env.texid[0]);
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_2D, env.texid[1]);
 }
 
 void cubes_init()
@@ -256,8 +348,7 @@ void cubes_image_export(unsigned char *buf, int buf_size)
 // other color channels to 4 bits precision
 void cubes_image_normalize(unsigned int *buf, int buf_size)
 {
-    assert(buf_size == width*height);
-    for (int i=0; i<width*height; i++) {
+    for (int i=0; i<buf_size; i++) {
         // We perform rounding.
         // Given a byte 0bXYZWPQRS, we mask it with 0xf0 to have
         // 0bXYZW0000, and mask it with 0x10 and shit it one left to get 0b000P0000.

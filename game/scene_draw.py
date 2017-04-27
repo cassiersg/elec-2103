@@ -125,7 +125,8 @@ def scene_cubes(gamestate):
         wall_color,
         x_offset,
         off_x1, off_y1, angle1,
-        off_x2, off_y2, angle2)
+        off_x2, off_y2, angle2,
+        255, 255)
     pixel_buf = bytearray(cubes.width*cubes.height*4)
     cubes.cubes_image_export(pixel_buf)
     # display score

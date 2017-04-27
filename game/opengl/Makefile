@@ -35,6 +35,7 @@ open: run
 	xdg-open img.bmp
 
 all: $(BIN) _cubes.so _compression.so _chunker.so _image_manip.so
+nocompression: _cubes.so _chunker.so _image_manip.so
 
 %.o: %.cpp $(HEADERS)
 	g++ -c $< $(CPPFLAGS) -o $@
