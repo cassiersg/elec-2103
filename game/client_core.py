@@ -93,6 +93,9 @@ class ClientGameState:
         self.round_running = False
         self.round_outcome = None
         self.game_finished = False
+        self.hide_struct = False
+        self.hide_struct_done = False
+        self.hide_struct_start_time = None
 
 class Client:
     def __init__(self, packet_socket, hw_interface, display_args_glob, role):
@@ -134,6 +137,11 @@ class Client:
             else:
                 logging.info("sending pause")
                 self.event_sender.send(net.CLIENT_GAME_PAUSE)
+        elif event == gg.HIDE_STRUCT:
+            if not self.gamestate.hide_struct_done:
+                self.gamestate.hide_struct = True
+                self.gamestate.hide_struct_done = True
+                self.gamestate.hide_struct_start_time = time.time()
         else:
             raise ValueError(event)
         self.action_id += 1
@@ -157,6 +165,7 @@ class Client:
             if self.role == net.SPECTATOR and not self.gamestate.game_started:
                 self.gamestate.game_started = True
                 self.gamestate.game_start_time = time.time()
+            self.gamestate.hide_struct_done = False
         elif packet_type == net.SERVER_PLAYER_POSITIONS:
             (self.grid_id, p1x, p1y, p2x, p2y) = payload
             self.gamestate.players_states[0].update_pos((p1x, p1y))

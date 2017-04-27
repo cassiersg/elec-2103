@@ -82,6 +82,8 @@ class HardwareInterface:
             events.append(gg.TAP_RIGHT)
         elif touch[3] == 3:
             events.append(gg.TWO_FINGER_SWIPE)
+        elif touch[3] == 4:
+            events.append(gg.HIDE_STRUCT)
 
         if events:
             write_spi(self.spi, 0x02, 4*[0x00])

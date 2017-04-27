@@ -18,7 +18,8 @@ void draw_cubes(
         int off_x1, int off_y1, float angle1,
         int off_x2, int off_y2, float angle2,
         unsigned int p1_tex_intensity,
-        unsigned int p2_tex_intensity
+        unsigned int p2_tex_intensity,
+        bool hide_struct
         );
 %pybuffer_mutable_binary(unsigned int *texels1, size_t texels_len1);
 %pybuffer_mutable_binary(unsigned int *texels2, size_t texels_len2);

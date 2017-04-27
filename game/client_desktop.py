@@ -44,6 +44,9 @@ class HardwareInterface:
                 elif event.key == pygame.K_p:
                     logging.info("[CLIENT] Client wants to pause/resume the game")
                     events.append(gg.TWO_FINGER_SWIPE)
+                elif event.key == pygame.K_v:
+                    logging.info("[CLIENT] Make this struct disappear !")
+                    events.append(gg.HIDE_STRUCT)
 
         return (quit, self.cur_acc_value, self.cur_raw_acc_value_y, events)
 

@@ -3,6 +3,7 @@ import math
 import itertools
 import client_core
 
+import time
 import net
 import game_global as gg
 import opengl.cubes as cubes
@@ -131,6 +132,10 @@ def scene_cubes(gamestate):
     f.add(gamestate.raw_acc_value_y/10)
     x_offset = round(max(-10.0, min(f.get_mean(), 10.0)))
 
+    if gamestate.hide_struct and (time.time() -
+    gamestate.hide_struct_start_time >= 1.5):
+        gamestate.hide_struct = False
+
     # draw cubes
     cubes.draw_cubes(
         grid, gg.N, gg.M,
@@ -140,7 +145,8 @@ def scene_cubes(gamestate):
         x_offset,
         off_x1, off_y1, angle1,
         off_x2, off_y2, angle2,
-        255, 255)
+        255, 255,
+        gamestate.hide_struct)
     pixel_buf = bytearray(cubes.width*cubes.height*4)
     cubes.cubes_image_export(pixel_buf)
     # display score
