@@ -6,8 +6,8 @@ import time
 import math
 import logging
 
-import pygame
 
+import net
 import game_global as gg
 import utils
 import scene_draw
@@ -15,6 +15,8 @@ import opengl.cubes as cubes
 import opengl.font as font
 if utils.is_rpi:
     import opengl.compression as compression
+else:
+    import pygame
 
 assert gg.M == cubes.m
 assert gg.N == cubes.n
@@ -56,4 +58,10 @@ class Renderer:
             b = s.get_buffer()
             b.write(bytes(pixel_buf))
             pygame.display.flip()
+
+    def update_player_images(self, p1_img, p2_img):
+        cubes.set_textures(
+            bytearray(p1_img), bytearray(p2_img),
+            net.IMG_SIZE_PIX, net.IMG_SIZE_PIX
+        )
 

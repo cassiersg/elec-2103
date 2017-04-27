@@ -1,8 +1,8 @@
 
 import math
 import itertools
-import client_core
 
+import client_core
 import net
 import game_global as gg
 import opengl.cubes as cubes

@@ -1,10 +1,12 @@
 import time
 import copy
 import logging
+import queue
 
 import utils
 import net
 import game_global as gg
+import opengl.cubes as cubes
 
 class GameFinished(Exception):
     pass
@@ -44,7 +46,7 @@ def get_rot_angle(player, grid):
             angle = 180
         else:
             angle = -180
-    print("off_x: %d, off_y: %d, angle: %d", offset_x, offset_y, angle)
+    logging.debug("off_x: %d, off_y: %d, angle: %d", offset_x, offset_y, angle)
     return offset_x, offset_y, angle
 
 class PlayerState:
@@ -95,7 +97,7 @@ class ClientGameState:
         self.game_finished = False
 
 class Client:
-    def __init__(self, packet_socket, hw_interface, display_args_glob, role):
+    def __init__(self, packet_socket, hw_interface, display_args_glob, role, command_queue):
         self.action_id = 0
         self.grid_id = 0
         self.cur_acc_value = 0
@@ -103,6 +105,7 @@ class Client:
         self.hw_interface = hw_interface
         self.display_args_glob = display_args_glob
         self.role = role
+        self.command_queue = command_queue
         self.event_sender = net.MaxFreqSender(self.packet_socket, 0.05) # should not be limiting
         self.acc_sender = net.MaxFreqSender(self.packet_socket, 1)
         self.gamestate = ClientGameState()
@@ -191,6 +194,8 @@ class Client:
         elif packet_type == net.SERVER_END_ROUND:
             self.gamestate.round_running = False
             self.gamestate.round_outcome, = payload
+        elif packet_type == net.SERVER_PLAYERS_PICTURES:
+            self.command_queue.put(('player_images', payload))
         else:
             raise ValueError("Invalid packet type {}".format(packet_type))
 
