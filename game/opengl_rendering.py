@@ -44,7 +44,7 @@ class Renderer:
         gamestate.current_time = time.time() # a small hack, but allow for clean decoding after-the-fact
         fname = os.environ.get('LOG_RENDER_ARGS')
         if fname is not None:
-            log_args(fname, gamestate) 
+            log_args(fname, gamestate)
             return
         pixel_buf = scene_draw.render_gamestate(gamestate)
         if pixel_buf is None:
@@ -54,7 +54,7 @@ class Renderer:
             compressed_buf = bytearray(50000)
             n_chunks, output_used = compression.chunk_compress_huffman(
                 pixel_buf, compressed_buf)
-            actual_qsys_size = 24000
+            actual_qsys_size = 20000
             if output_used > actual_qsys_size:
                 logging.error("Output used was %d", output_used)
                 output_used = actual_qsys_size
