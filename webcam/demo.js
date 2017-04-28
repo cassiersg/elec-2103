@@ -50,7 +50,7 @@ $(function() {
     var select_snapshot = function () {
       $(".item").removeClass("selected");
       var snapshot = $(this).addClass("selected").data("snapshot");
-      $("#discard_snapshot, #upload_snapshot, #api_url").show();
+      $("#discard_snapshot, #upload_snapshot1, #upload_snapshot2, #api_url").show();
       snapshot.show();
       $("#show_stream").show();
     };
@@ -122,7 +122,7 @@ $(function() {
     };
 
     var hide_snapshot_controls = function() {
-      $("#discard_snapshot, #upload_snapshot, #api_url").hide();
+      $("#discard_snapshot, #upload_snapshot1, #upload_snapshot2, #api_url").hide();
       $("#upload_result, #upload_status").html("");
       $("#show_stream").hide();
     };

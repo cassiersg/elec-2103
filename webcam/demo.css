@@ -10,6 +10,10 @@ input {
   width: 300px;
 }
 
+#upload_snapshot1, #upload_snapshot2 {
+    display: none;
+}
+
 #camera {
   display: inline-block;
   background-color: #eee;
