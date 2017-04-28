@@ -2,17 +2,40 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
 import glob
+import logging
+from logging.handlers import RotatingFileHandler
 
+def setup_log(logfile=None, print_stderr=True):
+    logger = logging.getLogger()
+    logger.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter('%(asctime)s :: %(levelname)s :: %(message)s')
+    if logfile is not None:
+        file_handler = RotatingFileHandler(logfile, 'a', 100000, 1)
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    if print_stderr:
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(logging.DEBUG)
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+
+    logging.info('Starting logging')
+
+setup_log('image_server.log', True)
 
 p_image_dir = os.getenv('P_IMAGE_DIR')
 if p_image_dir is None:
-    p_image_dir = '/home/pi/elec-2103/game/p_img'
+    p_image_dir = '/home/pi/elec-2103-common/comm/p_img'
 
 fname_template = os.path.join(p_image_dir, 'p{}_{}.jpg')
 
 PORT_NUMBER = 8080
 
 def last_horodated(glob_template):
+    glob_list = glob.glob(glob_template)
+    logging.debug(glob_list)
     l = [(int(x.split('.')[0].split('_')[-1]), x) for x in glob.glob(glob_template)]
     l.sort()
     return l[-1]
