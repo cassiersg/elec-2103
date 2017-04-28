@@ -25,8 +25,7 @@ SERVER_GAME_RESUME = 17
 SERVER_PLAYERS_PICTURES = 18
 
 # size of the images of the players
-IMG_SIZE_PIX = 32
-IMG_SIZE_BYTES = 4*IMG_SIZE_PIX**2
+IMG_SIZE_PIX = 64
 
 # Payload packing format
 PACKET_FMT = {
@@ -112,11 +111,13 @@ class PacketSocket:
                     HEADER_FMT, self.buf[:HEADER_LEN])
             if len(self.buf) >= HEADER_LEN + packet_len:
                 if packet_type == SERVER_PLAYERS_PICTURES:
-                    assert packet_len == 2*IMG_SIZE_BYTES
-                    imgs = self.buf[HEADER_LEN:HEADER_LEN+packet_len]
+                    header = self.buf[HEADER_LEN:HEADER_LEN+4]
+                    len1, len2 = struct.unpack('!HH', header)
+                    assert len1 + len2 + 4 == packet_len
+                    imgs = self.buf[HEADER_LEN+4:HEADER_LEN+packet_len]
                     payload = (
-                        imgs[:IMG_SIZE_BYTES],
-                        imgs[IMG_SIZE_BYTES:]
+                        imgs[:len1],
+                        imgs[len1:]
                     )
                 else:
                     payload = struct.unpack(
@@ -127,8 +128,9 @@ class PacketSocket:
             return None
 
     def format_packet(self, packet_type, payload):
-        if len(payload) == 1 and isinstance(payload[0], bytes):
-            packed_payload = payload[0]
+        if packet_type == SERVER_PLAYERS_PICTURES:
+            im1, im2 = payload
+            packed_payload = struct.pack('!HH', len(im1), len(im2)) + im1 + im2
         elif payload:
             packed_payload = struct.pack(PACKET_FMT[packet_type], *payload)
         else:

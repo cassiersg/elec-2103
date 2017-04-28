@@ -5,7 +5,9 @@ import os
 import time
 import math
 import logging
+import io
 
+from PIL import Image
 
 import net
 import game_global as gg
@@ -60,8 +62,11 @@ class Renderer:
             pygame.display.flip()
 
     def update_player_images(self, p1_img, p2_img):
+        img_size = (net.IMG_SIZE_PIX, net.IMG_SIZE_PIX)
+        im1 = Image.open(io.BytesIO(p1_img)).resize(img_size).convert('RGBA').tobytes()
+        im2 = Image.open(io.BytesIO(p2_img)).resize(img_size).convert('RGBA').tobytes()
         cubes.set_textures(
-            bytearray(p1_img), bytearray(p2_img),
+            bytearray(im1), bytearray(im2),
             net.IMG_SIZE_PIX, net.IMG_SIZE_PIX
         )
 
