@@ -2,6 +2,6 @@
 
 cd ~/elec-2103/webcam
 
-while [ "$1" ]; do
+while true; do
     python3 server.py
 done
