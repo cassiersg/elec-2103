@@ -19,11 +19,19 @@ OS_STK    task2_stk[TASK_STACKSIZE];
 OS_STK    task3_stk[TASK_STACKSIZE];
 
 /* Definition of Task Priorities */
+#define MUTEX_SPI_PRIO 5
 #define TASK1_PRIORITY      4
 #define TASK2_PRIORITY      6
 #define TASK3_PRIORITY      8
 
+OS_EVENT *mutex_spi;
+OS_EVENT *mbox_touch;
+
 void init() {
+	mbox_touch = OSMboxCreate((void *)NULL);
+	INT8U err;
+	mutex_spi = OSMutexCreate(MUTEX_SPI_PRIO, &err);
+	assert(!err);
 }
 
 void task1(void* pdata) {
@@ -42,19 +50,12 @@ void task1(void* pdata) {
 //}
 
 int main(void) {
-//	need_pageflip = 0;
-//	IOWR(PIO_ENDFRAME_BASE, 2, 1);
-//	 int reg_ret = alt_iic_isr_register(PIO_ENDFRAME_IRQ_INTERRUPT_CONTROLLER_ID,
-//			 PIO_ENDFRAME_IRQ,
-//			 &endframe_isr,
-//			 NULL,
-//			 NULL);
-//	 assert(!reg_ret);
 
+	OSInit();
 
 	init();
 
-	OSTaskCreateExt(task1,
+	OSTaskCreateExt(task_emit_touch_event_rpi,
 			NULL,
 			(void *)&task1_stk[TASK_STACKSIZE-1],
 			TASK1_PRIORITY,
