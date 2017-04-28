@@ -5,6 +5,10 @@ import glob
 import logging
 from logging.handlers import RotatingFileHandler
 
+from PIL import Image
+
+image_size = 64
+
 def setup_log(logfile=None, print_stderr=True):
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
@@ -103,8 +107,8 @@ class myHandler(BaseHTTPRequestHandler):
         content_length = int(self.headers['Content-Length'])
         print("Length is", content_length)
         post_data = self.rfile.read(content_length)
-        with open(filename, 'wb') as f:
-            f.write(post_data)
+        im = Image.open(io.BytesIO(post_data)).resize((image_size, image_size))
+        im.save(filename, 'JPEG')
         self.send_response(200)
         self.end_headers()
         self.wfile.write("Thanks !".encode())
