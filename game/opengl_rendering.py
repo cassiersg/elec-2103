@@ -5,7 +5,9 @@ import os
 import time
 import math
 import logging
+import io
 
+from PIL import Image
 
 import net
 import game_global as gg
@@ -42,16 +44,21 @@ class Renderer:
         gamestate.current_time = time.time() # a small hack, but allow for clean decoding after-the-fact
         fname = os.environ.get('LOG_RENDER_ARGS')
         if fname is not None:
-            log_args(fname, gamestate) 
+            log_args(fname, gamestate)
             return
         pixel_buf = scene_draw.render_gamestate(gamestate)
         if pixel_buf is None:
             # invalid gamestate, wait
             return
         if utils.is_rpi:
-            compressed_buf = bytearray(12000)
+            compressed_buf = bytearray(50000)
             n_chunks, output_used = compression.chunk_compress_huffman(
                 pixel_buf, compressed_buf)
+            actual_qsys_size = 20000
+            if output_used > actual_qsys_size:
+                logging.error("Output used was %d", output_used)
+                output_used = actual_qsys_size
+
             self.hw_interface.send_spi_buf(list(compressed_buf[:4*output_used+4]))
         else:
             s = self.hw_interface.screen
@@ -60,8 +67,11 @@ class Renderer:
             pygame.display.flip()
 
     def update_player_images(self, p1_img, p2_img):
+        img_size = (net.IMG_SIZE_PIX, net.IMG_SIZE_PIX)
+        im1 = Image.open(io.BytesIO(p1_img)).resize(img_size).convert('RGBA').tobytes()
+        im2 = Image.open(io.BytesIO(p2_img)).resize(img_size).convert('RGBA').tobytes()
         cubes.set_textures(
-            bytearray(p1_img), bytearray(p2_img),
+            bytearray(im1), bytearray(im2),
             net.IMG_SIZE_PIX, net.IMG_SIZE_PIX
         )
 

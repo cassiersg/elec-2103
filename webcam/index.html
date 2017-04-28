@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>JpegCamera Demo</title>
+    <script type="text/javascript"
+      src="jquery.min.js">
+    </script>
+    <script type="text/javascript"src="jpeg_camera_no_flash.js"></script>
+    <script type="text/javascript"src="swfobject.min.js"></script>
+    <script type="text/javascript"src="canvas-to-blob.min.js"></script>
+    <script type="text/javascript" src="demo.js"></script>
+    <link href="demo.css" media="all" rel="stylesheet" type="text/css" /></link>
+  </head>
+  <body>
+    <h1>Shape yourself, the wall is coming!</h1>
+    <p>Personalize your player by putting a picture of you on it!</p>
+    <!--<div id="camera_info"></div>-->
+    <!--<div id="stream_stats"></div>-->
+
+    <div id="camera">
+      <div class="placeholder">
+        Your browser does not support camera access.<br>
+        We recommend
+        <a href="https://www.google.com/chrome/" target="_blank">Chrome</a>
+        &mdash; modern, secure, fast browser from Google.<br>
+        It's free.
+      </div>
+    </div><br>
+
+    <button id="take_snapshots">Take snapshot</button>
+    <button id="show_stream">Show stream</button><br>
+   
+    <p>Please select your picture in the slideshow below</p>
+
+    <div id="snapshots"></div>
+
+    <button id="upload_snapshot1">I'am player 1</button>
+    <button id="upload_snapshot2">I'am player 2</button><br>
+    
+    <!--<input type="text" id="api_url" placeholder="/upload"><br>-->
+
+    <div id="upload_status"></div>
+    <div id="upload_result"></div>
+  
+    <p>
+      Credits: <a href="https://amw.github.io/jpeg_camera/doc/">JpegCamera library</a>.
+    </p>
+  </body>
+</html>
