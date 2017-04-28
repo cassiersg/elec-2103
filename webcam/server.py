@@ -1,9 +1,21 @@
 #!/usr/bin/python
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from os import curdir, sep
-import cgi
+import os
+import glob
+
+
+p_image_dir = os.getenv('P_IMAGE_DIR')
+if p_image_dir is None:
+    p_image_dir = '/home/pi/elec-2103/game/p_img'
+
+fname_template = os.path.join(p_image_dir, 'p{}_{}.jpg')
 
 PORT_NUMBER = 8080
+
+def last_horodated(glob_template):
+    l = [(int(x.split('.')[0].split('_')[-1]), x) for x in glob.glob(glob_template)]
+    l.sort()
+    return l[-1]
 
 #This class will handles any incoming request from
 #the browser
@@ -39,7 +51,7 @@ class myHandler(BaseHTTPRequestHandler):
 
             if sendReply == True:
                 #Open the static file requested and send it
-                f = open(curdir + sep + self.path, 'rb')
+                f = open(os.curdir + os.sep + self.path, 'rb')
                 self.send_response(200)
                 self.send_header('Content-type',mimetype)
                 self.end_headers()
@@ -53,14 +65,18 @@ class myHandler(BaseHTTPRequestHandler):
     #Handler for the POST requests
     def do_POST(self):
         if self.path == "/upload1":
-            filename = 'player1.jpg'
+            p_id = 1
         elif self.path == "/upload2":
-            filename = 'player2.jpg'
+            p_id = 2
         else:
             print("Invalid POST address")
             return
+        print("Received player picture for player", p_id)
+        last_image_id, _ = last_horodated(fname_template.format(p_id, '*'))
+        print('last image found: ', last_image_id)
+        image_id = last_image_id + 1
+        filename = fname_template.format(p_id, '{:04}'.format(image_id))
 
-        print("Received player picture")
         content_length = int(self.headers['Content-Length'])
         print("Length is", content_length)
         post_data = self.rfile.read(content_length)
