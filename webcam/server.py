@@ -4,6 +4,7 @@ import os
 import glob
 import logging
 from logging.handlers import RotatingFileHandler
+import io
 
 from PIL import Image
 
