@@ -184,7 +184,8 @@ void draw_cubes(
         int off_x1, int off_y1, float angle1,
         int off_x2, int off_y2, float angle2,
         unsigned int p1_tex_intensity,
-        unsigned int p2_tex_intensity
+        unsigned int p2_tex_intensity,
+        bool hide_struct
         )
 {
     float wfr = (float) (0xFF & (wall_color >> 16)) / 255.0;
@@ -229,27 +230,35 @@ void draw_cubes(
                 printf("invalid cube kind: %i (at (%i, %i))\n", kind, i, j);
                 assert(0);
             }
+
+            if (kind == 0 && hide_struct) {
+                continue;
+            }
+
             draw_cube_grid(&params, color, i, j, z_offset, glm::mat4(1.0f));
         }
     }
-    glm::vec3 color;
-    glm::vec3 color_p1 = glm::vec3(1.0f, 0.0f, 0.0f);
-    glm::vec3 color_p2 = glm::vec3(1.0f, 1.0f, 0.0f);
-   
-    glm::mat4 rot1 = get_rotation_matrix(off_x1, off_y1, angle1);
-    glm::mat4 rot2 = get_rotation_matrix(off_x2, off_y2, angle2);
 
-    // Use the texture for front face
-    glUniform1f(env.usetexture_loc, ((float) p1_tex_intensity) / 255.0f);
-    // Set the sampler texture unit to 0 -> use texture 0
-    glUniform1i(env.sampler_loc, 0 );
-    draw_cube_grid(&params, color_p1, p1y, p1x, 0.0f, rot1);
+    if (!hide_struct) {
+        glm::vec3 color;
+        glm::vec3 color_p1 = glm::vec3(1.0f, 0.0f, 0.0f);
+        glm::vec3 color_p2 = glm::vec3(1.0f, 1.0f, 0.0f);
+       
+        glm::mat4 rot1 = get_rotation_matrix(off_x1, off_y1, angle1);
+        glm::mat4 rot2 = get_rotation_matrix(off_x2, off_y2, angle2);
 
-    // Use the texture for front face
-    glUniform1f(env.usetexture_loc, ((float) p2_tex_intensity) / 255.0f);
-    // Set the sampler texture unit to 1 -> use texture 1
-    glUniform1i(env.sampler_loc, 1);
-    draw_cube_grid(&params, color_p2, p2y, p2x, 0.0f, rot2);
+        // Use the texture for front face
+        glUniform1f(env.usetexture_loc, ((float) p1_tex_intensity) / 255.0f);
+        // Set the sampler texture unit to 0 -> use texture 0
+        glUniform1i(env.sampler_loc, 0 );
+        draw_cube_grid(&params, color_p1, p1y, p1x, 0.0f, rot1);
+
+        // Use the texture for front face
+        glUniform1f(env.usetexture_loc, ((float) p2_tex_intensity) / 255.0f);
+        // Set the sampler texture unit to 1 -> use texture 1
+        glUniform1i(env.sampler_loc, 1);
+        draw_cube_grid(&params, color_p2, p2y, p2x, 0.0f, rot2);
+    }
 }
 
 static void gen_default_textures(void)

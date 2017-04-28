@@ -17,7 +17,8 @@ void draw_cubes(
         int off_x1, int off_y1, float angle1,
         int off_x2, int off_y2, float angle2,
         unsigned int p1_tex_intensity,
-        unsigned int p2_tex_intensity
+        unsigned int p2_tex_intensity,
+        bool hide_struct
         );
 
 void set_textures(

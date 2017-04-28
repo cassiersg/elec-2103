@@ -17,6 +17,7 @@
 
 static void emit_touch_to_rpi(int x, int y);
 static void emit_pause_resume_to_rpi(void);
+static void emit_hide_struct_to_rpi(void);
 
 typedef enum {notouch, intouch} touch_state;
 
@@ -50,7 +51,7 @@ void task_touch_sense(void *pdata)
     while (1) {
         int t_count = *mtl_touch_count;
 
-        if (t_count > 2) {
+        if (t_count > 4) {
             printf("Invalid touch count\n");
             state = notouch;
         } else if (state == notouch || (t_count > state_data.intouch.t_count)) {
@@ -63,10 +64,12 @@ void task_touch_sense(void *pdata)
 					state_data.intouch.x_init = *mtl_touch_x1;
 					state_data.intouch.y_init = *mtl_touch_y1;
 					state_data.intouch.t_count = *mtl_touch_count;
-                } else {
+                } else if(t_count == 2) {
                 	state_data.intouch.x_init = (*mtl_touch_x1 + *mtl_touch_x2)/2;
 					state_data.intouch.y_init = (*mtl_touch_y1 + *mtl_touch_y2)/2;
 					state_data.intouch.t_count = *mtl_touch_count;
+                } else {
+                	state_data.intouch.t_count = *mtl_touch_count;
                 }
             }
         } else if (state == intouch) {
@@ -74,7 +77,7 @@ void task_touch_sense(void *pdata)
             	if (state_data.intouch.t_count == 1) {
             		printf("Touch detected\n");
             		emit_touch_to_rpi(state_data.intouch.x_init, state_data.intouch.y_init);
-            	} else {
+            	} else if (state_data.intouch.t_count == 2) {
             		int dx = abs(x_final - state_data.intouch.x_init);
             		int dy = abs(y_final - state_data.intouch.y_init);
 
@@ -82,6 +85,9 @@ void task_touch_sense(void *pdata)
             			printf("Pause or resume detected\n");
             			emit_pause_resume_to_rpi();
                     }
+            	} else {
+                	printf("Triple touch detected!\n");
+                	emit_hide_struct_to_rpi();
             	}
 
             	state = notouch;
@@ -108,4 +114,9 @@ static void emit_touch_to_rpi(int x, int y) {
 static void emit_pause_resume_to_rpi(void) {
 	volatile int *msg_reg = (int *) MESSAGE_MEM_BASE;
 	msg_reg[2] = 3; // PAUSE or RESUME
+}
+
+static void emit_hide_struct_to_rpi(void) {
+	volatile int *msg_reg = (int *) MESSAGE_MEM_BASE;
+	msg_reg[2] = 4; // HIDE THE STRUCT
 }

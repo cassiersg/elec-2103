@@ -3,6 +3,7 @@ import math
 import itertools
 
 import client_core
+import time
 import net
 import game_global as gg
 import opengl.cubes as cubes
@@ -19,6 +20,21 @@ color_win = 0x00a000
 color_loose = 0xf4a742
 dark_gray = 0x808080
 white = 0x000000
+
+class Filter():
+    def __init__(self, size):
+        self.size = size
+        self.buf = [0] * size
+        self.cur = 0
+
+    def add(self, val):
+        self.buf[self.cur] = val
+        self.cur = (self.cur + 1) % self.size
+
+    def get_mean(self):
+        return sum(self.buf)/self.size
+
+f = Filter(10)
 
 def render_gamestate(gamestate):
     if gamestate.game_finished:
@@ -113,9 +129,12 @@ def scene_cubes(gamestate):
     p1x, p1y, off_x1, off_y1, angle1 = get_player_pos_st(0, gamestate)
     p2x, p2y, off_x2, off_y2, angle2 = get_player_pos_st(1, gamestate)
 
-    # x_offset, I put a round to keep very small deadzone (to be tested on
-    # device)
-    x_offset = round(max(-10, min(gamestate.raw_acc_value_y/5, 10)))
+    f.add(gamestate.raw_acc_value_y/10)
+    x_offset = round(max(-10.0, min(f.get_mean(), 10.0)))
+
+    if gamestate.hide_struct and (time.time() -
+    gamestate.hide_struct_start_time >= 1.5):
+        gamestate.hide_struct = False
 
     # draw cubes
     cubes.draw_cubes(
@@ -126,7 +145,8 @@ def scene_cubes(gamestate):
         x_offset,
         off_x1, off_y1, angle1,
         off_x2, off_y2, angle2,
-        255, 255)
+        255, 255,
+        gamestate.hide_struct)
     pixel_buf = bytearray(cubes.width*cubes.height*4)
     cubes.cubes_image_export(pixel_buf)
     # display score
