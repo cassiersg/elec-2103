@@ -45,9 +45,13 @@ def render_gamestate(gamestate):
         pixel_buf = scene_texts(
             ["What's the goal?",
             " ", " ",
-            "You're a cube, and you want to fit in",
+            "You're a cube, and you want to fit in the holes of a",
             " ",
-            "the holes of a moving wall to survive!",
+            "a moving wall to survive! You have to pass in as much walls",
+            " ",
+            "as possible in the given time. Each passed wall is worth 1 point.",
+            " ",
+            "Failing to pass a wall will make you loose 1 point.",
             " ", " ", " ", " ", " ",
             "How to play?",
             " ", " ",
@@ -59,10 +63,14 @@ def render_gamestate(gamestate):
             " ",
             "- Tilt the screen to either change the point of",
             " ",
-            "view or change the speed of the wall"],
-            font_size = [40, 30, 30, 20, 30, 20, 30, 30, 30, 30, 30, 40, 30,
+            "view or change the speed of the wall",
+            " ",
+            "- Press the screen with 3 fingers to make the wall more",
+            " ",
+            "visible during 2s (only once per round)"],
+            font_size = [40, 30, 30, 20, 30, 20, 30, 20, 30, 20, 30, 30, 30, 30, 30, 40, 30,
                          30, 20, 30, 15, 30, 20,
-                         30, 20, 30, 20])
+                         30, 20, 30, 20, 30, 20, 30])
 
     elif gamestate.game_started:
         if (not gamestate.players_states[0].is_valid() or
