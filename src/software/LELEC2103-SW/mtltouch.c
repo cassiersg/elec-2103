@@ -7,6 +7,8 @@
 #include "system.h"
 #include "includes.h"
 
+#include "utils.h"
+
 #define MTL_TOUCH_X1 (((int *) MTL_TOUCH_BASE) + 0)
 #define MTL_TOUCH_Y1 (((int *) MTL_TOUCH_BASE) + 8)
 #define MTL_TOUCH_X2 (((int *) MTL_TOUCH_BASE) + 1)
@@ -35,7 +37,7 @@ int abs(int x) {
 
 void task_touch_sense(void *pdata)
 {
-    printf("Task touch sense started\n");
+    debug_printf("Task touch sense started\n");
 
     volatile int *mtl_touch_x1 		= MTL_TOUCH_X1;
     volatile int *mtl_touch_y1 		= MTL_TOUCH_Y1;
@@ -52,7 +54,7 @@ void task_touch_sense(void *pdata)
         int t_count = *mtl_touch_count;
 
         if (t_count > 4) {
-            printf("Invalid touch count\n");
+            debug_printf("Invalid touch count\n");
             state = notouch;
         } else if (state == notouch || (t_count > state_data.intouch.t_count)) {
         	/* The second condition deals with non-ideal pause gestures (i.e. touch_count
@@ -75,18 +77,18 @@ void task_touch_sense(void *pdata)
         } else if (state == intouch) {
             if (t_count == 0) {
             	if (state_data.intouch.t_count == 1) {
-            		printf("Touch detected\n");
+            		debug_printf("Touch detected\n");
             		emit_touch_to_rpi(state_data.intouch.x_init, state_data.intouch.y_init);
             	} else if (state_data.intouch.t_count == 2) {
             		int dx = abs(x_final - state_data.intouch.x_init);
             		int dy = abs(y_final - state_data.intouch.y_init);
 
             		if(dx < 100 && dy > 150) {
-            			printf("Pause or resume detected\n");
+            			debug_printf("Pause or resume detected\n");
             			emit_pause_resume_to_rpi();
                     }
             	} else {
-                	printf("Triple touch detected!\n");
+                	debug_printf("Triple touch detected!\n");
                 	emit_hide_struct_to_rpi();
             	}
 

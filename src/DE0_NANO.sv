@@ -260,7 +260,12 @@ base u0 (
 	.disp_buf1_s2_write      (rpi_buf_we && (display_status[0] == 0)),
 	.disp_buf1_s2_readdata   (rpi_buf1_rd),
 	.disp_buf1_s2_writedata  (rpi_buf_wd),
-	.disp_buf1_s2_byteenable (4'b1111)
+	.disp_buf1_s2_byteenable (4'b1111),
+	
+	.epcs_flash_controller_0_external_dclk  (EPCS_DCLK),
+	.epcs_flash_controller_0_external_sce   (EPCS_NCSO),
+	.epcs_flash_controller_0_external_sdo   (EPCS_ASDO),
+	.epcs_flash_controller_0_external_data0 (EPCS_DATA0)
 );
 
 assign DRAM_CLK = sdram_pll_clk;

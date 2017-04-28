@@ -8,6 +8,7 @@
 #include "system.h"
 #include "mtltouch.h"
 #include "gsensor.h"
+#include "utils.h"
 //#include "tiling_roms.h"
 //#include "compressed.h"
 
@@ -22,13 +23,7 @@ OS_STK    task3_stk[TASK_STACKSIZE];
 #define TASK2_PRIORITY      6
 #define TASK3_PRIORITY      8
 
-
-
-#define DEBUG	1
-
-
 void init() {
-
 }
 
 void task1(void* pdata) {
@@ -36,7 +31,7 @@ void task1(void* pdata) {
 //
 //
 //
-	printf("start task 1\n");
+	debug_printf("start task 1\n");
 	while (1) {
 		OSTimeDlyHMSM(0, 0, 0, 20);
 	}
@@ -69,7 +64,7 @@ int main(void) {
 			NULL,
 			0);
 
-	printf("started task 1\n");
+	debug_printf("started task 1\n");
 	OSTaskCreateExt(task_touch_sense,
 			NULL,
 			(void *)&task2_stk[TASK_STACKSIZE-1],
