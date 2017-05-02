@@ -50,7 +50,7 @@ def get_rot_angle(player, grid):
     return offset_x, offset_y, angle
 
 class PlayerState:
-    move_duration = 0.2
+    move_duration = 0.1
     def __init__(self):
         self.curr_pos = None
         self.prev_pos = None

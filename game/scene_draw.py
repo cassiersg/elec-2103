@@ -52,6 +52,9 @@ def render_gamestate(gamestate):
             "as possible in the given time. Each passed wall is worth 1 point.",
             " ",
             "Failing to pass a wall will make you loose 1 point.",
+            " ",
+            "Both players have to pass the wall: you have to collaborate!",
+            " ",
             " ", " ", " ", " ", " ",
             "How to play?",
             " ", " ",
@@ -70,7 +73,7 @@ def render_gamestate(gamestate):
             "visible during 2s (only once per round)",
             " ", " ", " ", " ", " ", " ", " ",
             "                                          Tap anywhere to start"],
-            font_size = [40, 30, 30, 20, 30, 20, 30, 20, 30, 20, 30, 30, 30, 30, 30, 40, 30,
+            font_size = [40, 30, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 30, 30, 30, 30, 30, 40, 30,
                          30, 20, 30, 15, 30, 20,
                          30, 20, 30, 20, 30, 20, 30, 20, 30, 30, 30, 30, 30,
                          30, 30, 20])
