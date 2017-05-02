@@ -109,7 +109,7 @@ void task_touch_sense(void *pdata)
             }
         }
 
-        OSTimeDlyHMSM(0, 0, 0, 20);
+        OSTimeDlyHMSM(0, 0, 0, 2);
     }
 }
 
