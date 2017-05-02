@@ -26,9 +26,16 @@ class Filter():
         self.size = size
         self.buf = [0] * size
         self.cur = 0
+        self.last = 0
 
     def add(self, val):
-        self.buf[self.cur] = val
+        # Filter out HF small variations
+        if abs(val - self.last) < 4:
+            self.buf[self.cur] = self.last
+        else:
+            self.last = val
+            self.buf[self.cur] = val
+        
         self.cur = (self.cur + 1) % self.size
 
     def get_mean(self):
