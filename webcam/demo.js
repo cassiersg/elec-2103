@@ -82,7 +82,6 @@ $(function() {
       $("#upload_status").html("Upload successful");
       $("#upload_result").html(response);
       camera.show_stream();
-      $("#discard_snapshot, #upload_snapshot1, #upload_snapshot2, #api_url").hide();
     };
 
     var upload_fail = function(code, error, response) {

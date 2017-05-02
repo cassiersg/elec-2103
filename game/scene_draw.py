@@ -74,10 +74,13 @@ def render_gamestate(gamestate):
             " ",
             "- Press the screen with 3 fingers to make the wall more",
             " ",
-            "visible during 2s (only once per round)"],
+            "visible during 2s (only once per round)",
+            " ", " ", " ", " ", " ", " ", " ",
+            "                                          Tap anywhere to start"],
             font_size = [40, 30, 30, 20, 30, 20, 30, 20, 30, 20, 30, 30, 30, 30, 30, 40, 30,
                          30, 20, 30, 15, 30, 20,
-                         30, 20, 30, 20, 30, 20, 30])
+                         30, 20, 30, 20, 30, 20, 30, 20, 30, 30, 30, 30, 30,
+                         30, 30, 20])
 
     elif gamestate.game_started:
         if (not gamestate.players_states[0].is_valid() or
