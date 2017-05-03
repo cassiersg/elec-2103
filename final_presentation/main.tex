@@ -1,0 +1,53 @@
+\documentclass[10pt]{beamer}
+
+\input{lib.tex}
+\usepackage{comment}
+
+\usetheme[progressbar=frametitle]{metropolis}
+
+\usepackage{tikz}
+\usepackage{booktabs}
+\usepackage[scale=2]{ccicons}
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+
+\usepackage{xspace}
+
+\title{LELEC2103}
+\subtitle{}
+\date{\today}
+\author{Gaëtan Cassiers\and Charles Momin \and Antoine Paris \and Sylvain Ramelot}
+\institute{Ecole polytechnique de Louvain}
+\titlegraphic{\hfill\includegraphics[height=1cm]{logo}}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Table of contents}
+  \setbeamertemplate{section in toc}[sections numbered]
+  \tableofcontents%[hideallsubsections]
+\end{frame}
+
+\AtBeginSection[]
+{
+    \begin{frame}<beamer>
+        \frametitle{Plan}
+        \tableofcontents[currentsection]
+    \end{frame}
+}
+
+
+\begin{frame}[standout]
+    Questions?
+\end{frame}
+
+\appendix
+
+%\begin{frame}[allowframebreaks]{References}
+%	\nocite{*}
+%  	\bibliography{biblio}
+%  	\bibliographystyle{abbrv}
+%\end{frame}
+
+\end{document}

@@ -1,0 +1,81 @@
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{xspace}
+\usepackage[binary-units=true]{siunitx}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{todonotes}
+\usepackage{epstopdf}
+\usepackage{array}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{tabularx} % tabular with automatic line-break
+\newcolumntype{Y}{>{\centering\arraybackslash}X} % centered column
+\usepackage{amsmath}
+\usepackage{grffile} % better name handling with graphicx
+\usepackage{currfile} % provides relative file inclusion for tikzscale
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{pgfplots}
+\usepackage{tikzscale}
+\pgfplotsset{compat=newest}
+\usetikzlibrary{plotmarks}
+\usepackage{rotating}
+\usepackage[absolute,overlay]{textpos}
+\usepackage{circuitikz}
+
+% Math symbols
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand\norm[1]{\left\lVert#1\right\rVert}
+
+% Sets
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rn}{\R^n}
+\newcommand{\Rnn}{\R^{n \times n}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\Kn}{\K^n}
+\newcommand{\Knn}{\K^{n \times n}}
+
+% Unit vectors
+\usepackage{esint}
+\usepackage{esvect}
+\newcommand{\kmath}{k}
+\newcommand{\xunit}{\hat{\imath}}
+\newcommand{\yunit}{\hat{\jmath}}
+\newcommand{\zunit}{\hat{\kmath}}
+\newcommand{\uunit}{\hat{\umath}}
+
+% rot & div & grad & lap
+\DeclareMathOperator{\newdiv}{div}
+\newcommand{\divn}[1]{\nabla \cdot #1}
+\newcommand{\rotn}[1]{\nabla \times #1}
+\newcommand{\grad}[1]{\nabla #1}
+\newcommand{\gradn}[1]{\nabla #1}
+\newcommand{\lap}[1]{\nabla^2 #1}
+
+% Elec
+\newcommand{\B}{\vec B}
+\newcommand{\E}{\vec E}
+\newcommand{\EMF}{\mathcal{E}}
+\newcommand{\perm}{\varepsilon} % permittivity
+
+\newcommand{\bigoh}{\mathcal{O}}
+\newcommand\eqdef{\triangleq}
+
+\DeclareMathOperator{\newdiff}{d} % use \dif instead
+\newcommand{\dif}{\newdiff\!}
+\newcommand{\fpart}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\ffpart}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+\newcommand{\fdpart}[3]{\frac{\partial^2 #1}{\partial #2\partial #3}}
+\newcommand{\fdif}[2]{\frac{\dif #1}{\dif #2}}
+\newcommand{\ffdif}[2]{\frac{\dif^2 #1}{\dif #2^2}}
+\newcommand{\constant}{\ensuremath{\mathrm{cst}}}

@@ -15,6 +15,10 @@ game/opengl/chunker.py
 game/opengl/image_manip.py
 game/training_images
 
+.~lock.*
+final_presentation/img/*_cropped.pdf
+final_presentation/build_latex
+
 
 ## Modelsim
 *.mti
