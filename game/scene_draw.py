@@ -54,7 +54,7 @@ def render_gamestate(gamestate):
             " ", " ",
             "You're a cube, and you want to fit in the holes of a",
             " ",
-            "a moving wall to survive! You have to pass in as much walls",
+            "moving wall to survive! You have to pass in as much walls",
             " ",
             "as possible in the given time. Each passed wall is worth 1 point.",
             " ",
@@ -62,25 +62,25 @@ def render_gamestate(gamestate):
             " ",
             "Both players have to pass the wall: you have to collaborate!",
             " ",
-            " ", " ", " ", " ", " ",
+            " ", " ", " ", " ",
             "How to play?",
             " ", " ",
             "- Touch the right side of the screen to go right",
             " ",
-            "(I suppose you guessed how to go left)",
+            "(I suppose you guessed how to go left).",
             " ",
-            "- Do a two-finger vertical swipe to pause",
+            "- Do a two-finger vertical swipe to pause (or resume).",
             " ",
-            "- Tilt the screen to either change the point of",
+            "- Tilt the screen to change the point of view and",
             " ",
-            "view or change the speed of the wall",
+            "the speed of the wall.",
             " ",
             "- Press the screen with 3 fingers to make the wall more",
             " ",
-            "visible during 2s (only once per round)",
+            "visible during 2s (only once per round).",
             " ", " ", " ", " ", " ", " ", " ",
             "                                          Tap anywhere to start"],
-            font_size = [40, 30, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 30, 30, 30, 30, 30, 40, 30,
+            font_size = [40, 30, 30, 20, 30, 20, 30, 20, 30, 20, 30, 20, 30, 30, 30, 30, 30, 40, 30,
                          30, 20, 30, 15, 30, 20,
                          30, 20, 30, 20, 30, 20, 30, 20, 30, 30, 30, 30, 30,
                          30, 30, 20])
@@ -213,7 +213,7 @@ def draw_texts(pixel_buf, texts, fg, font_size, x_c, y_c):
         font_size = itertools.repeat(font_size)
     for t, fs in zip(texts, font_size):
         masks.append(font.render_text(t, font_size=fs))
-    sum_height = sum(h for (_, h), _ in masks)*1.1
+    sum_height = sum(h for (_, h), _ in masks)*1.25
     v_offs = [round((i-(n-1)/2)*sum_height/n) for i in range(n)]
     for mask, v_sup_off in zip(masks, v_offs):
         off_x, off_y = offset_center_mask(mask, x_c, y_c)
