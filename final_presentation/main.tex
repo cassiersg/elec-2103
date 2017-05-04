@@ -23,20 +23,129 @@
 \begin{document}
 
 \maketitle
+\setbeamercolor{background canvas}{bg=white}
 
 \begin{frame}{Table of contents}
   \setbeamertemplate{section in toc}[sections numbered]
   \tableofcontents%[hideallsubsections]
 \end{frame}
 
-\AtBeginSection[]
-{
-    \begin{frame}<beamer>
-        \frametitle{Plan}
-        \tableofcontents[currentsection]
-    \end{frame}
-}
+%\AtBeginSection[]
+%{
+%    \begin{frame}<beamer>
+%        \frametitle{Plan}
+%        \tableofcontents[currentsection]
+%    \end{frame}
+%}
 
+\section{Features and demonstration}
+\begin{frame}{Features}
+    \begin{itemize}
+        \item Video animation
+        \item Real-time interactivity
+        \item 3D rendering
+        \begin{itemize}
+            \item Perspective
+            \item Lighting
+            \item Variable point of view
+        \end{itemize}
+        \item Player's picture acquisition and integration in the game
+        \item Flexible text rendering
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Demonstration}
+
+\end{frame}
+
+\section{Global view of the system}
+\begin{frame}{Global view of the system: device}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/block_global_device_cropped}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Global view of the system: desktop}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/block_global_desktop_cropped}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Plan of the presentation}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/block_global_device_highlight_full_cropped}
+    \end{center}
+\end{frame}
+
+\section{Rendering}
+\begin{frame}{Plan of the presentation}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/block_global_device_highlight_render_cropped}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Pipeline}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/block_rendering_cropped}
+    \end{center}
+\end{frame}
+
+\section{Compression}
+\begin{frame}{Plan of the presentation}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/block_global_device_highlight_compression_cropped}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Challenges and constraints}
+    
+\end{frame}
+
+\begin{frame}{Basic idea: run-length coding and Huffman}
+    \begin{center}
+        \includegraphics[width=1.0\textwidth]{img/compression_scheme}
+    \end{center}
+\end{frame}
+
+\section{SPI communication}
+\begin{frame}{Plan of the presentation}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/block_global_device_highlight_spi_cropped}
+    \end{center}
+\end{frame}
+
+\begin{frame}{SPI state machine}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/spi_state_machine_cropped}
+    \end{center}
+\end{frame}
+
+
+\section{Display manager}
+\begin{frame}{Plan of the presentation}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/block_global_device_highlight_display_cropped}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Basic idea: double-buffering}
+    \begin{center}
+        \includegraphics[width=1.0\textwidth]{img/display_manager_cropped}
+    \end{center}
+\end{frame}
+
+\section{Nios $\mu$C/OSII}
+\begin{frame}{Plan of the presentation}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/block_global_device_highlight_nios_cropped}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Basic idea: double-buffering}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/tasks_mC_cropped}
+    \end{center}
+\end{frame}
 
 \begin{frame}[standout]
     Questions?
