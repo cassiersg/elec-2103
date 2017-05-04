@@ -1,4 +1,4 @@
-\documentclass[10pt]{beamer}
+\documentclass[10pt, notes]{beamer}
 
 \input{lib.tex}
 \usepackage{comment}
@@ -9,6 +9,7 @@
 \usepackage{booktabs}
 \usepackage[scale=2]{ccicons}
 \usepackage{pgfplots}
+\usepackage{multimedia}
 \usepgfplotslibrary{dateplot}
 
 \usepackage{xspace}
@@ -41,37 +42,45 @@
 \section{Features and demonstration}
 \begin{frame}{Features}
     \begin{itemize}
-        \item Video animation
         \item Real-time interactivity
         \item 3D rendering
         \begin{itemize}
+            \item Moving objects animation
             \item Perspective
-            \item Lighting
+            \item Lightning
             \item Variable point of view
         \end{itemize}
         \item Player's picture acquisition and integration in the game
         \item Flexible text rendering
+        \item Powerful gesture detection
+        \item Robust and fast SPI communication through handshake-free protocol
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Demonstration}
-
+    \movie[width=\textwidth, height=7cm]{Demonstration}{../game-screencast.mp4}
 \end{frame}
 
 \section{Global view of the system}
-\begin{frame}{Global view of the system: device}
-    \begin{center}
-        \includegraphics[width=0.8\textwidth]{img/block_global_device_cropped}
-    \end{center}
-\end{frame}
-
 \begin{frame}{Global view of the system: desktop}
     \begin{center}
         \includegraphics[width=0.8\textwidth]{img/block_global_desktop_cropped}
     \end{center}
 \end{frame}
 
-\begin{frame}{Plan of the presentation}
+\note{
+    L'hardware interface commune permet:
+    \begin{itemize}
+        \item Debug
+        \item Mode spectateur
+    \end{itemize}
+
+    L'image est identique sur device/desktop.
+
+    Les entrées sont simulées au clavier.
+}
+
+\begin{frame}{Global view of the system: device}
     \begin{center}
         \includegraphics[width=0.8\textwidth]{img/block_global_device_highlight_full_cropped}
     \end{center}
@@ -97,14 +106,85 @@
     \end{center}
 \end{frame}
 
-\begin{frame}{Challenges and constraints}
-    
+\begin{frame}{Objectives and constraints}
+    \begin{columns}
+        \begin{column}{0.49\textwidth}
+            \begin{exampleblock}{Objectives}
+                \begin{itemize}
+                    \item 25 FPS
+                    \item 800$\times$480 pixels
+                    \item Each frame must be perfect (no glitches, no tearing)
+                    \item Image content flexibility 
+                \end{itemize}
+            \end{exampleblock}
+        \end{column}
+
+        \begin{column}{0.49\textwidth}
+            \begin{alertblock}{Constraints}
+                \begin{itemize}
+                    \item Real-time encoder
+                    \item On-the-fly decoder (no memory)
+                    \item SPI: max \SI{5}{Mb/s}
+                    \item Maximum frame size: \SI{30}{kB}
+                \end{itemize}
+            \end{exampleblock}
+        \end{column}
+    \end{columns}
+
+
+    $\to$ Uncompressed : \SI{600}{kB/frame} and \SI{115}{kb/s}
+
+    \begin{defaultblock}{Conclusion}
+        We need a compression system with a compression factor $> 20$      
+    \end{defaultblock}
 \end{frame}
 
-\begin{frame}{Basic idea: run-length coding and Huffman}
+\begin{frame}{Solution : color quantization, run-length coding and Huffman}
     \begin{center}
         \includegraphics[width=1.0\textwidth]{img/compression_scheme}
     \end{center}
+\end{frame}
+
+\begin{frame}{Huffman coding preprocessing}
+    \begin{defaultblock}{On colors}
+        \begin{itemize}
+            \item Color quantization reduces the color space size from \SI{16}{M} to \SI{4}{K}.
+            \begin{itemize}
+                \item Keeps code length reasonable
+                \item Reasonable hardware size (FPGA)
+                \item Improves compression rate
+                \item Efficient encoding
+                \item Lightning scheme designed to behave well with color quantization
+            \end{itemize}
+        \end{itemize}
+    \end{defaultblock}
+
+    \begin{defaultblock}{On lengths}
+        \begin{itemize}
+            \item Smart lengths choice (1, 2, ..., 16, 32, 64, ..., 4096)
+            \begin{itemize}
+                \item Keeps code length reasonable (max. 6 bits)
+                \item Reasonable hardware size (FPGA)
+            \end{itemize}
+        \end{itemize}
+    \end{defaultblock}
+\end{frame}
+
+\begin{frame}{Performances}
+    \begin{defaultblock}{Compression rate}
+        \begin{itemize}
+            \item Uncompressed : \SI{600}{kB/frame}
+            \item Compressed without picture : \SI{4}{kB/frame}
+            \item Compressed with picture : \SI{15}{kB/frame} 
+        \end{itemize}
+    \end{defaultblock}
+        
+    \begin{defaultblock}{Speed}
+        \begin{itemize}
+            \item Coding : \SI{3}{ms} per frame
+            \item Decoding : 1 pixel per clock cycle (at \SI{33}{\mega\hertz})
+        \end{itemize}
+    \end{defaultblock}
 \end{frame}
 
 \section{SPI communication}
@@ -116,10 +196,15 @@
 
 \begin{frame}{SPI state machine}
     \begin{center}
-        \includegraphics[width=0.8\textwidth]{img/spi_state_machine_cropped}
+        \includegraphics[width=0.5\textwidth]{img/spi_state_machine_cropped}
     \end{center}
-\end{frame}
 
+    \begin{itemize}
+        \item \SI{5}{Mb/s}
+        \item Burst mode, very low protocol overhead, chip select not released
+        \item Connected to multiple RAMs through an MMU
+    \end{itemize}
+\end{frame}
 
 \section{Display manager}
 \begin{frame}{Plan of the presentation}
@@ -128,23 +213,37 @@
     \end{center}
 \end{frame}
 
-\begin{frame}{Basic idea: double-buffering}
+\begin{frame}{Hardware-controlled double-buffering}
     \begin{center}
         \includegraphics[width=1.0\textwidth]{img/display_manager_cropped}
     \end{center}
+    
+
 \end{frame}
 
-\section{Nios $\mu$C/OSII}
+\section{Nios µC/OSII}
 \begin{frame}{Plan of the presentation}
     \begin{center}
         \includegraphics[width=0.8\textwidth]{img/block_global_device_highlight_nios_cropped}
     \end{center}
 \end{frame}
 
-\begin{frame}{Basic idea: double-buffering}
+\begin{frame}{µC/OSII functionnalities}
     \begin{center}
         \includegraphics[width=0.8\textwidth]{img/tasks_mC_cropped}
     \end{center}
+\end{frame}
+
+\section{Player pictures acquisition}
+
+\begin{frame}{Pipeline}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{img/block_pictures_cropped}
+    \end{center}
+\end{frame}
+
+\begin{frame}[standout]
+    Conclusion
 \end{frame}
 
 \begin{frame}[standout]
