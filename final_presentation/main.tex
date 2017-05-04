@@ -131,12 +131,11 @@
         \end{column}
     \end{columns}
 
-
     $\to$ Uncompressed : \SI{600}{kB/frame} and \SI{115}{kb/s}
 
-    \begin{defaultblock}{Conclusion}
+    \begin{block}{Conclusion}
         We need a compression system with a compression factor $> 20$      
-    \end{defaultblock}
+    \end{block}
 \end{frame}
 
 \begin{frame}{Solution : color quantization, run-length coding and Huffman}
@@ -146,7 +145,7 @@
 \end{frame}
 
 \begin{frame}{Huffman coding preprocessing}
-    \begin{defaultblock}{On colors}
+    \begin{block}{On colors}
         \begin{itemize}
             \item Color quantization reduces the color space size from \SI{16}{M} to \SI{4}{K}.
             \begin{itemize}
@@ -157,9 +156,9 @@
                 \item Lightning scheme designed to behave well with color quantization
             \end{itemize}
         \end{itemize}
-    \end{defaultblock}
+    \end{block}
 
-    \begin{defaultblock}{On lengths}
+    \begin{block}{On lengths}
         \begin{itemize}
             \item Smart lengths choice (1, 2, ..., 16, 32, 64, ..., 4096)
             \begin{itemize}
@@ -167,24 +166,24 @@
                 \item Reasonable hardware size (FPGA)
             \end{itemize}
         \end{itemize}
-    \end{defaultblock}
+    \end{block}
 \end{frame}
 
 \begin{frame}{Performances}
-    \begin{defaultblock}{Compression rate}
+    \begin{block}{Compression rate}
         \begin{itemize}
             \item Uncompressed : \SI{600}{kB/frame}
             \item Compressed without picture : \SI{4}{kB/frame}
             \item Compressed with picture : \SI{15}{kB/frame} 
         \end{itemize}
-    \end{defaultblock}
+    \end{block}
         
-    \begin{defaultblock}{Speed}
+    \begin{block}{Speed}
         \begin{itemize}
             \item Coding : \SI{3}{ms} per frame
             \item Decoding : 1 pixel per clock cycle (at \SI{33}{\mega\hertz})
         \end{itemize}
-    \end{defaultblock}
+    \end{block}
 \end{frame}
 
 \section{SPI communication}
