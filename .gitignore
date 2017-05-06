@@ -17,7 +17,9 @@ game/training_images
 
 .~lock.*
 final_presentation/img*/*_cropped.pdf
+report/img*/*_cropped.pdf
 final_presentation/build_latex
+report/build_latex
 
 
 ## Modelsim

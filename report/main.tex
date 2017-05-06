@@ -10,26 +10,80 @@
 \begin{document}
 \maketitle
 
-\section{Introduction}
+\chapter{Introduction}
 
-\section{Gameplay and features}
+\chapter{Gameplay and features}
 
-\section{Network interface}
+\chapter{Network interface}
 
-\section{Global view of the system}
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{img/global_comm_scheme_cropped.pdf}
+    \caption{Block diagram of the network communication.}
+\end{figure}
 
-\section{Rendering subsystem}
+\chapter{Global view of the client system}
 
-\section{Compression subsystem}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/block_global_desktop_cropped.pdf}
+    \caption{Block diagram of the client, when running on a PC.}
+\end{figure}
 
-\section{SPI salve subsystem}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/block_global_device_cropped.pdf}
+    \caption{Block diagram of the client, when running the raspberry-pi/DE0-Nano system.}
+\end{figure}
 
-\section{Display management}
+\chapter{Rendering subsystem}
 
-\section{Input detection subsystem}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.6\textwidth]{img/block_rendering_cropped.pdf}
+    \caption{Pipeline for the rendering of the video.}
+\end{figure}
 
-\section{Player pictures acquisition}
+\chapter{Compression subsystem}
 
-\section{Conclusion}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{img/compression_scheme_cropped.pdf}
+    \caption{Principle view of the compression scheme.}
+\end{figure}
+
+\chapter{SPI slave subsystem}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{img/spi_state_machine_cropped.pdf}
+    \caption{State machine for the SPI communication protocol.}
+\end{figure}
+
+\chapter{Display management}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{img/display_manager_cropped.pdf}
+    \caption{Block diagram of the display management and synchronization system.}
+\end{figure}
+
+\chapter{Input detection subsystem}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{img/tasks_mC_cropped.pdf}
+    \caption{Tasks and their relationships on the uC/OS-II operating system.}
+\end{figure}
+
+\chapter{Player pictures acquisition}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{img/block_pictures_cropped.pdf}
+    \caption{Block diagram of the picture acquisition subsystem.}
+\end{figure}
+
+\chapter{Conclusion}
 
 \end{document}
