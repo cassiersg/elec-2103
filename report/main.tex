@@ -13,27 +13,73 @@
 \chapter{Introduction}
 
 \chapter{Gameplay and features}
+Our game is inspired by an existing game available on most smartphones and tablets
+and developped by Ketchapp. Figure~\ref{fig:original-game} is a screenshot from this game.
+In this original version of the game, the player (represented by the yellow cube on figure
+~\ref{fig:original-game}) has to place itself correctly on the white structure in order
+to fit in the hole of the wall coming in his direction at a constant speed. The objective
+is to pass in as much wall as possible. Passing a wall gives 1 point, failing to pass a
+wall makes the score starting back at 0.
+
+Our version of the game differs from the original one in several aspects. First, this
+is a two-players collaborative game. Second, a game only lasts a finite amount of time
+and the two players can control the speed of the wall using the accelerometer.
+Finally, failing to pass a wall only decreases the current score by 1.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\textwidth]{img/original-game}
+    \caption{Screenshot of the orginal game by Ketchapp.}
+    \label{fig:original-game}
+\end{figure}
 
 \chapter{Network interface}
+The way the two players communicate with each other is illustrated in figure~\ref{fig:
+comm-scheme}. The approach taken here is client-server based. The server is responsible
+for all the logic of the game and maintains an object representing the state of the game.
+Centralizing computations in this way ensures a complete synchronization between clients.
+
+A complete communication protocol was rigorously defined by the two groups. This
+protocol defines an handshake procedure between a client and the server to ensure both
+sides are ready before starting. Once the game has started, the two clients can send
+messages to the server based on user inputs (accelerometer values, touch, or gesture).
+The server then performs some computations on the game state such as computing player
+positions, speed of the wall, remaining time, score, etc. Finally, the server
+broadcasts the parts of the game state which changed.
+
+On the practical side, one Raspberry-Pi runs both the server and a client while the other
+one only runs a client.
 
 \begin{figure}
     \centering
     \includegraphics[width=1.0\textwidth]{img/global_comm_scheme_cropped.pdf}
     \caption{Block diagram of the network communication.}
+    \label{fig:comm-scheme}
 \end{figure}
 
 \chapter{Global view of the client system}
+The global view of the client system is represented in figure~\ref{fig:global-desktop}
+and figure~\ref{fig:global-device}. Through the network interface described in the
+previous section, the client builds its own image of the game state. This client game
+state is then fed to the rendering subsystem which produces a 3D image. This image
+is then compressed and sent to the hardware interface.
+
+One of the strength of our system is this hardware interface. This abstraction offers
+a common layer to communicate both with a PC or a device. This eased a lot the development
+process.
 
 \begin{figure}
     \centering
     \includegraphics[width=0.6\textwidth]{img/block_global_desktop_cropped.pdf}
     \caption{Block diagram of the client, when running on a PC.}
+    \label{fig:global-desktop}
 \end{figure}
 
 \begin{figure}
     \centering
     \includegraphics[width=0.6\textwidth]{img/block_global_device_cropped.pdf}
     \caption{Block diagram of the client, when running the raspberry-pi/DE0-Nano system.}
+    \label{fig:global-device}
 \end{figure}
 
 \chapter{Rendering subsystem}
