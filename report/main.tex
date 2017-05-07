@@ -46,11 +46,79 @@
 
 \chapter{Compression subsystem}
 
+\section{Goal}
+
+The need for a compression system comes from the following observation:
+when transferring 25 frames of 800x480 pixel, with 12 bits per pixel,
+the bandwidth needed is \SI{115}{Mb/s}. The memory needed for each frame
+is \SI{600}{kB}.
+
+In our system, the SPI bandwidth available to transfer the video is \SI{5}{Mb/s},
+and the memory available on the FPGA (onchip memory, SDRAM is used by the
+nios/µC0S-II system) is \SI{30}{kB} per frame.
+
+We neeed thus a compression of a factor larger than 20, that is such that
+the video can be compressed in real-time. The decompression must be done
+pixel per pixel, on-the-fly, since there is no memory available to store the
+decompressed images.
+
+\section{Principle}
+
 \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{img/compression_scheme_cropped.pdf}
     \caption{Principle view of the compression scheme.}
+    \label{fig:compression}
 \end{figure}
+
+The compression system is based on three steps (see fig.~\ref{fig:compression}):
+the color quantization, the run-length coding, and the Huffman coding. The first
+step is lossy, while the two other steps are lossless.
+
+\paragraph{Color quantization} The precision for each color channel is
+reduced to 4 bits. This step is a preprocessing step that makes it possible
+to implement and improves the efficiency of the following steps.
+
+\paragraph{Run-length coding} The image, represented as a list of pixels,
+is converted to a list of pairs $(\text{color}, \text{number of repetitions})$.
+The allowed sizes for the number of repetitions are
+$1, 2, 3, ..., 16,$ $32, 64, ..., 4096$. This allows to encode most images with
+a number of blocks that is not too far from the optimum, while keeping the set
+of number of repetitions small, which is required for the Huffman compression.
+
+\paragraph{Huffman coding} Two Huffman trees are built: one for the pixels colors
+and one for the numbers of repetitions. Each element of the pairs generated
+at the previous stage is encoded with the corresponding Huffman tree.
+All the codewords are then concatenated together to form the compressed image.
+
+\section{Impact of the color quantization}
+
+The color quantization has several goals. For the run-length coding,
+the quantization creates chunks of constant color when there is a
+continuous shading.\todo{Is it a correct wording ?} For the Huffman
+coding, the reduction of the pixels coding from \SI{24}{bits} to
+\SI{12}{bits} means the size of the colorspace is reduced from
+\SI{16}{M} to \SI{4}{K}. This simplifies a lot the Huffman coding:
+\begin{itemize}
+    \item it is much easier to estimate the distribution of the colors
+        to build the Huffman tree\footnote{
+            The color and run-length distribution are estimated from a set of training
+        images during at compile time.};
+    \item it keeps the codewords length small, which simplifies the implementation:
+        the memory bandwidth required is smaller;
+    \item it reduces the amount of logic gates required to implement a decoder,
+        which makes it possible to fit it on the FPGA;
+    \item it also makes the software encoder faster, for the same reasons
+        (memory bandwidth, code size)
+\end{itemize}
+
+The color quantization has an impact of the quality of the images,
+but it is mainly visible when there is an area where there are
+slightly different shades of the same color. For these kinds of images,
+it may introduce a "staircase" effect. To avoid this artefact to be visible,
+the rendering process has been tuned to avoid producing continuously varying colors,
+through the choice of a adequated lightning scheme for the 3D scene (the lightning
+has only the directionnal component of the phong lightning model).
 
 \chapter{SPI slave subsystem}
 
