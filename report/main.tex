@@ -91,6 +91,7 @@ process.
 \end{figure}
 
 \chapter{Compression subsystem}
+\label{chap:compression}
 
 \section{Goal}
 
@@ -176,10 +177,28 @@ has only the directionnal component of the phong lightning model).
 
 \chapter{Display management}
 
+The system uses double buffering to avoid tearing in displayed images.
+It is implemented by two RAMs on the FPGA (see fig.~\ref{fig:display-manager}).
+
+The RAMs are connected to the decoder
+(which decodes the code discussed in section~\ref{chap:compression})
+through a MUX controlled by a \texttt{display control} register.
+
+The RAMs are also connected to the SPI MMU. The write enable
+signal of the RAMs are masked by the \texttt{display control} signal,
+so that only RAM that is not connected to the decoder is written.
+
+The \texttt{display control} register can be read from the SPI MMU,
+and can be written by the SPI MMU, but only through a buffer register,
+in order for changes of \texttt{display control} to be synchronized
+to the \texttt{end of frame} signal from the display controller.
+This synchronization system avoids tearing.
+
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{img/display_manager_cropped.pdf}
     \caption{Block diagram of the display management and synchronization system.}
+    \label{fig:display-manager}
 \end{figure}
 
 \chapter{Input detection subsystem}
