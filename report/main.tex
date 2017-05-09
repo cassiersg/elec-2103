@@ -22,7 +22,7 @@ communicate with
 each other throught a Wi-Fi communication between the two Raspberry-Pis, a common
 network interface has been specified by the two groups. This is discussed
 in section~\ref{sec:net-interface}. Before that, section~\ref{sec:gameplay-features}
-introduces the game that inspired our game and the additional features we decided to
+introduces the game that inspired ours and the additional features we decided to
 add to it. Section~\ref{sec:global-view} then describes the global architecture of
 our game as a block diagram where each block, named subsystem in what follows, serves a
 particular purpose. One of the key feature of our implementation of the game is the
@@ -224,18 +224,18 @@ Text handling is made of three steps:
 \section{Compression subsystem}
 \label{sec:compression}
 
-\subsection{Goal}
+\subsection{Objectives}
 
 The need for a compression system comes from the following observation:
-when transferring 25 frames of 800x480 pixel, with 12 bits per pixel,
+when transferring 25 frames of 800x480 pixels per second, with 12 bits per pixel,
 the bandwidth needed is \SI{115}{Mb/s}. The memory needed for each frame
 is \SI{600}{kB}.
 
 In our system, the SPI bandwidth available to transfer the video is \SI{5}{Mb/s},
-and the memory available on the FPGA (onchip memory, SDRAM is used by the
-nios/µC0S-II system) is \SI{30}{kB} per frame.
+and the memory available on the FPGA (considering onchip memory only, the SDRAM
+being used by the Nios/µC0S-II system) is \SI{30}{kB} per frame.
 
-We neeed thus a compression of a factor larger than 20, that is such that
+We thus need a compression by a factor larger than 20, that is such that
 the video can be compressed in real-time. The decompression must be done
 pixel per pixel, on-the-fly, since there is no memory available to store the
 decompressed images.
@@ -244,7 +244,7 @@ decompressed images.
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.8\textwidth]{img/compression_scheme_cropped.pdf}
+    \includegraphics[width=0.65\textwidth]{img/compression_scheme_cropped.pdf}
     \caption{Principle view of the compression scheme.}
     \label{fig:compression}
 \end{figure}
@@ -271,31 +271,30 @@ All the codewords are then concatenated together to form the compressed image.
 
 \subsection{Impact of the color quantization}
 
-The color quantization has several goals. For the run-length coding,
+The color quantization serves different purposes. For the run-length coding,
 the quantization creates chunks of constant color when there is a
-continuous shading.\todo{Is it a correct wording ?} For the Huffman
-coding, the reduction of the pixels coding from \SI{24}{bits} to
-\SI{12}{bits} means the size of the colorspace is reduced from
+continuous shading. For the Huffman
+coding, the reduction of the color depth from \SI{24}{bits/pixel} to
+\SI{12}{bits/pixel} means the size of the colorspace is reduced from
 \SI{16}{M} to \SI{4}{K}. This simplifies a lot the Huffman coding:
 \begin{itemize}
     \item it is much easier to estimate the distribution of the colors
-        to build the Huffman tree\footnote{
-            The color and run-length distribution are estimated from a set of training
-        images during at compile time.};
+    to build the Huffman tree\footnote{The color and run-length distribution are
+    estimated from a set of training images at compile time.};
     \item it keeps the codewords length small, which simplifies the implementation:
-        the memory bandwidth required is smaller;
+    the memory bandwidth required is smaller;
     \item it reduces the amount of logic gates required to implement a decoder,
-        which makes it possible to fit it on the FPGA;
+    which makes it possible to fit it on the FPGA;
     \item it also makes the software encoder faster, for the same reasons
-        (memory bandwidth, code size)
+    (memory bandwidth, code size).
 \end{itemize}
 
-The color quantization has an impact of the quality of the images,
-but it is mainly visible when there is an area where there are
-slightly different shades of the same color. For these kinds of images,
+The color quantization has an impact on the quality of the images
+but it is mainly visible on image area exhibiting a color gradient.
+For these kinds of images,
 it may introduce a "staircase" effect. To avoid this artefact to be visible,
-the rendering process has been tuned to avoid producing continuously varying colors,
-through the choice of a adequated lightning scheme for the 3D scene (the lightning
+the rendering process has been tuned to avoid producing color gradients
+through the choice of an appropriate lightning scheme for the 3D scene (the lightning
 has only the directionnal component of the phong lightning model).
 
 \section{SPI slave subsystem}
@@ -314,18 +313,18 @@ The system uses double buffering to avoid tearing in displayed images.
 It is implemented by two RAMs on the FPGA (see fig.~\ref{fig:display-manager}).
 
 The RAMs are connected to the decoder
-(which decodes the code discussed in section~\ref{chap:compression})
-through a MUX controlled by a \texttt{display control} register.
+(which decodes the code discussed in section~\ref{sec:compression})
+through a multiplexer controlled by a \texttt{display control} register.
 
 The RAMs are also connected to the SPI MMU. The write enable
 signal of the RAMs are masked by the \texttt{display control} signal,
-so that only RAM that is not connected to the decoder is written.
+so that only the RAM that is not connected to the decoder is written.
 
 The \texttt{display control} register can be read from the SPI MMU,
 and can be written by the SPI MMU, but only through a buffer register,
 in order for changes of \texttt{display control} to be synchronized
 to the \texttt{end of frame} signal from the display controller.
-This synchronization system avoids tearing.
+This synchronization is again necessary to avoid tearing.
 
 \begin{figure}
     \centering
@@ -337,10 +336,41 @@ This synchronization system avoids tearing.
 \section{Input detection subsystem}
 \label{sec:input-det}
 
+Three tasks runs on the real-time kernel µC/OSII. One of them is responsible
+for sensing the touchscreen. It is implemented as a finite state machine periodically
+refreshed at a sufficient rate to ensure responsiveness. The fact that the gesture
+detection is implemented in software makes it really flexible. Three different types of
+gestures are recognized by this task:
+\begin{itemize}
+    \item A simple touch with one finger: depending on the position where this touch
+    occurs on the screen, this is interpreted as an instruction from the user to move
+    its cube to the left or to the right;
+    \item A vertical swipe with two fingers: this is the custom gesture we defined to
+    pause or resume the game;
+    \item A simple touch with three finger: this custom gesture commands the
+    disappearance of the stucture during a small amount of time (this feature is
+    described in section~\ref{sec:gameplay-features}).
+\end{itemize}
+When one of this gesture is detected, the touch sensing task sends a particular
+message to a second task through a message mailbox to inform it of which gesture
+was detected. Upon reception of a message via its message mailbox, this second task
+tries to acquire the mutex on the SPI RAM before writing a value corresponding
+to the detected gesture at a particular address.
+
+The last task periodically reads the accelerometer values and, after acquiring the mutex
+, writes it in the SPI RAM. To avoid tremor on the change of point of
+view of the 3D scene of game, which is controlled by one of the axis of the
+accelerometer, a very basic low-pass filter is applied to the accelerometer values upon
+receipt by the hardware interface.
+
+The three tasks and the synchronization mechanisms they used are represented in
+figure~\ref{fig:tasks-mc}.
+
 \begin{figure}
     \centering
     \includegraphics[width=0.5\textwidth]{img/tasks_mC_cropped.pdf}
     \caption{Tasks and their relationships on the uC/OS-II operating system.}
+    \label{fig:tasks-mc}
 \end{figure}
 
 \section{Player pictures acquisition}
