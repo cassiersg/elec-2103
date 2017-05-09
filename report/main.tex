@@ -96,19 +96,10 @@ game whenever they want to take a break.
 \label{sec:net-interface}
 The way the two players communicate with each other is illustrated in figure~\ref{fig:
 comm-scheme}. The approach taken here is client-server based. The server is responsible
-for all the logic of the game and maintains an object representing the state of the game.
-Centralizing computations in this way ensures a complete synchronization between clients.
-
-A complete communication protocol was rigorously defined by the two groups. This
-protocol defines an handshake procedure between a client and the server to ensure both
-sides are ready before starting. Once the game has started, the two clients can send
-messages to the server based on user inputs (accelerometer values, touch, or gesture).
-The server then performs some computations on the game state such as computing player
-positions, speed of the wall, remaining time, score, etc. Finally, the server
-broadcasts the parts of the game state which changed.
-
-On the practical side, one Raspberry-Pi runs both the server and a client while the other
-one only runs a client.
+for all the logic of the game and maintains an object representing the state of the game,
+while the clients are simple input/output terminals that do no handle the logic of the game.
+Centralizing computations in this way ensures an easy and robust synchronization between
+clients.
 
 \begin{figure}
     \centering
@@ -116,6 +107,23 @@ one only runs a client.
     \caption{Block diagram of the network communication.}
     \label{fig:comm-scheme}
 \end{figure}
+
+A complete communication protocol was rigorously defined by the two groups (see full
+protocol specification in appendix XX\todo{Add RFC as appendix}).
+This protocol defines an handshake procedure between a client and the server to ensure both
+sides are ready before starting the game.
+Once the game has started, the two clients can send
+messages to the server based on user inputs (accelerometer values, touches, or gestures).
+The server then performs some computations on the game state such as computing player
+positions, speed and position of the wall, remaining time, score, etc. Finally, the server
+broadcasts the parts of the game state which changed, and only those parts, which results
+in a bandwidth-efficient system.
+
+On the practical side, one Raspberry-Pi runs both the server and a client while the other
+one only runs a client.
+The Raspberry-Pi running the server is also configured as a WiFi access point and the other
+Rapsberry-Pi is directly connected to it. This point-to-point setup maximizes the
+reliability of the communication while minimizing the latency.
 
 \section{Global view of the client system}
 \label{sec:global-view}
