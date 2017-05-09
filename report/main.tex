@@ -164,11 +164,62 @@ values and touchscreen events are periodically read out by the hardware interfac
 \section{Rendering subsystem}
 \label{sec:rendering}
 
+The rendering subsystem takes as input the state of the game sent by the server,
+and outputs images of the size of the MTL\todo{did we define this ?} at a rate
+of 25 FPS. As shown in figure~\ref{fig:rendering}, the rendering system is
+implemented as a pipeline and performs three main operations: draw instructions
+computation, rendering of the 3D scene and blitting of text on top of the 3D scene.
+Each of these operations is detailled below.
+
 \begin{figure}
     \centering
-    \includegraphics[width=0.6\textwidth]{img/block_rendering_cropped.pdf}
+    \includegraphics[width=0.5\textwidth]{img/block_rendering_cropped.pdf}
     \caption{Pipeline for the rendering of the video.}
+    \label{fig:rendering}
 \end{figure}
+
+\subsection{Draw instructions}
+
+This step of the pipeline is implemented using the Python programming language.
+It converts the game state sent by the server into a set of properties for each
+frame. The main computations here are:
+\begin{itemize}
+    \item Animation of the cubes rotation: knowing the previous and current
+        position of each cube, as well as the time each cube moved, the rotation
+        center and the rotation angle are computed.
+    \item Wall distance extrapolation: to ensure smooth movement of the wall, its
+        displayed position is extrapolated from the last position sent by the server
+        and from the speed of the wall.
+    \item Computation of the angle of view based on the accelerometer value.
+    \item \todo[inline]{Anything else ?}
+\end{itemize}
+
+\subsection{3D rendering}
+
+The draw instructions are then sent to a C++ code, which computes the rotation/translation
+matrixes for all elements of the scene. These matrixes are then sent to the GPU of the
+Raspberry-Pi.
+
+The pictures of the players are received by from the server in the JPEG file format.
+They are then decompressed and copied to the RAM of the GPU as textures.
+
+Once those parameters are set, the GPU then executes an OpenGL ES program to draw the image.
+This program is the one that computes the perspective projection and the lightning of the scene.
+Finally, the resulting image is copied back into the CPU RAM.
+
+\subsection{Text handling}
+
+Text handling is made of three steps:
+\begin{itemize}
+    \item Font rasterization: the vector description of the glyphs (taken from a ttf file)
+        are converted individually into a mask of pixels.
+    \item Text rendering: the rasterized glyphs are copied next to each other according
+        to a given text string. This produces a binary image mask, which indicates where
+        the text pixels should be drawn.
+    \item Text blitting: using the text offset position in the image, each pixel of the image
+        corresponding to a pixel set to true in the mask is set at the color of the text.
+\end{itemize}
+
 
 \section{Compression subsystem}
 \label{sec:compression}
