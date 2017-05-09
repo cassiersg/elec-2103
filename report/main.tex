@@ -127,8 +127,16 @@ state is then fed to the rendering subsystem which produces a 3D image. This ima
 is then compressed and sent to the hardware interface.
 
 One of the strength of our system is this hardware interface. This abstraction offers
-a common layer to communicate both with a PC or a device. This eased a lot the development
-process.
+a common layer to communicate both with a PC or a device.
+On PC, touches, gestures and accelerometer values are simulated with the keyboard.
+This eased a lot the development process by allowing efficient debugging first on PC,
+and then only on device if necessary.
+
+On PC, the hardware interface mainly interacts with a Python library dedicated to game
+developement named Pygame. As a first development step, Pygame allowed us to develop
+a fully functionnal basic 2D version of the game. The move to the 3D version
+complicated a lot the rendering subsystem. This is explained in
+section~\ref{sec:rendering}.
 
 \begin{figure}
     \centering
@@ -136,6 +144,15 @@ process.
     \caption{Block diagram of the client, when running on a PC.}
     \label{fig:global-desktop}
 \end{figure}
+
+On device, the hardware interface communicates through SPI with the FPGA.
+Different types of informations flow in both directions. From the Raspberry-Pi to the
+FPGA, compressed frames representing 3D scenes along with control signals for the
+display manager are sent at a fixed rate. The reasons why we need a compression
+subsystem between the rendering subsystem and the hardware interface are detailed in
+section~\ref{sec:compression}. From the Nios processor running µC/OS-II, accelerometer
+values and touchscreen events are periodically read out by the hardware interface.
+
 
 \begin{figure}
     \centering
