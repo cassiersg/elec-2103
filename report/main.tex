@@ -223,8 +223,8 @@ All the codewords are then concatenated together to form the compressed image.
 The color quantization serves different purposes. For the run-length coding,
 the quantization creates chunks of constant color when there is a
 continuous shading. For the Huffman
-coding, the reduction of the pixels length from \SI{24}{bits} to
-\SI{12}{bits} means the size of the colorspace is reduced from
+coding, the reduction of the color depth from \SI{24}{bits/pixel} to
+\SI{12}{bits/pixel} means the size of the colorspace is reduced from
 \SI{16}{M} to \SI{4}{K}. This simplifies a lot the Huffman coding:
 \begin{itemize}
     \item it is much easier to estimate the distribution of the colors
