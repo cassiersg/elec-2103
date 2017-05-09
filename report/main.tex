@@ -22,7 +22,7 @@ communicate with
 each other throught a Wi-Fi communication between the two Raspberry-Pis, a common
 network interface has been specified by the two groups. This is discussed
 in section~\ref{sec:net-interface}. Before that, section~\ref{sec:gameplay-features}
-introduces the game that inspired our game and the additional features we decided to
+introduces the game that inspired ours and the additional features we decided to
 add to it. Section~\ref{sec:global-view} then describes the global architecture of
 our game as a block diagram where each block, named subsystem in what follows, serves a
 particular purpose. One of the key feature of our implementation of the game is the
@@ -285,10 +285,41 @@ This synchronization is again necessary to avoid tearing.
 \section{Input detection subsystem}
 \label{sec:input-det}
 
+Three tasks runs on the real-time kernel µC/OSII. One of them is responsible
+for sensing the touchscreen. It is implemented as a finite state machine periodically
+refreshed at a sufficient rate to ensure responsiveness. The fact that the gesture
+detection is implemented in software makes it really flexible. Three different types of
+gestures are recognized by this task:
+\begin{itemize}
+    \item A simple touch with one finger: depending on the position where this touch
+    occurs on the screen, this is interpreted as an instruction from the user to move
+    its cube to the left or to the right;
+    \item A vertical swipe with two fingers: this is the custom gesture we defined to
+    pause or resume the game;
+    \item A simple touch with three finger: this custom gesture commands the
+    disappearance of the stucture during a small amount of time (this feature is
+    described in section~\ref{sec:gameplay-features}).
+\end{itemize}
+When one of this gesture is detected, the touch sensing task sends a particular
+message to a second task through a message mailbox to inform it of which gesture
+was detected. Upon reception of a message via its message mailbox, this second task
+tries to acquire the mutex on the SPI RAM before writing a value corresponding
+to the detected gesture at a particular address.
+
+The last task periodically reads the accelerometer values and, after acquiring the mutex
+, writes it in the SPI RAM. To avoid tremor on the change of point of
+view of the 3D scene of game, which is controlled by one of the axis of the
+accelerometer, a very basic low-pass filter is applied to the accelerometer values upon
+receipt by the hardware interface.
+
+The three tasks and the synchronization mechanisms they used are represented in
+figure~\ref{fig:tasks-mc}.
+
 \begin{figure}
     \centering
     \includegraphics[width=0.5\textwidth]{img/tasks_mC_cropped.pdf}
     \caption{Tasks and their relationships on the uC/OS-II operating system.}
+    \label{fig:tasks-mc}
 \end{figure}
 
 \section{Player pictures acquisition}
