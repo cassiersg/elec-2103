@@ -300,11 +300,46 @@ has only the directionnal component of the phong lightning model).
 \section{SPI slave subsystem}
 \label{sec:spi}
 
+In order to transmit the compressed images at the required rate, an efficient and
+flexible SPI communication protocol is needed.
+The one we were provided with has major issues for our application:
+\begin{itemize}
+    \item there is a fixed overhead of 8 bits per 32 payload bits transmitted,
+    \item the chip select signal must be released between each transfer of 32 bits
+        words, which is slow on the Raspberry-Pi side,
+    \item the address to which the data is written is limited to 7 bits, which means
+        the maximum memory size is 128 words (512 bytes).
+\end{itemize}
+
+We designed thus a new protocol that avoids these issues, but which keeps the same simple
+function: accessing (read and write) to a RAM.
+The core idea of this protocol is that it works in burst mode: after some configuration steps,
+only the payload bytes are transmitted in a whole sequence, whithout any interruption for
+chip select release or control bits.
+
+To implemented this idea, the protocol is base on the state machine shown on figure~\ref{fig:spi}.
+At the start a transfer, the state machine is in command state.
+The master (i.e. the Raspberry-Pi) sets the base address of the client by
+sending a control word. A second control word sets the state machine in reading or writing state
+and configures the number of data words that will be read or written (this is the burst lenght).
+The words transmitted are read/written starting at the base address and then sequentially in the
+next words of the memory.
+Once the right amount of data words have been transmitted, the state machine returns to command state.
+All the data or control words are made of 32 bits. The base address and the burst length are encoded
+on 28 bits, which allows for a \SI{1}{GB} RAM.
+
 \begin{figure}
     \centering
     \includegraphics[width=0.5\textwidth]{img/spi_state_machine_cropped.pdf}
     \caption{State machine for the SPI communication protocol.}
+    \label{fig:spi}
 \end{figure}
+
+The SPI slave that implement this protocol on the FPGA is connected to a SPI MMU module, that presents
+three RAMs under the same address space to the Raspberry-Pi.
+These RAMs are the interface of the image buffer of the display management system, the \texttt{display control}
+buffer of the same system (see section~\ref{sec:display-mngt}), and the RAMs used for communication between the nios
+and the Raspberry-Pi.
 
 \section{Display management}
 \label{sec:display-mngt}
