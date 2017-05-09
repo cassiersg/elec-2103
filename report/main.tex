@@ -43,6 +43,7 @@ Section~\ref{sec:pic-acq} explains this player pictures acquisition subsystem.
 \section{Gameplay and features}
 \label{sec:gameplay-features}
 
+\subsection{Original game}
 Our game is inspired by an existing game available on most smartphones and tablets
 and developped by Ketchapp. Figure~\ref{fig:original-game} is a screenshot from this game.
 In this original version of the game, the player (represented by the yellow cube on figure
@@ -51,17 +52,45 @@ to fit in the hole of the wall coming in his direction at a constant speed. The 
 is to pass in as much wall as possible. Passing a wall gives 1 point, failing to pass a
 wall makes the score starting back at 0.
 
-Our version of the game differs from the original one in several aspects. First, this
-is a two-players collaborative game. Second, a game only lasts a finite amount of time
-and the two players can control the speed of the wall using the accelerometer.
-Finally, failing to pass a wall only decreases the current score by 1.
-
 \begin{figure}
     \centering
-    \includegraphics[width=0.4\textwidth]{img/original-game}
+    \includegraphics[width=0.3\textwidth]{img/original-game}
     \caption{Screenshot of the orginal game by Ketchapp.}
     \label{fig:original-game}
 \end{figure}
+
+\subsection{Custom version of the game}
+Our version of the game differs from the original one in several aspects. First, this
+is a two-players collaborative game. Second, a game only lasts a finite amount of time
+and the two players can control the speed of the wall using the accelerometer.
+Finally, failing to pass a wall only decreases the current score by 1. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{img/custom-game-version}
+    \caption{Screenshot of our version of the game. This screenshot has been taken
+    on the PC version of the game but there is really no difference with the actual
+    on-device version.}
+    \label{fig:custom-game}
+\end{figure}
+
+\subsection{Additional features}
+The difficulty of the game relies mainly on the fact that the scene is represented as a
+3D image. Experience has shown that this can sometimes be really perturbating or even
+induces the players in error. To counteract a bit this, and to add some fun to the
+gameplay, the player can change de point of view of the 3D scene by tilting the tablet
+on the left or on the right. In addition, the player has the possibility to make the
+structure on which it stands disappear during a very small amount of time each round.
+This feature can also help the player to better see where he should go to fit in the hole.
+
+As briefly mentioned in the introduction, players also have the possibility to take a
+selfie, either with a smartphone or a PC, to actually see themselves in the game. More
+precisely, their picture appears on the cube they incarnate. In addition to beeing just a
+cool feature, this helps the players to localize the cube they control at the start of
+each round.
+
+Finally, since playing our game requires a lot of concentration, players can pause the
+game whenever they want to take a break.
 
 \section{Network interface}
 \label{sec:net-interface}
