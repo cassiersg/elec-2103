@@ -11,7 +11,7 @@
 \maketitle
 \tableofcontents
 
-\chapter{Introduction}
+\addchap{Introduction}
 The objective of this project in electronic systems is to design and implement a
 two-player video game using a Raspberry-Pi 3, a DE0-Nano board containing an FPGA
 and a collection of interfaces and peripherals, and a multi-touch LCD display on
@@ -53,7 +53,7 @@ to fit in the hole of the wall coming in his direction at a constant speed. The 
 is to pass in as much wall as possible. Passing a wall gives 1 point, failing to pass a
 wall makes the score starting back at 0.
 
-\begin{figure}[htb]
+\begin{figure}[bth]
     \centering
     \includegraphics[width=0.3\textwidth]{img/original-game}
     \caption{Screenshot of the orginal game by Ketchapp.}
@@ -66,7 +66,7 @@ is a collaborative game for two players. Second, a game only lasts a fixed amoun
 and the two players can control the speed of the wall using the accelerometer.
 Finally, failing to pass a wall only decreases the current score by 1. 
 
-\begin{figure}[htb]
+\begin{figure}[bth]
     \centering
     \includegraphics[width=0.7\textwidth]{img/custom-game-version}
     \caption{Screenshot of our version of the game. This screenshot has been taken
@@ -104,9 +104,9 @@ while the clients are simple input/output terminals that do no handle the logic 
 game. Centralizing computations in this way ensures an easy and robust synchronization
 between clients.
 
-\begin{figure}[htb]
+\begin{figure}[hbt]
     \centering
-    \includegraphics[width=1.0\textwidth]{img/global_comm_scheme_cropped.pdf}
+    \includegraphics[width=0.8\textwidth]{img/global_comm_scheme_cropped.pdf}
     \caption{Block diagram of the network communication.}
     \label{fig:comm-scheme}
 \end{figure}
@@ -149,9 +149,9 @@ a fully functionnal basic 2D version of the game. The move to the 3D version
 complicated a lot the rendering subsystem. This is explained in
 section~\ref{sec:rendering}.
 
-\begin{figure}[htb]
+\begin{figure}[bth]
     \centering
-    \includegraphics[width=0.6\textwidth]{img/block_global_desktop_cropped.pdf}
+    \includegraphics[width=0.45\textwidth]{img/block_global_desktop_cropped.pdf}
     \caption{Block diagram of the client, when running on a PC.}
     \label{fig:global-desktop}
 \end{figure}
@@ -164,7 +164,7 @@ subsystem between the rendering subsystem and the hardware interface are detaile
 section~\ref{sec:compression}. From the Nios processor running µC/OS-II, accelerometer
 values and touchscreen events are periodically read out by the hardware interface.
 
-\begin{figure}[htb]
+\begin{figure}[bth]
     \centering
     \includegraphics[width=0.6\textwidth]{img/block_global_device_cropped.pdf}
     \caption{Block diagram of the client, when running the raspberry-pi/DE0-Nano system.}
@@ -181,7 +181,7 @@ implemented as a pipeline and performs three main operations: draw instructions
 computation, rendering of the 3D scene and blitting of text on top of the 3D scene.
 Each of these operations is detailled below.
 
-\begin{figure}[htb]
+\begin{figure}[bth]
     \centering
     \includegraphics[width=0.5\textwidth]{img/block_rendering_cropped.pdf}
     \caption{Pipeline for the rendering of the video.}
@@ -252,7 +252,7 @@ decompressed images.
 
 \subsection{Principle}
 
-\begin{figure}[htb]
+\begin{figure}[bth]
     \centering
     \includegraphics[width=0.65\textwidth]{img/compression_scheme_cropped.pdf}
     \caption{Principle view of the compression scheme.}
@@ -342,7 +342,7 @@ command state.
 All the data or control words are made of 32 bits. The base address and the burst length
 are encoded on 28 bits, which allows for a \SI{1}{GB} RAM.
 
-\begin{figure}[htb]
+\begin{figure}[bth]
     \centering
     \includegraphics[width=0.5\textwidth]{img/spi_state_machine_cropped.pdf}
     \caption{State machine for the SPI communication protocol.}
@@ -375,7 +375,7 @@ in order for changes of \texttt{display control} to be synchronized
 to the \texttt{end of frame} signal from the display controller.
 This synchronization is again necessary to avoid tearing.
 
-\begin{figure}[htb]
+\begin{figure}[bth]
     \centering
     \includegraphics[width=\textwidth]{img/display_manager_cropped.pdf}
     \caption{Block diagram of the display management and synchronization system.}
@@ -415,7 +415,7 @@ values upon receipt by the hardware interface.
 The three tasks and the synchronization mechanisms they used are represented in
 figure~\ref{fig:tasks-mc}.
 
-\begin{figure}[htb]
+\begin{figure}[bth]
     \centering
     \includegraphics[width=0.5\textwidth]{img/tasks_mC_cropped.pdf}
     \caption{Tasks and their relationships on the uC/OS-II operating system.}
@@ -427,13 +427,13 @@ figure~\ref{fig:tasks-mc}.
 \chapter{Player pictures acquisition}
 \label{chap:pic-acq}
 
-\begin{figure}[htb]
+\begin{figure}[bth]
     \centering
     \includegraphics[width=0.5\textwidth]{img/block_pictures_cropped.pdf}
     \caption{Block diagram of the picture acquisition subsystem.}
 \end{figure}
 
-\chapter{Conclusion}
+\addchap{Conclusion}
 
 The result of all the careful design described above is a game application that
 is playful and extremely robust. We review here the main design choices that
