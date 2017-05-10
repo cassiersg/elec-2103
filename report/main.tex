@@ -161,7 +161,7 @@ values and touchscreen events are periodically read out by the hardware interfac
     \label{fig:global-device}
 \end{figure}
 
-\section{Rendering subsystem}
+\subsection{Rendering subsystem}
 \label{sec:rendering}
 
 The rendering subsystem takes as input the state of the game sent by the server,
@@ -178,7 +178,7 @@ Each of these operations is detailled below.
     \label{fig:rendering}
 \end{figure}
 
-\subsection{Draw instructions}
+\subsubsection{Draw instructions}
 
 This step of the pipeline is implemented using the Python programming language.
 It converts the game state sent by the server into a set of properties for each
@@ -194,7 +194,7 @@ frame. The main computations here are:
     \item \todo[inline]{Anything else ?}
 \end{itemize}
 
-\subsection{3D rendering}
+\subsubsection{3D rendering}
 
 The draw instructions are then sent to a C++ code, which computes the rotation/translation
 matrixes for all elements of the scene. These matrixes are then sent to the GPU of the
@@ -207,7 +207,7 @@ Once those parameters are set, the GPU then executes an OpenGL ES program to dra
 This program is the one that computes the perspective projection and the lightning of the scene.
 Finally, the resulting image is copied back into the CPU RAM.
 
-\subsection{Text handling}
+\subsubsection{Text handling}
 
 Text handling is made of three steps:
 \begin{itemize}
@@ -221,10 +221,10 @@ Text handling is made of three steps:
 \end{itemize}
 
 
-\section{Compression subsystem}
+\subsection{Compression subsystem}
 \label{sec:compression}
 
-\subsection{Objectives}
+\subsubsection{Objectives}
 
 The need for a compression system comes from the following observation:
 when transferring 25 frames of 800x480 pixels per second, with 12 bits per pixel,
@@ -240,7 +240,7 @@ the video can be compressed in real-time. The decompression must be done
 pixel per pixel, on-the-fly, since there is no memory available to store the
 decompressed images.
 
-\subsection{Principle}
+\subsubsection{Principle}
 
 \begin{figure}
     \centering
@@ -269,7 +269,7 @@ and one for the numbers of repetitions. Each element of the pairs generated
 at the previous stage is encoded with the corresponding Huffman tree.
 All the codewords are then concatenated together to form the compressed image.
 
-\subsection{Impact of the color quantization}
+\subsubsection{Impact of the color quantization}
 
 The color quantization serves different purposes. For the run-length coding,
 the quantization creates chunks of constant color when there is a
@@ -297,7 +297,7 @@ the rendering process has been tuned to avoid producing color gradients
 through the choice of an appropriate lightning scheme for the 3D scene (the lightning
 has only the directionnal component of the phong lightning model).
 
-\section{SPI slave subsystem}
+\subsection{SPI slave subsystem}
 \label{sec:spi}
 
 In order to transmit the compressed images at the required rate, an efficient and
@@ -341,7 +341,7 @@ These RAMs are the interface of the image buffer of the display management syste
 buffer of the same system (see section~\ref{sec:display-mngt}), and the RAMs used for communication between the nios
 and the Raspberry-Pi.
 
-\section{Display management}
+\subsection{Display management}
 \label{sec:display-mngt}
 
 The system uses double buffering to avoid tearing in displayed images.
@@ -368,7 +368,7 @@ This synchronization is again necessary to avoid tearing.
     \label{fig:display-manager}
 \end{figure}
 
-\section{Input detection subsystem}
+\subsection{Input detection subsystem}
 \label{sec:input-det}
 
 Three tasks runs on the real-time kernel µC/OSII. One of them is responsible
@@ -465,5 +465,5 @@ The second feature extension is the possibility to have more than two players. T
 already supports this, so only the a few changes in the codebase are required to make the game truly
 multiplayer.\todo{et être le prochain craquage de blocus de l'UCL}
 
-
 \end{document}
+
