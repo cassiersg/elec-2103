@@ -119,8 +119,21 @@ Once the game has started, the two clients can send
 messages to the server based on user inputs (accelerometer values, touches, or gestures).
 The server then performs some computations on the game state such as computing player
 positions, speed and position of the wall, remaining time, score, etc. Finally, the server
-broadcasts the parts of the game state which changed, and only those parts, which results
-in a bandwidth-efficient system.
+broadcasts the parts of the game state which changed, and only those parts.
+
+The protocol is designed to minimize the bandwidth used, which is achieved by using small packets
+of a few bytes, that transfer only the part of the game state that changed.
+This design makes the average bandwidth used less than \SI{1}{kb/s}.
+
+All the communication happens over the TCP protocol. This protocol provides the reliability
+layer. Its main drawback is to damatically increase the latency when there is a packet loss.
+In our case this drawback is relatively minor since the latency and the packet loss rate
+for point-to-point WiFi communication are small.
+
+A spectator mode is defined: at any time of the game, a client can connect to the server,
+advertising itself as a spectator and not as a player. The server then starts sending the
+same information to the spectator as the one it sends to the players. The server ignores
+any command coming from the spectator.
 
 On the practical side, one Raspberry-Pi runs both the server and a client while the other
 one only runs a client.
