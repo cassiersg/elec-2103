@@ -523,10 +523,19 @@ communication does not require any form of handshake, which makes the impact of
 the crash of any entity minimum: there is no full reset of both parts, the
 communication is just interrupted until the entity restarts.
 
+Next, we must recognize some weaknesses of our system. The first one is its
+high sensitivity to network latency. Indeed, because the computations on the game state
+are centralized on the server, clients game state updates have a latency at least equal
+to the network latency.
+Another weakness of our system concerns sporadic minor glitches affecting the 3D rendering
+of the wall. The causes of these glitches were not investigated because they are almost
+imperceptible.
+
 That being said, there are numerous possible improvements to the game. Apart
 from all the addition of features to the gameplay, we want to highlight two
 simple extensions that would make the game even more interesting. The first one
-is the extrapolation of the player movement based on its inputs: currently, when
+is the extrapolation of the player movement based on its inputs, which reduces the
+sentivity to network latency: currently, when
 a player does some left/right action, the command is sent to the server, which
 computes the new position of the player and sends it to the client. This means
 that the feedback of the action of the player is delayed by one network
