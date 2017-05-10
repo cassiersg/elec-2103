@@ -2,7 +2,7 @@
 PACKET FORMAT
 -------------
 
-j   block_type[1 byte] length[2 bytes] payload[length bytes]
+    block_type[1 byte] length[2 bytes] payload[length bytes]
     <------------ header ------------>
 
 ---------------------------
@@ -104,8 +104,8 @@ PAYLOAD FOR EACH BLOCK TYPE
     18: SERVER_PLAYERS_PICTURES
         - player1_picture                           [4096 bytes]
         - player2_picture                           [4096 bytes]
-            NOTE: pictures are 32x32, encoded RGBA LSB (4 bytes per pixel)
-	
+        NOTE: pictures are 32x32, encoded RGBA LSB
+        (4 bytes per pixel)
     
 -----------------
 TYPICAL EXCHANGES
