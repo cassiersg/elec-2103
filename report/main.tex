@@ -220,7 +220,6 @@ frame. The main computations here are:
     displayed position is extrapolated from the last position sent by the server
     and from the speed of the wall.
     \item Computation of the angle of view based on the accelerometer value.
-    \item \todo[inline]{Anything else ?}
 \end{itemize}
 
 \subsection{3D rendering}
@@ -419,7 +418,7 @@ gestures are recognized by this task:
     disappearance of the stucture during a small amount of time (this feature is
     described in chapter~\ref{chap:gameplay-features}).
 \end{itemize}
-When one of this gesture is detected, the touch sensing task sends a particular
+When one of this gesture is detected, the touch sensing task sends a
 message to a second task through a message mailbox to inform it of which gesture
 was detected. Upon reception of a message via its message mailbox, this second task
 tries to acquire the mutex on the SPI RAM before writing a value corresponding
@@ -441,25 +440,38 @@ figure~\ref{fig:tasks-mc}.
     \label{fig:tasks-mc}
 \end{figure}
 
-\todo[inline]{Describe high-level communication protocol RPI<->nios over SPI}
+The read of the accelerometer value by the Raspberry-Pi is very simple:
+the Raspberry-Pi only needs to read the correct register, and it gets the
+last accelerometer value.
+For the touch event transmission, this is a bit more complicated since we
+need to detect events and not to read a state. To do this in a simple way,
+the Raspberry resets the "touch action" register to an invalid value each
+time it reads it. Using this method, the Raspberry-Pi can detect if there
+was a new event if since the last time it has read the register.
+In the unlikely event that the touch events are emitted faster than they
+can be read, there is a graceful degradation: on event is lost, but the
+next events are correctly transmitted.
 
 \chapter{Player pictures acquisition}
 \label{chap:pic-acq}
 
 As mentionned in the introduction and in chapter~\ref{chap:gameplay-features},
-one of the originality of our game is that it makes possible to actually see
-a picture of you on the cube you incarnate. This feature is illustrated on
+one of the originalites of our game is that the player can see a picture of
+himself on his cube. This feature is illustrated on
 figure~\ref{fig:custom-game} where you can see Bilal playing with the famous
 Terasic's dragon.
 
 On a more technical side, figure~\ref{fig:pic-acq} describes how this actually
 works. A very basic HTTP web server written in Python is running on the port 8080
-of the Raspberry-Pi. When a user access through a web browser to the IP address
-of the Raspberry-Pi on port 8080, the HTTP web servers serves a slightly modified
-version of \textsc{JpegCamera}, an open-source JavaScript webcam image capture
-library. The user can then take a picture of himself, indicates which player he is
-and upload the picture on the Raspberry-Pi at a pre-defined location. At the start
-of each new game, the game server picks the two last uploaded images and sends it
+of the Raspberry-Pi. When a user uses a web browser to access the IP address
+of the Raspberry-Pi on port 8080, the HTTP web server serves a webpage 
+that allows him to take a picutre using the webcam, indicate which player he is
+and upload the picture on to the web server. The webpage uses \textsc{JpegCamera},
+an open-source JavaScript webcam image capture.
+
+When the web server receives the player picture, it reduces its size to 64x64 pixels
+and stores it in the filesystem as a JPEG file, using a pre-defined filename scheme.
+At the start of each new game, the game server picks the two last uploaded images and sends it
 to the client so that the texture rendering of the player pictures can be performed.
 
 \begin{figure}[bth]
