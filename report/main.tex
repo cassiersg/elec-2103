@@ -14,13 +14,13 @@
 \chapter{Introduction}
 The objective of this project in electronic systems is to design and implement a
 two-player video game using a Raspberry-Pi 3, a DE0-Nano board containing an FPGA
-and a collection of interfaces and peripherals, and a multi-touch LCD module on
+and a collection of interfaces and peripherals, and a multi-touch LCD display on
 each side. In addition, the FPGA features a Nios II processor running µC/OS-II, a
 real-time kernel.
 One of the main specificity of this project is that each side is designed and
 implemented by two independent groups. However, because the two players have to
 communicate with
-each other throught a Wi-Fi communication between the two Raspberry-Pis, a common
+each other through a Wi-Fi communication between the two Raspberry-Pis, a common
 network interface has been specified by the two groups. This is discussed
 in chapter~\ref{chap:net-interface}. Before that, chapter~\ref{chap:gameplay-features}
 introduces the game that inspired ours and the additional features we decided to
@@ -34,7 +34,7 @@ To ensure robust and fast communication between the Raspberry-Pi and the FPGA, a
 SPI slave subsystem together with a simple, yet reliable, communication protocol has
 been designed and implemented. This is the topic of section~\ref{sec:spi}. Next, in
 section~\ref{sec:display-mngt}, the hardware behind the double buffering technique
--- used to avoid tearing effects on the screen -- is explained.
+--- used to avoid tearing effects on the screen --- is explained.
 In section~\ref{sec:input-det}, we head to the tasks running on the real-time kernel.
 These tasks are responsible for the sensing of the touchscreen and the accelerometer.
 Another originality of our game is that the players have the possibility to take a
@@ -62,7 +62,7 @@ wall makes the score starting back at 0.
 
 \section{Custom version of the game}
 Our version of the game differs from the original one in several aspects. First, this
-is a two-players collaborative game. Second, a game only lasts a finite amount of time
+is a collaborative game for two players. Second, a game only lasts a fixed amount of time
 and the two players can control the speed of the wall using the accelerometer.
 Finally, failing to pass a wall only decreases the current score by 1. 
 
@@ -96,8 +96,9 @@ game whenever they want to take a break.
 \chapter{Network interface}
 \label{chap:net-interface}
 
-The way the two players communicate with each other is illustrated in figure~\ref{fig:
-comm-scheme}. The approach taken here is client-server based. The server is responsible
+The way the two players communicate with each other is illustrated in
+figure~\ref{fig:comm-scheme}.
+The approach taken here is client-server based. The server is responsible
 for all the logic of the game and maintains an object representing the state of the game,
 while the clients are simple input/output terminals that do no handle the logic of the
 game. Centralizing computations in this way ensures an easy and robust synchronization
