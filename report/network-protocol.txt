@@ -1,15 +1,23 @@
+------------
+REQUIREMENTS
+------------
+
+The key words "MAY", "MUST", "MUST NOT", "OPTIONAL", "RECOMMENDED",
+"REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT" in this
+document are to be interpreted as described in RFC 2119.
+
 -------------
 PACKET FORMAT
 -------------
 
-j   block_type[1 byte] length[2 bytes] payload[length bytes]
+    block_type[1 byte] length[2 bytes] payload[length bytes]
     <------------ header ------------>
 
 ---------------------------
 PAYLOAD FOR EACH BLOCK TYPE
 ---------------------------
 
-/!\ EVERYTHING IN NETWORK-BYTE ORDER (big-endian, MSB first) /!\
+Everything MUST be in network-byte order (big-endian, MSB first).
 
     0: CLIENT CONNECT 
         - client role (player: 0, spectator: 1)     [1 byte] 
@@ -24,7 +32,7 @@ PAYLOAD FOR EACH BLOCK TYPE
         - player_id (can be 1 or 2)                 [1 byte]
         - grid_size_x (currently hardcoded to 15)   [1 byte]
         - grid_size_y (currently hardcoded to 6)    [1 byte]
-	    NOTE: should be send only when two players
+	    NOTE: SHOULD be send only when two players
         are ready.
 
     4: CLIENT ACTION
@@ -39,7 +47,7 @@ PAYLOAD FOR EACH BLOCK TYPE
         - angle                                     [2 bytes]
         NOTE: angle is as read from the accelerometer
         (i.e. unsigned int on 16 bits).
-        Should be send at a reasonable pace,
+        SHOULD be send at a reasonable pace,
         5-10Hz for example. 
 
     6: SERVER GAME FINISHED
@@ -55,7 +63,7 @@ PAYLOAD FOR EACH BLOCK TYPE
         - grid: 1 byte per case, row by row,        [X*Y bytes]
         starting from (x,y) = (0,0) which is
         bottom left (hole: 4, wall: 3, struct:0)
-        NOTE: only sent when a new round begins
+        NOTE: MUST only sent when a new round begins
 
     9: SERVER PLAYER POSITIONS
         - positions_id                              [4 bytes]
@@ -71,19 +79,19 @@ PAYLOAD FOR EACH BLOCK TYPE
         rate given by the current speed (in gauge
         units/ms).
         - speed in gauge units per milliseconds     [2 bytes]	
-        NOTE: should be sent at a fixed frequency
+        NOTE: SHOULD be sent at a fixed frequency
         (example: 5 Hz).
 
     11: SERVER SCORE:
         - score                                     [4 bytes]
-        NOTE: again, must only be transmitted if
+        NOTE: again, MUST only be transmitted if
         a change in the score occured.
 	
     12: SERVER GLOBAL GAUGE STATE
         - gauge units                               [2 bytes]
         NOTE: decrease at a constant speed (not like
         the round gauge state)
-        NOTE: should be sent at a fixed frequency
+        NOTE: SHOULD be sent at a fixed frequency
         (example: 5 Hz).
 
     13: SERVER END ROUND
@@ -104,13 +112,13 @@ PAYLOAD FOR EACH BLOCK TYPE
     18: SERVER_PLAYERS_PICTURES
         - player1_picture                           [4096 bytes]
         - player2_picture                           [4096 bytes]
-            NOTE: pictures are 32x32, encoded RGBA LSB (4 bytes per pixel)
-	
+        NOTE: pictures MUST be 32x32, encoded RGBA
+        LSB (4 bytes per pixel)
     
 -----------------
 TYPICAL EXCHANGES
 -----------------
-NOTE: outdated, must be updated.
+WARNING: some parts are deprecated, SHOULD be updated.
 
 C -> S: client connect
 S -> C: server connect

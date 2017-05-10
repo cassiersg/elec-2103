@@ -457,9 +457,10 @@ works. A very basic HTTP web server written in Python is running on the port 808
 of the Raspberry-Pi. When a user access through a web browser to the IP address
 of the Raspberry-Pi on port 8080, the HTTP web servers serves a slightly modified
 version of \textsc{JpegCamera}, an open-source JavaScript webcam image capture
-library. The user can then take a picture, indicate which player he is and upload
-the picture on the Raspberry-Pi at a pre-defined location. At the start of each new game,
-the game server picks the two last uploaded images and sends it to the client so that
+library. The user can then take a picture of himself, indicates which player he is
+and upload the picture on the Raspberry-Pi at a pre-defined location. At the start
+of each new game, the game server picks the two last uploaded images and sends it
+to the client so that the texture rendering of the player pictures can be performed.
 
 \begin{figure}[bth]
     \centering
