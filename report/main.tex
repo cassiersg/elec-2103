@@ -112,7 +112,7 @@ between clients.
 \end{figure}
 
 A complete communication protocol was rigorously defined by the two groups (see full
-protocol specification in appendix XX\todo{Add RFC as appendix}).
+protocol specification in appendix~\ref{app:protocol}).
 This protocol defines an handshake procedure between a client and the server to ensure both
 sides are ready before starting the game.
 Once the game has started, the two clients can send
@@ -344,7 +344,7 @@ are encoded on 28 bits, which allows for a \SI{1}{GB} RAM.
 
 \begin{figure}[bth]
     \centering
-    \includegraphics[width=0.5\textwidth]{img/spi_state_machine_cropped.pdf}
+    \includegraphics[width=0.37\textwidth]{img/spi_state_machine_cropped.pdf}
     \caption{State machine for the SPI communication protocol.}
     \label{fig:spi}
 \end{figure}
@@ -377,7 +377,7 @@ This synchronization is again necessary to avoid tearing.
 
 \begin{figure}[bth]
     \centering
-    \includegraphics[width=\textwidth]{img/display_manager_cropped.pdf}
+    \includegraphics[width=0.81\textwidth]{img/display_manager_cropped.pdf}
     \caption{Block diagram of the display management and synchronization system.}
     \label{fig:display-manager}
 \end{figure}
@@ -398,7 +398,7 @@ gestures are recognized by this task:
     pause or resume the game;
     \item A simple touch with three fingers: this custom gesture commands the
     disappearance of the stucture during a small amount of time (this feature is
-    described in chapter~\ref{sec:gameplay-features}).
+    described in chapter~\ref{chap:gameplay-features}).
 \end{itemize}
 When one of this gesture is detected, the touch sensing task sends a particular
 message to a second task through a message mailbox to inform it of which gesture
@@ -427,10 +427,26 @@ figure~\ref{fig:tasks-mc}.
 \chapter{Player pictures acquisition}
 \label{chap:pic-acq}
 
+As mentionned in the introduction and in chapter~\ref{chap:gameplay-features},
+one of the originality of our game is that it makes possible to actually see
+a picture of you on the cube you incarnate. This feature is illustrated on
+figure~\ref{fig:custom-game} where you can see Bilal playing with the famous
+Terasic's dragon.
+
+On a more technical side, figure~\ref{fig:pic-acq} describes how this actually
+works. A very basic HTTP web server written in Python is running on the port 8080
+of the Raspberry-Pi. When a user access through a web browser to the IP address
+of the Raspberry-Pi on port 8080, the HTTP web servers serves a slightly modified
+version of \textsc{JpegCamera}, an open-source JavaScript webcam image capture
+library. The user can then take a picture, indicate which player he is and upload
+the picture on the Raspberry-Pi at a pre-defined location. At the start of each new game,
+the game server picks the two last uploaded images and sends it to the client so that
+
 \begin{figure}[bth]
     \centering
     \includegraphics[width=0.5\textwidth]{img/block_pictures_cropped.pdf}
     \caption{Block diagram of the picture acquisition subsystem.}
+    \label{fig:pic-acq}
 \end{figure}
 
 \addchap{Conclusion}
@@ -442,32 +458,32 @@ enables these characteristics.
 While the game concept is relatively simple, it is not repetitive thanks to the
 wide variety of structures that are automatically generated, and this automatic
 generation is done with an algorithm that ensures that the resulting structure
-has always playful properties.  Furthermore, the players can adapt the
+always has playful properties. Furthermore, the players can adapt the
 difficulty to their skills by changing the speed of the wall, so that the game
-remains challenging as the players improve.  The perspective view (3D rendering)
+remains challenging as the players improve. The perspective view (3D rendering)
 of the scene is indeed attracting at the first sight, and it also enables
 advanced gameplay possibilities, namely: changing the point of view of the
-player and making the structure and the players disappear.  For the novice
-players, the flexible rendering of text allows to easily give hints.  Finally,
+player and making the structure and the players disappear. For the novice
+players, the flexible rendering of text allows to easily give hints. Finally,
 the flexible rendering system allows to use a PC insted of a
-Raspberry-Pi-DE0-Nano-MTL system to play.  Combined with the use of the specator
-mode on a large display is a very effective way to attract candidate players
+Raspberry-Pi-DE0-Nano-MTL system to play. Combined with the use of the spectator
+mode on a large display, this gives a very efficient way to attract candidate players
 during public demonstrations.
 
-The robustness of the game is a critical characteristic for a game. Indeed, an
-essential way to achieve this is to carefully test and debug all the code. This
+Robustness is a critical characteristic for a game. A way to achieve this is to
+carefully test and debug all the code. This
 was achieved through the extensive use of logs to be able to track down the
-origin of each crash, even if it only appears sporadically.  Nevertheless, the
+origin of each crash, even if it only appears sporadically. Nevertheless, the
 design of the communication protocols and the different entities is also an
 important point. Our approach at this level was to avoid as much as possible any
 kind of state that is shared by two communicating entities, and that needs
-bidirectionnal sychronization.  Bidirectionnal synchronization logic is often
-complicated and error-prone, so we prefer to avoid it.  For the TCP
+bidirectionnal sychronization. Indeed, bidirectionnal synchronization logic is often
+complicated and error-prone, so we prefer to avoid it. For the TCP
 communication (which is itself a robust protocol), there are two distinct
 states: the state of the game, which is computed by the server and sent to the
-clients, while the state of the clients goes in the opposite direction.  The SPI
-communication is designed with the same principle: at low level, the slave state
-machine is controlled by the master (i.e. the Raspberry-Pi). At higher level,
+clients and the state of the clients which goes in the opposite direction. The SPI
+communication is designed with the same principle: at a low level, the slave state
+machine is controlled by the master (i.e. the Raspberry-Pi). At a higher level,
 there are two infomation flows: the display information that comes from the
 master, and the player actions that are sent by the slave. All this
 communication does not require any form of handshake, which makes the impact of
@@ -476,24 +492,25 @@ communication is just interrupted until the entity restarts.
 
 That being said, there are numerous possible improvements to the game. Apart
 from all the addition of features to the gameplay, we want to highlight two
-simple extensions that would make the game even more intersting.  The first one
+simple extensions that would make the game even more interesting. The first one
 is the extrapolation of the player movement based on its inputs: currently, when
 a player does some left/right action, the command is sent to the server, which
 computes the new position of the player and sends it to the client. This means
 that the feedback of the action of the player is delayed by one network
 round-trip time (RTT). The client can predict the movement of the player to
-avoids this round-trip delay.  This feature would greatly improve the perceived
+avoids this round-trip delay. This feature would greatly improves the perceived
 responsiveness of the game. However it would in some rare situations
-(simultaneous movement of both players to the same positions) cause small
-glitches.  The second feature extension is the possibility to have more than two
-players. The network architecture already supports this, so only the a few
-changes in the codebase are required to make the game truly multiplayer.\todo{et
-être le prochain craquage de blocus de l'UCL}
+(simultaneous movement of both players to the same position) cause small
+glitches. The second feature extension is the possibility to have more than two
+players. The network architecture already supports this, so only a few
+changes in the codebase are required to make the game truly multiplayer.
 
 \appendix
 
-\section{Network specification}
-\todo[inline]{A ajouter}
+\chapter{Network specification}
+\label{app:protocol}
+
+\lstinputlisting{network-protocol.txt}
 
 \end{document}
 
