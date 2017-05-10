@@ -62,7 +62,9 @@ wall makes the score starting back at 0.
 
 \section{Custom version of the game}
 Our version of the game differs from the original one in several aspects. First, this
-is a collaborative game for two players. Second, a game only lasts a fixed amount of time
+is a collaborative game for two players. The collaborative aspect of the game
+changes a bit the behavior for the movement of the cubes, which is specified in
+appendix~\ref{chap:formal}. Second, a game only lasts a fixed amount of time
 and the two players can control the speed of the wall using the accelerometer.
 Finally, failing to pass a wall only decreases the current score by 1. 
 
@@ -528,6 +530,8 @@ changes in the codebase are required to make the game truly multiplayer.
 \label{app:protocol}
 
 \lstinputlisting{network-protocol.txt}
+
+\input{formal.tex}
 
 \end{document}
 
