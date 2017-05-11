@@ -90,7 +90,8 @@ As briefly mentioned in the introduction, players also have the possibility to t
 selfie, either with a smartphone or a PC, to actually see themselves in the game. More
 precisely, their picture appears on the cube they incarnate. In addition to beeing just a
 cool feature, this helps the players to localize the cube they control at the start of
-each round.
+each round. This feature is illustrated on figure~\ref{fig:custom-game} where we can
+see Bilal, the beta tester of our game, playing with the famous Terasic's dragon.
 
 Finally, since playing our game requires a lot of concentration, players can pause the
 game whenever they want to take a break.
@@ -181,7 +182,7 @@ FPGA, compressed frames representing 3D scenes along with control signals for th
 display manager are sent at a fixed rate. The reasons why we need a compression
 subsystem between the rendering subsystem and the hardware interface are detailed in
 section~\ref{sec:compression}. From the Nios processor running µC/OS-II, accelerometer
-values and touchscreen events are periodically read out by the hardware interface.
+values and touchscreen events are periodically readout by the hardware interface.
 
 \begin{figure}[bth]
     \centering
@@ -214,17 +215,22 @@ It converts the game state sent by the server into a set of properties for each
 frame. The main computations here are:
 \begin{itemize}
     \item Animation of the cubes rotation: knowing the previous and current
-    position of each cube, as well as the time each cube moved, the rotation
+    position of each cube, as well as by how much it has already rotated, the rotation
     center and the rotation angle are computed.
     \item Wall distance extrapolation: to ensure smooth movement of the wall, its
     displayed position is extrapolated from the last position sent by the server
     and from the speed of the wall.
     \item Computation of the angle of view based on the accelerometer value.
+    \item Wall color: when the wall reaches the structure, its color turns to green
+    if the players are well positioned, orange otherwise.
+    \item Visibility of the structure: based on user input, decides if the structure
+    must be visible or not.
 \end{itemize}
 
-\subsection{3D rendering}
+\subsection{3D rendering and texture decompression}
 
-The draw instructions are then sent to a C++ code, which computes the rotation/translation
+The draw instructions are then sent to a \texttt{C++} code, which computes the
+rotation/translation
 matrices for all elements of the scene. These matrices are then sent to the GPU of the
 Raspberry-Pi.
 
@@ -246,7 +252,8 @@ Text handling is made of three steps:
     to a given text string. This produces a binary image mask, which indicates where
     the text pixels should be drawn.
     \item Text blitting: using the text offset position in the image, each pixel of the
-    image corresponding to a pixel set to true in the mask is set at the color of the text.
+    image corresponding to a pixel set to true in the mask is set at the color of the
+    text.
 \end{itemize}
 
 \section{Compression subsystem}
@@ -261,7 +268,7 @@ is \SI{600}{kB}.
 
 In our system, the SPI bandwidth available to transfer the video is \SI{5}{Mb/s},
 and the memory available on the FPGA (considering onchip memory only, the SDRAM
-being used by the Nios/µC0S-II system) is \SI{30}{kB} per frame.
+being used by the Nios/µCOS-II system) is \SI{30}{kB} per frame.
 
 We thus need a compression by a factor larger than 20, that is such that
 the video can be compressed in real-time. The decompression must be done
@@ -282,7 +289,7 @@ the color quantization, the run-length coding, and the Huffman coding. The first
 step is lossy, while the two other steps are lossless.
 
 \paragraph{Color quantization} The precision for each color channel is
-reduced to 4 bits. This step is a preprocessing step that makes it possible
+reduced to 4 bits. This preprocessing step makes it possible
 to implement and improves the efficiency of the following steps.
 
 \paragraph{Run-length coding} The image, represented as a list of pixels,
@@ -307,7 +314,7 @@ coding, the reduction of the color depth from \SI{24}{bits/pixel} to
 \SI{16}{M} to \SI{4}{K}. This simplifies a lot the Huffman coding:
 \begin{itemize}
     \item it is much easier to estimate the distribution of the colors
-    to build the Huffman tree\footnote{The color and run-length distribution are
+    to build the Huffman tree\footnote{The color and run-length distributions are
     estimated from a set of training images at compile time.};
     \item it keeps the codewords length small, which simplifies the implementation:
     the memory bandwidth required is smaller;
@@ -323,7 +330,24 @@ For these kinds of images,
 it may introduce a "staircase" effect. To avoid this artefact to be visible,
 the rendering process has been tuned to avoid producing color gradients
 through the choice of an appropriate lightning scheme for the 3D scene (the lightning
-has only the directionnal component of the phong lightning model).
+has only the directionnal component of the Phong lightning model).
+
+\subsection{Results}
+As mentionned earlier, an uncompressed frame with a color depth of \SI{12}{bits}
+requires \SI{600}{kB}. With our compression system, the following performances were
+achieved:
+\begin{itemize}
+    \item compressed without player picture: \SI{4}{kB/frame}, this gives a compression
+    ratio of 150 ;
+    \item compressed with player pictures: \SI{15}{kB/frame}, this gives a compression
+    ratio of 40.
+\end{itemize}
+As expected, player pictures make the compression a bit harder. Nevertheless, the
+objective of a compression ratio greater than 20 is achieved. In term of speed,
+specifications are also met: the
+coding (in software, on the Raspberry-Pi) lasts in average \SI{3}{ms/frame} while the
+decoding (in hardware, on the FPGA) occurs at a rate of 1 pixel per clock cycle
+(at \SI{33}{\mega\hertz}, which is the clock of LCD screen).
 
 \section{SPI slave subsystem}
 \label{sec:spi}
@@ -332,7 +356,7 @@ In order to transmit the compressed images at the required rate, an efficient an
 flexible SPI communication protocol is needed.
 The one we were provided with has major issues for our application:
 \begin{itemize}
-    \item there is a fixed overhead of 8 bits per 32 payload bits transmitted,
+    \item there is a fixed overhead of 8 bits per 32 bits payload transmitted,
     \item the chip select signal must be released between each transfer of 32 bits
     words, which is slow on the Raspberry-Pi side,
     \item the address to which the data is written is limited to 7 bits, which means
@@ -343,16 +367,16 @@ We thus designed a new protocol that avoids these issues, but which keeps the sa
 function: accessing (read and write) to a RAM.
 The core idea of this protocol is that it works in burst mode: after some configuration
 steps,
-only the payload bytes are transmitted in a whole sequence, whithout any interruption for
+only the payload bytes are transmitted in a whole sequence, without any interruption for
 chip select release or control bits.
 
-To implemente this idea, the protocol is based on the state machine shown in
+To implement this idea, the protocol is based on the state machine shown in
 figure~\ref{fig:spi}.
-At the start a transfer, the state machine is in command state.
+At the start of a transfer, the state machine is in command state.
 The master (i.e. the Raspberry-Pi) sets the base address of the client by
 sending a control word. A second control word sets the state machine in reading or
 writing state and configures the number of data words that will be read or written
-(this is the burst lenght).
+(this is the burst length).
 The words transmitted are read/written starting at the base address and then sequentially
 in the next words of the memory.
 Once the right amount of data words have been transmitted, the state machine returns to
@@ -367,11 +391,12 @@ are encoded on 28 bits, which allows for a \SI{1}{GB} RAM.
     \label{fig:spi}
 \end{figure}
 
-The SPI slave that implements this protocol on the FPGA is connected to a SPI MMU module,
-that presents three RAMs under the same address space to the Raspberry-Pi.
+The SPI slave that implements this protocol on the FPGA is connected to an SPI MMU module,
+that offers three RAMs under the same address space to the Raspberry-Pi.
 These RAMs are the interface of the image buffer of the display management system,
-the \texttt{display control} buffer of the same system (see section~\ref{sec:display-mngt})
-, and the RAMs used for communication between the Nios and the Raspberry-Pi.
+the \texttt{display control} buffer of the same system
+(see section~\ref{sec:display-mngt}), and the RAMs used for communication between
+the Nios and the Raspberry-Pi.
 
 \section{Display management}
 \label{sec:display-mngt}
@@ -425,7 +450,7 @@ tries to acquire the mutex on the SPI RAM before writing a value corresponding
 to the detected gesture at a particular address.
 
 The last task periodically reads the accelerometer values and, after acquiring
-the mutex , writes it in the SPI RAM. To avoid tremor on the change of point of
+the mutex, writes it in the SPI RAM. To avoid tremor on the change of point of
 view of the 3D scene of game, which is controlled by one of the axis of the
 accelerometer, a very basic low-pass filter is applied to the accelerometer
 values upon receipt by the hardware interface.
@@ -436,13 +461,13 @@ figure~\ref{fig:tasks-mc}.
 \begin{figure}[bth]
     \centering
     \includegraphics[width=0.5\textwidth]{img/tasks_mC_cropped.pdf}
-    \caption{Tasks and their relationships on the uC/OS-II operating system.}
+    \caption{Tasks and their relationships on the µC/OS-II operating system.}
     \label{fig:tasks-mc}
 \end{figure}
 
-The readout of the accelerometer value by the Raspberry-Pi is very simple:
+The readout of the accelerometer values by the Raspberry-Pi is very simple:
 the Raspberry-Pi only needs to read the correct register, and it gets the
-last accelerometer value.
+last accelerometer values.
 For the touch event transmission, this is a bit more complicated since we
 need to detect events and not to read a state. To do this in a simple way,
 the Raspberry resets the "touch action" register to an invalid value each
@@ -467,7 +492,7 @@ of the Raspberry-Pi. When a user uses a web browser to access the IP address
 of the Raspberry-Pi on port 8080, the HTTP web server serves a webpage 
 that allows him to take a picutre using the webcam, indicate which player he is
 and upload the picture on to the web server. The webpage uses \textsc{JpegCamera},
-an open-source JavaScript webcam image capture.
+an open-source JavaScript webcam image capture library.
 
 When the web server receives the player picture, it reduces its size to 64x64 pixels
 and stores it in the filesystem as a JPEG file, using a pre-defined filename scheme.
@@ -494,11 +519,11 @@ generation is done with an algorithm that ensures that the resulting structure
 always has playful properties. Furthermore, the players can adapt the
 difficulty to their skills by changing the speed of the wall, so that the game
 remains challenging as the players improve. The perspective view (3D rendering)
-of the scene is indeed attracting at the first sight, and it also enables
+of the scene is attracting at the first sight, and it also enables
 advanced gameplay possibilities, namely: changing the point of view of the
 player and making the structure and the players disappear. For the novice
 players, the flexible rendering of text allows to easily give hints. Finally,
-the flexible rendering system allows to use a PC insted of a
+the flexible rendering system allows to use a PC instead of a
 Raspberry-Pi-DE0-Nano-MTL system to play. Combined with the use of the spectator
 mode on a large display, this gives a very efficient way to attract candidate players
 during public demonstrations.
@@ -521,7 +546,7 @@ there are two infomation flows: the display information that comes from the
 master, and the player actions that are sent by the slave. All this
 communication does not require any form of handshake, which makes the impact of
 the crash of any entity minimum: there is no full reset of both parts, the
-communication is just interrupted until the entity restarts.
+communication is just interrupted until the faulty entity restarts.
 
 Next, we must recognize some weaknesses of our system. The first one is its
 high sensitivity to network latency. Indeed, because the computations on the game state
@@ -540,7 +565,7 @@ a player does some left/right action, the command is sent to the server, which
 computes the new position of the player and sends it to the client. This means
 that the feedback of the action of the player is delayed by one network
 round-trip time (RTT). The client can predict the movement of the player to
-avoids this round-trip delay. This feature would greatly improves the perceived
+avoid this round-trip delay. This feature would greatly improves the perceived
 responsiveness of the game. However it would in some rare situations
 (simultaneous movement of both players to the same position) cause small
 glitches. The second feature extension is the possibility to have more than two
